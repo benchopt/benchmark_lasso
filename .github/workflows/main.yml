@@ -1,14 +1,14 @@
 name: build
 
 on:
-  push:
-    branches:
-      - '**'
   create:
     branches:
       - 'master'
     tags:
       - '**'
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build-linux:
@@ -32,10 +32,7 @@ jobs:
         # make sure we have the latest version of pip to correctly install benchopt in sub conda env
         pip install --upgrade pip
         pip install -U git+https://github.com/benchopt/benchopt@$BENCH_BRANCH
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 .
+
     - name: Test
       env:
           BENCHO_DEBUG: 1
@@ -44,3 +41,19 @@ jobs:
         conda activate base
         benchopt test . --env-name bench_test_env -vl
         benchopt test . --env-name bench_test_env -vl --skip-install
+
+
+  linter-flake8:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 .
