@@ -1,14 +1,14 @@
 name: build
 
 on:
-  push:
-    branches:
-      - '**'
   create:
     branches:
       - 'master'
     tags:
       - '**'
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build-linux:
@@ -24,22 +24,15 @@ jobs:
         python-version: 3.8
 
     - name: Install dependencies
+      env:
+        BENCH_BRANCH: master
       run: |
         eval "$(conda shell.bash hook)"
         conda activate base
         # make sure we have the latest version of pip to correctly install benchopt in sub conda env
         pip install --upgrade pip
-        pip install -U https://api.github.com/repos/benchopt/benchOpt/zipball/master
-        # There is an ungoing issue with compat between libgit2 and julia which makes
-        # the auto install of julia solver fails when cloning the General repository
-        # from julia. To avoid this, we clone this on the system directly.
-        # See https://github.com/JuliaLang/julia/issues/33111
-        git clone https://github.com/JuliaRegistries/General.git \
-                $HOME/.julia/registries/General
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 .
+        pip install -U git+https://github.com/benchopt/benchopt@$BENCH_BRANCH
+
     - name: Test
       env:
           BENCHO_DEBUG: 1
@@ -48,3 +41,19 @@ jobs:
         conda activate base
         benchopt test . --env-name bench_test_env -vl
         benchopt test . --env-name bench_test_env -vl --skip-install
+
+
+  linter-flake8:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 .
