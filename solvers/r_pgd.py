@@ -4,7 +4,6 @@ from pathlib import Path
 from benchopt.base import BaseSolver
 from benchopt.util import safe_import_context
 
-
 with safe_import_context() as import_ctx:
 
     from rpy2 import robjects
@@ -16,11 +15,12 @@ with safe_import_context() as import_ctx:
     import_func_from_r_file(R_FILE)
     numpy2ri.activate()
 
+
 class Solver(BaseSolver):
     name = "R-PGD"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2']
+    requirements = ['r-base', '-c r rpy2']
     stop_strategy = 'iteration'
     support_sparse = False
 
