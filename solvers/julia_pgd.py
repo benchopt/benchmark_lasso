@@ -1,5 +1,5 @@
 from pathlib import Path
-from benchopt.utils import safe_import_context
+from benchopt import safe_import_context
 
 from benchopt.helpers.julia import JuliaSolver
 from benchopt.helpers.julia import get_jl_interpreter
