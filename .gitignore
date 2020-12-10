@@ -1,5 +1,6 @@
 # Cache directories
 joblib
+__cache__
 .pytest_cache
 __pycache__
 *.egg-info

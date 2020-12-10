@@ -1,6 +1,6 @@
-from benchopt.base import BaseDataset
+from benchopt import BaseDataset
 
-from benchopt.util import safe_import_context
+from benchopt.utils import safe_import_context
 
 
 with safe_import_context() as import_ctx:

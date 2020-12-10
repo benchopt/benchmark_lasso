@@ -1,14 +1,14 @@
 import numpy as np
 
-from benchopt.base import BaseSolver
-from benchopt.util import safe_import_context
+from benchopt import BaseSolver
+from benchopt.utils import safe_import_context
 
 
 with safe_import_context() as import_ctx:
 
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri
-    from benchopt.utils.r_helpers import import_rpackages
+    from benchopt.helpers.r_lang import import_rpackages
 
     # Setup the system to allow rpy2 running
     numpy2ri.activate()

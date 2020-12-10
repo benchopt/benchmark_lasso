@@ -1,4 +1,4 @@
-from benchopt.base import BaseObjective
+from benchopt import BaseObjective
 
 
 class Objective(BaseObjective):
