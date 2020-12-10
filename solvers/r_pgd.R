@@ -22,14 +22,14 @@ St <- function(lambda, X) {
 
 
 # Main algorithm
-proximal_gradient_descent <- function(X, Y, lambda, step_size, n_iter) {
+proximal_gradient_descent <- function(X, Y, lambda, n_iter) {
     # --------- Initialize parameter ---------
     p <- ncol(X)
     parameters <- numeric(p)
-
+    step_size <- 1 / norm(X, "2") ** 2
     for (i in 1:n_iter) {
         # Compute the gradient
-        grad <- t(-X) %*% (Y - X %*% parameters)
+        grad <- crossprod(-X, (Y - X %*% parameters))
         # # Update the parameters
         parameters <- St(step_size * lambda, parameters - step_size * grad)
     }
