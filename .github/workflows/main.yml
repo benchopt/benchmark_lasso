@@ -25,13 +25,13 @@ jobs:
 
     - name: Install dependencies
       env:
-        BENCH_BRANCH: master
+        BENCH_BRANCH: Fix52
       run: |
         eval "$(conda shell.bash hook)"
         conda activate base
         # make sure we have the latest version of pip to correctly install benchopt in sub conda env
         pip install --upgrade pip
-        pip install -U git+https://github.com/benchopt/benchopt@$BENCH_BRANCH
+        pip install -U git+https://github.com/tanglef/benchopt@$BENCH_BRANCH
 
     - name: Test
       env:
