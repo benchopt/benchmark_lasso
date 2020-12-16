@@ -10,6 +10,7 @@ with safe_import_context() as import_ctx:
     from modopt.opt.linear import Identity
     from modopt.opt.gradient import GradBasic
 
+
 class Solver(BaseSolver):
     name = 'ModOpt-FISTA'
     stop_strategy = 'iteration'
