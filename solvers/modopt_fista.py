@@ -21,7 +21,6 @@ class Solver(BaseSolver):
 
     parameters = {
         'restart_strategy': ['greedy', 'adaptive-1'],
-
     }
 
     def set_objective(self, X, y, lmbd):
