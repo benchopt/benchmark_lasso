@@ -15,8 +15,9 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
-        if scipy.sparse.issparse(self.X) and scipy.sparse.isspmatrix_csc(self.X):
-            self.X = scipy.sparse.csr_matrix(self.X)
+        if scipy.sparse.issparse(self.X)
+        and scipy.sparse.isspmatrix_csc(self.X):
+                self.X = scipy.sparse.csr_matrix(self.X)
 
         n_samples = self.X.shape[0]
 
@@ -28,7 +29,7 @@ class Solver(BaseSolver):
         )
 
     def run(self, n_iter):
-        self.solver.fit(self.X, self.y, max_epochs=n_iter, 
+        self.solver.fit(self.X, self.y, max_epochs=n_iter,
                         **self.solver_parameter)
 
     def get_result(self):
