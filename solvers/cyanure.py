@@ -4,23 +4,27 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     from cyanure import Regression
+    import scipy
 
 
 class Solver(BaseSolver):
     name = 'Cyanure'
 
     install_cmd = 'conda'
-    requirements = ['pip:cyanure-mkl']
+    requirements = ['scipy', 'pip:cyanure-mkl']
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
+        if (scipy.sparse.issparse(self.X) and
+                scipy.sparse.isspmatrix_csc(self.X)):
+            self.X = scipy.sparse.csr_matrix(self.X)
 
         n_samples = self.X.shape[0]
 
         self.solver = Regression(loss='square', penalty='l1',
                                  fit_intercept=False)
         self.solver_parameter = dict(
-            lambd=self.lmbd / n_samples, solver='auto',
+            lambd=self.lmbd / n_samples, solver='auto', it0=1000000,
             tol=1e-12, verbose=False
         )
 
