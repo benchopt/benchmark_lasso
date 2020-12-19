@@ -11,12 +11,12 @@ class Solver(BaseSolver):
     name = 'Cyanure'
 
     install_cmd = 'conda'
-    requirements = ['pip:cyanure-mkl']
+    requirements = ['scipy', 'pip:cyanure-mkl']
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
-        if scipy.sparse.issparse(self.X) and \
-           scipy.sparse.isspmatrix_csc(self.X):
+        if (scipy.sparse.issparse(self.X) and 
+                scipy.sparse.isspmatrix_csc(self.X)):
             self.X = scipy.sparse.csr_matrix(self.X)
 
         n_samples = self.X.shape[0]
