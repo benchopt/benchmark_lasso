@@ -1,17 +1,18 @@
+import scipy
+import numpy as np
+
 from benchopt import BaseSolver
 from benchopt import safe_import_context
-import numpy as np
 
 with safe_import_context() as import_ctx:
     from spams import lasso, fistaFlat
-    import scipy
 
 
 class Solver(BaseSolver):
     name = 'spams'
 
     install_cmd = 'conda'
-    requirements = ['numpy', 'mkl', 'scipy', 'pip:spams']
+    requirements = ['mkl', 'pip:spams']
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

@@ -8,7 +8,6 @@ from benchopt import BaseSolver
 class Solver(BaseSolver):
     name = "L-BFGS-B"
 
-    install_cmd = 'conda'
     stop_strategy = 'iteration'
     support_sparse = False
 
