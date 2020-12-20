@@ -12,6 +12,12 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = ['cvxpy']
 
+    def skip(self, X, y, lmbd):
+        if X.shape[1] > 50000:
+            return True, "problem to large."
+
+        return False, None
+
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
 

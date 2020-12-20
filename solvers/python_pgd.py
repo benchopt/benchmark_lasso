@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse
 
 
 from benchopt import BaseSolver
@@ -14,7 +15,7 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
 
     def run(self, n_iter):
-        L = np.linalg.norm(self.X, ord=2) ** 2
+        L = self.compute_lipschitz_cste()
 
         n_features = self.X.shape[1]
         w = np.zeros(n_features)
@@ -42,3 +43,34 @@ class Solver(BaseSolver):
 
     def get_result(self):
         return self.w
+
+    def compute_lipschitz_cste(self):
+        if not sparse.issparse(self.X):
+            return np.linalg.norm(self.X, ord=2) ** 2
+
+        n, m = self.X.shape
+        if n < m:
+            A = self.X.T
+        else:
+            A = self.X
+
+        b_k = np.random.rand(A.shape[1])
+        diff = np.inf
+        rk = np.inf
+
+        while diff > 1e-15:
+            # calculate the matrix-by-vector product Ab
+            b_k1 = A.T @ (A @ b_k)
+
+            # compute the eigenvalue and the difference of eigenvalue
+            rk1 = rk
+            rk = b_k1 @ b_k
+            diff = abs(rk - rk1)
+
+            # calculate the norm
+            b_k1_norm = np.linalg.norm(b_k1)
+
+            # re normalize the vector
+            b_k = b_k1 / b_k1_norm
+
+        return rk
