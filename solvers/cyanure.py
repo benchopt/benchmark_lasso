@@ -1,17 +1,18 @@
+import scipy
+
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
     from cyanure import Regression
-    import scipy
 
 
 class Solver(BaseSolver):
     name = 'Cyanure'
 
     install_cmd = 'conda'
-    requirements = ['scipy', 'pip:cyanure-mkl']
+    requirements = ['pip:cyanure-mkl']
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
