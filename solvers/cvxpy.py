@@ -14,7 +14,7 @@ class Solver(BaseSolver):
 
     def skip(self, X, y, lmbd):
         if X.shape[1] > 50000:
-            return True, "problem to large."
+            return True, "problem too large."
 
         return False, None
 
