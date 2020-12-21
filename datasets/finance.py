@@ -13,9 +13,14 @@ class Dataset(BaseDataset):
     install_cmd = 'conda'
     requirements = ['pip:libsvmdata']
 
+    def __init__(self):
+        self.X, self.y = None, None
+
     def get_data(self):
 
-        X, y = fetch_libsvm('finance')
-        data = dict(X=X, y=y)
+        if self.X is None:
+            self.X, self.y = fetch_libsvm('finance')
 
-        return X.shape[1], data
+        data = dict(X=self.X, y=self.y)
+
+        return self.X.shape[1], data
