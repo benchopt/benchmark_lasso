@@ -27,15 +27,12 @@ class Solver(BaseSolver):
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
         n_features = self.X.shape[1]
-        L = np.linalg.norm(self.X, ord=2) ** 2
         if self.restart_strategy == 'greedy':
-            beta_param = 1.3 * (1/L)
             min_beta = 1.0
             s_greedy = 1.1
             p_lazy = 1.0
             q_lazy = 1.0
         else:
-            beta_param = 1 / L
             min_beta = None
             s_greedy = None
             p_lazy = 1 / 30
@@ -48,7 +45,7 @@ class Solver(BaseSolver):
                 data=y,
             ),
             prox=SparseThreshold(Identity(), lmbd),
-            beta_param=beta_param,
+            beta_param=1.0,
             min_beta=min_beta,
             metric_call_period=None,
             restart_strategy=self.restart_strategy,
@@ -62,6 +59,13 @@ class Solver(BaseSolver):
         )
 
     def run(self, n_iter):
+        L = np.linalg.norm(self.X, ord=2) ** 2
+        if self.restart_strategy == 'greedy':
+            beta_param = 1.3 * (1/L)
+        else:
+            beta_param = 1 / L
+        self.fb.beta_param = beta_param
+        self.fb._beta = self.fb.step_size or beta_param
         self.fb.iterate(max_iter=n_iter)
 
     def get_result(self):

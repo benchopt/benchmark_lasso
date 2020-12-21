@@ -23,8 +23,6 @@ class Solver(BaseSolver):
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
         n_features = self.X.shape[1]
-        L = np.linalg.norm(self.X, ord=2) ** 2
-        beta_param = 1 / L
         sigma_bar = 0.96
         var_init = np.zeros(n_features)
         self.pogm = POGM(
@@ -38,7 +36,7 @@ class Solver(BaseSolver):
                 data=y,
             ),
             prox=SparseThreshold(Identity(), lmbd),
-            beta_param=beta_param,
+            beta_param=1.0,
             metric_call_period=None,
             sigma_bar=sigma_bar,
             auto_iterate=False,
@@ -47,6 +45,9 @@ class Solver(BaseSolver):
         )
 
     def run(self, n_iter):
+        L = np.linalg.norm(self.X, ord=2) ** 2
+        beta_param = 1 / L
+        self.pogm._beta = self.pogm.step_size or beta_param
         self.pogm.iterate(max_iter=n_iter)
 
     def get_result(self):
