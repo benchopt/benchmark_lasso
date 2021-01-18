@@ -6,7 +6,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     from celer import Lasso
-    from celer.homotopy import ConvergenceWarning
+    from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):
@@ -14,9 +14,7 @@ class Solver(BaseSolver):
     stop_strategy = 'iteration'
 
     install_cmd = 'conda'
-    requirements = [
-        'pip:git+https://github.com/mathurinm/celer.git'
-    ]
+    requirements = ['pip:celer']
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

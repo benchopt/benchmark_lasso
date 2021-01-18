@@ -11,6 +11,7 @@ __pycache__
 
 # Config files
 benchopt.ini
+config.ini
 
 .DS_Store
 coverage.xml
