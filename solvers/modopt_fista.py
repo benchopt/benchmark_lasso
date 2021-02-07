@@ -23,6 +23,7 @@ class Solver(BaseSolver):
     parameters = {
         'restart_strategy': ['greedy', 'adaptive-1'],
     }
+    support_sparse = False
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
