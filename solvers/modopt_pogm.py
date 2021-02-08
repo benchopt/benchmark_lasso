@@ -19,6 +19,7 @@ class Solver(BaseSolver):
     requirements = [
         'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
     ]
+    support_sparse = False
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
