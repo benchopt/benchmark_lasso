@@ -13,7 +13,9 @@ class Dataset(BaseDataset):
     parameters = {
         'n_samples, n_features': [
             (100, 5000),
-            (100, 10000)],  # slow to simulate big correlated design
+            (100, 10000),  # slow to simulate big correlated design
+            (1000, 5),  # case with more samples than features
+        ],
         'rho': [0, 0.6]
     }
 
