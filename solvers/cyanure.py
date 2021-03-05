@@ -12,6 +12,11 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['pip:cyanure-mkl']
+    references = [
+        'J. Mairal, "Cyanure: An Open-Source Toolbox for Empirical Risk'
+        ' Minimization for Python, C++, and soon more," '
+        'Arxiv eprint 1912.08165 (2019)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

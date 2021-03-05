@@ -19,6 +19,11 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['r-base', 'rpy2', 'r-glmnet']
+    references = [
+        'J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths '
+        'for generalized linear models via coordinate descent", '
+        'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
+    ]
     stop_strategy = 'iteration'
     support_sparse = False
 

@@ -19,6 +19,13 @@ class Solver(BaseSolver):
     requirements = [
         'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
     ]
+    references = [
+        'S. Farrens, A. Grigis, L. El Gueddari, Z. Ramzi, G. R. Chaithya, '
+        'S. Starck, B. Sarthou, H. Cherkaoui, P. Ciuciu and J.-L. Starck, '
+        '"PySAP: Python Sparse Data Analysis Package for multidisciplinary '
+        'image processing", Astronomy and Computing, vol. 32, '
+        ' pp. 100402 (2020)'
+    ]
     support_sparse = False
 
     def set_objective(self, X, y, lmbd):

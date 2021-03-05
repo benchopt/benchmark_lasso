@@ -14,6 +14,11 @@ class Solver(BaseSolver):
     requirements = [
         'pip:git+https://github.com/tommoral/blitzl1.git@FIX_setup_deps'
     ]
+    references = [
+        'T. B. Johnson and C. Guestrin, "Blitz: A Principled Meta-Algorithm '
+        'for Scaling Sparse Optimization", ICML, '
+        'vol. 37, pp. 1171-1179 (2015)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

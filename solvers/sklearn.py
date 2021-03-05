@@ -13,6 +13,14 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['scikit-learn']
+    references = [
+        'F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel, B. Thirion, '
+        'O. Grisel, M. Blondel, P. Prettenhofer, R. Weiss, V. Dubourg, '
+        'J. Vanderplas, A. Passos, D. Cournapeau, M. Brucher, M. Perrot'
+        ' and E. Duchesnay'
+        '"Scikit-learn: Machine Learning in Python", J. Mach. Learn. Res., '
+        'vol. 12, pp. 2825-283 (2011)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

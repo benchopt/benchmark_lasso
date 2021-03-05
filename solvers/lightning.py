@@ -15,6 +15,12 @@ class Solver(BaseSolver):
     requirements = [
         'pip:git+https://github.com/scikit-learn-contrib/lightning.git'
     ]
+    references = [
+        'M. Blondel, K. Seki and K. Uehara, '
+        '"Block coordinate descent algorithms for large-scale sparse '
+        'multiclass classification" '
+        'Mach. Learn., vol. 93, no. 1, pp. 31-52 (2013)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd

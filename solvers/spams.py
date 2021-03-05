@@ -12,6 +12,11 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['mkl', 'pip:spams']
+    references = [
+        'J. Mairal, F. Bach, J. Ponce and G. Sapiro, '
+        '"Online dictionary learning for sparse coding", '
+        'ICML, vol. 382, pp. 689-696, ACM (2009)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -33,7 +38,7 @@ class Solver(BaseSolver):
                                regul='l1', it0=10000, loss='square', tol=1e-12,
                                max_it=n_iter).flatten()
         else:
-            self.w = lasso(y,  D=self.X, L=n_iter,
+            self.w = lasso(y, D=self.X, L=n_iter,
                            **self.solver_parameter).toarray().flatten()
 
     def get_result(self):

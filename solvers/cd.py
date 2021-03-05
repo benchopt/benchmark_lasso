@@ -27,6 +27,14 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['numba']
+    references = [
+        'W. J. Fu, "Penalized Regressions: the Bridge versus the Lasso", '
+        'J. Comput. Graph. Statist., vol.7, no. 3, pp. 397-416, '
+        'Taylor & Francis (1998)',
+        'J. Friedman, T. J. Hastie, H. Höfling and R. Tibshirani, '
+        '"Pathwise coordinate optimization", Ann. Appl. Stat., vol 1, no. 2, '
+        'pp. 302-332 (2007)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.y, self.lmbd = y, lmbd
