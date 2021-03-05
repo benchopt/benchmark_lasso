@@ -66,7 +66,7 @@ class Solver(BaseSolver):
                 prox=g.prox_factory(n_features),
                 step_size=step_size,
                 tol=0,
-                max_iter=100,
+                max_iter=n_iter,
             )
         else:
             assert solver == 'svrg'
@@ -80,7 +80,7 @@ class Solver(BaseSolver):
                 prox=g.prox_factory(n_features),
                 step_size=step_size,
                 tol=0,
-                max_iter=100,
+                max_iter=n_iter,
             )
 
         self.beta = result.x
