@@ -11,6 +11,11 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['cvxpy']
+    references = [
+        'S. Diamond and S. Boyd, "CVXPY: A Python-embedded modeling language '
+        'for convex optimization", J. Mach. Learn. Res., vol. 17, no. 83, '
+        'pp. 1-5, (2016)'
+    ]
 
     def skip(self, X, y, lmbd):
         if X.shape[1] > 50000:

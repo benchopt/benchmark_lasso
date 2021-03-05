@@ -15,6 +15,11 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['pip:celer']
+    references = [
+        'M. Massias, A. Gramfort and J. Salmon, ICML, '
+        '"Celer: a Fast Solver for the Lasso with Dual Extrapolation", '
+        'vol. 80, pp. 3321-3330 (2018)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -22,7 +27,7 @@ class Solver(BaseSolver):
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
-            alpha=self.lmbd/n_samples, max_iter=1, max_epochs=100000,
+            alpha=self.lmbd / n_samples, max_iter=1, max_epochs=100000,
             tol=1e-12, prune=True, fit_intercept=False, normalize=False,
             warm_start=False, positive=False, verbose=False,
         )

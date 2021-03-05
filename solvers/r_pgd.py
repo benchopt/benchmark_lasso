@@ -23,6 +23,15 @@ class Solver(BaseSolver):
     requirements = ['r-base', '-c conda-forge r rpy2']
     stop_strategy = 'iteration'
     support_sparse = False
+    references = [
+        'I. Daubechies, M. Defrise and C. De Mol, '
+        '"An iterative thresholding algorithm for linear inverse problems '
+        'with a sparsity constraint", Comm. Pure Appl. Math., '
+        'vol. 57, pp. 1413-1457, no. 11, Wiley Online Library (2004)',
+        'A. Beck and M. Teboulle, "A fast iterative shrinkage-thresholding '
+        'algorithm for linear inverse problems", SIAM J. Imaging Sci., '
+        'vol. 2, no. 1, pp. 183-202 (2009)'
+    ]
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
