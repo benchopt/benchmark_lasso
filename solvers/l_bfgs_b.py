@@ -1,8 +1,10 @@
-import numpy as np
-from numpy.linalg import norm
-from scipy.optimize import fmin_l_bfgs_b
-
 from benchopt import BaseSolver
+from benchopt import safe_import_context
+
+with safe_import_context() as import_ctx:
+    import numpy as np
+    from numpy.linalg import norm
+    from scipy.optimize import fmin_l_bfgs_b
 
 
 class Solver(BaseSolver):
