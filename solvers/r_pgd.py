@@ -1,10 +1,10 @@
-import numpy as np
 from pathlib import Path
 
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
+    import numpy as np
 
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri

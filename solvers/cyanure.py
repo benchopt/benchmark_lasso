@@ -1,10 +1,9 @@
-import scipy
-
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import scipy
     from cyanure import Regression
 
 
