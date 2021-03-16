@@ -57,21 +57,17 @@ class Solver(BaseSolver):
 
         return rk
 
-    def run(self, n_iter):
-        pass
-
-    def run_all_in_one(self, max_iter, callback):  # add a callback argument
+    def run_with_cb(self, callback):
         L = self.compute_lipschitz_cste()
         n_features = self.X.shape[1]
         w = np.zeros(n_features)
         if self.use_acceleration:
             z = np.zeros(n_features)
 
+        it = 0
         t_new = 1
-        for i in range(max_iter):
-            if callback(i, w):  # run callback for each iteration
-                self.w = w
-                return
+        while callback(it, w):
+            it += 1
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + np.sqrt(1 + 4 * t_old ** 2)) / 2
@@ -82,8 +78,8 @@ class Solver(BaseSolver):
             else:
                 w -= self.X.T @ (self.X @ w - self.y) / L
                 w = self.st(w, self.lmbd / L)
+
         self.w = w
-        callback(max_iter, w)  # run callback at the end
 
     def get_result(self):
         return self.w
