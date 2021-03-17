@@ -44,7 +44,7 @@ jobs:
       run: |
         eval "$(conda shell.bash hook)"
         conda activate base
-        benchopt test . --env-name bench_test_env -vl -k '"glmnet or julia'"
+        benchopt test . --env-name bench_test_env -vl -k '"glmnet or julia"'
         echo '-------------'
         echo 'find gfortran:'
         find /usr/share/miniconda -name libgfortran*
