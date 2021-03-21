@@ -18,7 +18,7 @@ class Solver(BaseSolver):
     name = "glmnet"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2', 'r-glmnet']
+    requirements = ['r-base', 'rpy2', '-c conda-forge glmnet']
     references = [
         'J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths '
         'for generalized linear models via coordinate descent", '
