@@ -6,11 +6,12 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = 'Python-PGD-all-in-one'  # proximal gradient, optionally accelerated
+    name = 'Python-PGD-callback'  # proximal gradient, optionally accelerated
     # uses callbacks at each iterations instead of rerunning multiple times
 
     # any parameter defined here is accessible as a class attribute
     parameters = {'use_acceleration': [False, True]}
+    stop_strategy = "callback"
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '
@@ -57,7 +58,7 @@ class Solver(BaseSolver):
 
         return rk
 
-    def run_with_cb(self, callback):
+    def run(self, callback):
         L = self.compute_lipschitz_cste()
         n_features = self.X.shape[1]
         w = np.zeros(n_features)
@@ -66,7 +67,7 @@ class Solver(BaseSolver):
 
         it = 0
         t_new = 1
-        while callback(it, w):
+        while callback(w):
             it += 1
             if self.use_acceleration:
                 t_old = t_new
