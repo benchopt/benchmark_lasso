@@ -46,13 +46,11 @@ jobs:
         conda activate base
         benchopt test . --env-name bench_test_env -vl -k '"glmnet or julia"'
         echo '-------------'
-        echo 'gcc version'
-        gcc --version
         echo 'find gfortran:'
         find /usr/share/miniconda -name libgfortran*
         echo '-------------'
         echo 'all fortran'
-        find /usr -name libgfortran*
+        find ~ -name libgfortran*
         echo '-------------'
 
         benchopt test . --env-name bench_test_env -vl --skip-install
