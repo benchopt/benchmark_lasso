@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
+    stop_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
     parameters = {'use_acceleration': [False, True]}
@@ -23,7 +24,9 @@ class Solver(BaseSolver):
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
 
-    def run(self, n_iter):
+        self.run(lambda _: False)
+
+    def run(self, callback):
         L = self.compute_lipschitz_cste()
 
         n_features = self.X.shape[1]
@@ -32,7 +35,7 @@ class Solver(BaseSolver):
             z = np.zeros(n_features)
 
         t_new = 1
-        for _ in range(n_iter):
+        while callback(w):
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + np.sqrt(1 + 4 * t_old ** 2)) / 2
