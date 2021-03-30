@@ -38,6 +38,8 @@ jobs:
         branch=${BENCHOPT_BRANCH##*:}
         pip install -U git+https://github.com/$user/benchopt@$branch
 
+        ln -s /usr/local/julia1.5.4/lib/julia/libgfortran.so4 /usr/share/miniconda/envs/bench_test_env/lib/libgfortran.so.4
+
     - name: Test
       env:
           BENCHOPT_DEBUG: 1
@@ -50,7 +52,7 @@ jobs:
         find /usr/share/miniconda -name libgfortran*
         echo '-------------'
         echo 'all fortran'
-        find ~ -name libgfortran*
+        find /usr -name libgfortran*
         echo '-------------'
 
         benchopt test . --env-name bench_test_env -vl --skip-install
