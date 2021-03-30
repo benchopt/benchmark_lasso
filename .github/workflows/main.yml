@@ -38,7 +38,7 @@ jobs:
         branch=${BENCHOPT_BRANCH##*:}
         pip install -U git+https://github.com/$user/benchopt@$branch
 
-        ln -s /usr/local/julia1.5.4/lib/julia/libgfortran.so4 /usr/share/miniconda/envs/bench_test_env/lib/
+        ln -s /usr/local/julia1.5.4/lib/julia/libgfortran.so4 /usr/share/miniconda/envs/bench_test_env/lib
 
     - name: Test
       env:
