@@ -25,7 +25,7 @@ jobs:
 
     - name: Install dependencies
       env:
-        BENCHOPT_BRANCH: tommoral:FIX_r_home_management
+        BENCHOPT_BRANCH: tommoral:FIX_instabilities_R_Julia
       run: |
         eval "$(conda shell.bash hook)"
         conda activate base
@@ -45,6 +45,7 @@ jobs:
         eval "$(conda shell.bash hook)"
         conda activate base
         benchopt test . --env-name bench_test_env -vl -k '"glmnet or julia"'
+
         echo '-------------'
         echo 'find gfortran:'
         find /usr/share/miniconda -name libgfortran*
