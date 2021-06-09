@@ -41,8 +41,8 @@ class Solver(BaseSolver):
         coefs = self.r_pgd(
             self.X, self.y[:, None], self.lmbd,
             n_iter=n_iter)
-        as_matrix = robjects.r['as']
-        self.w = np.array(as_matrix(coefs, "matrix"))
+        as_r = robjects.r['as']
+        self.w = np.array(as_r(coefs, "vector"))
 
     def get_result(self):
         return self.w.flatten()
