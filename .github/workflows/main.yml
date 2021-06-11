@@ -9,6 +9,9 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # Run every day at 7:42am UTC.
+    - cron:  '42 7 * * *'
 
 jobs:
   build-linux:
@@ -44,13 +47,7 @@ jobs:
       run: |
         eval "$(conda shell.bash hook)"
         conda activate base
-        benchopt test . --env-name bench_test_env -vl -k '"glmnet or julia"'
-
-        echo '-------------'
-        echo 'find gfortran:'
-        find /usr/share/miniconda -name libgfortran*
-        echo '-------------'
-
+        benchopt test . --env-name bench_test_env -vl
         benchopt test . --env-name bench_test_env -vl --skip-install
 
 
