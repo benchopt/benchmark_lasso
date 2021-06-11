@@ -22,7 +22,7 @@ def check_test_solver_install(solver_class):
 
     # Lightning install is broken on python3.9+.
     # See CEA-COSMIC/ModOpt#144.
-    if (solver_class.name.lower() == 'modopt'):
+    if ('modopt' in solver_class.name.lower()):
         pytest.skip(
             'Modopt breaks other package installation by changing '
             'numpy version. Skipping for now.'
