@@ -20,8 +20,8 @@ def check_test_solver_install(solver_class):
             and sys.version_info >= (3, 9)):
         pytest.xfail('Lightning install is broken on python3.9+.')
 
-    # Lightning install is broken on python3.9+.
-    # See CEA-COSMIC/ModOpt#144.
+    # ModOpt install change numpy version, breaking celer install.
+    # See CEA-COSMIC/ModOpt#144. Skipping for now
     if ('modopt' in solver_class.name.lower()):
         pytest.skip(
             'Modopt breaks other package installation by changing '
