@@ -17,7 +17,7 @@ class Objective(BaseObjective):
         self.lmbd = self.reg * self._get_lambda_max()
 
     def compute(self, beta):
-        diff = self.y - self.X.dot(beta)
+        diff = self.y - self.X @ beta
         return .5 * diff.dot(diff) + self.lmbd * abs(beta).sum()
 
     def _get_lambda_max(self):
