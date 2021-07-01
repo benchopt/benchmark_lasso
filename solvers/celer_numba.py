@@ -7,9 +7,39 @@ with safe_import_context() as import_ctx:
     from numba import njit
 
 
-def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
+@njit
+def dual_lasso(alpha, norm_y2, theta, y):
+    d_obj = 0
+    n_samples = theta.shape[0]
+    for i in range(n_samples):
+        d_obj -= (y[i] / (alpha * n_samples) - theta[i]) ** 2
+    d_obj *= 0.5 * alpha ** 2 * n_samples
+    d_obj += norm_y2 / (2. * n_samples)
+    return d_obj
+
+
+@njit
+def primal_lasso(alpha, R, w):
+    return (R @ R) / (2 * len(R)) + alpha * np.sum(np.abs(w))
+
+
+@njit
+def ST(x, tau):
+    if x > tau:
+        return x - tau
+    elif x < -tau:
+        return x + tau
+    return 0
+
+
+@njit
+def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
+                verbose=0):
     n_samples, n_features = X.shape
     w = np.zeros(n_features)
+    R = y.copy()
+    verbose_in = max(verbose-1, 0)
+
     # tol *= norm(y) ** 2 / n_samples
     if p0 > n_features:
         p0 = n_features
@@ -51,7 +81,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
             if scal > 1.:
                 theta /= scal
 
-            d_obj = dual(alpha, norm_y2, theta, y)
+            d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
             # also test dual point returned by inner solver after 1st iter:
             scal = dnorm_l1(
@@ -60,9 +90,9 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
             if scal > 1.:
                 theta_in /= scal
 
-            d_obj_from_inner = dual(alpha, norm_y2, theta_in, y)
+            d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
         else:
-            d_obj = dual(pb, n_samples, alpha, norm_y2, & theta[0], & y[0])
+            d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
@@ -71,7 +101,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
 
         highest_d_obj = d_obj
 
-        p_obj = primal(alpha, Xw, y, w)
+        p_obj = primal_lasso(alpha, R, y, w)
         gap = p_obj - highest_d_obj
         gaps[t] = gap
         if verbose:
@@ -167,12 +197,13 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
                         if scal > 1.:
                             thetacc /= scal
 
-                        d_obj_accel = dual(
-                            pb, n_samples, alpha, norm_y2, & thetacc[0], & y[0])
+                        d_obj_accel = dual_lasso(
+                            alpha, norm_y2, thetacc, y)
                         if d_obj_accel > d_obj_in:
                             d_obj_in = d_obj_accel
-                            fcopy( & n_samples, & thetacc[0], & inc,
-                                  & theta_in[0], & inc)
+                            theta_in[:] = theta_acc
+                            # fcopy(& n_samples, & thetacc[0], & inc,
+                            #    & theta_in[0], & inc)
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
@@ -180,7 +211,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
                 # CAUTION: code does not yet  include a best_theta.
                 # Can be an issue in screening: dgap and theta might disagree.
 
-                p_obj_in = primal(alpha, Xw, y, w)
+                p_obj_in = primal_lasso(alpha, R, y, w)  # TODO maybe small
+                # improvement here
                 gap_in = p_obj_in - highest_d_obj_in
 
                 if verbose_in:
@@ -198,15 +230,14 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True):
                     continue
                 old_w_j = w[j]
 
-                w[j] += X[0, j] @ Xw[0] / norms_X_col[j] ** 2
+                w[j] += X[0, j] @ R[0] * inv_lc[j]
 
-                w[j] = ST(w[j], alpha / norms_X_col[j] ** 2 *
-                          n_samples)
+                w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
 
                 # R -= (w_j - old_w_j) (X[:, j]
                 tmp = old_w_j - w[j]
                 if tmp != 0.:
-                    Xw += tmp * X[:, j]
+                    R += tmp * X[:, j]
         else:
             print("!!! Inner solver did not converge at epoch "
                   "%d, gap: %.2e > %.2e" % (epoch, gap_in, tol_in))
