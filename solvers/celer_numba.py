@@ -99,9 +99,8 @@ def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
         # LASSO: R_acc / (alpha * n_samples)
 
 
-@jit
-def create_ws(prune, w, prios, p0, t, screened, C, all_features, notin_WS,
-              n_screened, gap, tol, prev_ws_size):
+@njit
+def create_ws(prune, w, prios, p0, t, screened, C, n_screened, prev_ws_size):
     n_features = w.shape[0]
     if prune:
         nnz = 0
@@ -130,24 +129,7 @@ def create_ws(prune, w, prios, p0, t, screened, C, all_features, notin_WS,
     if ws_size > n_features - n_screened:
         ws_size = n_features - n_screened
 
-    # if ws_size === n_features then argpartition will break:
-    if ws_size == n_features:
-        C = all_features
-    else:
-        C = np.argpartition(np.asarray(prios), ws_size)[
-            :ws_size].astype(np.int32)
-
-    for j in range(n_features):
-        notin_WS[j] = 1
-    for idx in range(ws_size):
-        notin_WS[C[idx]] = 0
-
-    if prune:
-        tol_in = 0.3 * gap
-    else:
-        tol_in = tol
-
-    return ws_size, tol_in
+    return ws_size
 
 
 @njit
@@ -235,7 +217,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         gaps[t] = gap
         if verbose:
             print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(
-                t, p_obj, gap))
+                t, p_obj, gap), end="")
 
         if gap <= tol:
             if verbose:
@@ -247,12 +229,25 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         n_screened = set_prios(
             theta, X, norms_X_col, prios, screened, radius, n_screened)
 
-        ws_size, tol_in = create_ws(
-            prune, w, prios, p0, t, screened, C, all_features, notin_WS,
-            n_screened, gap, tol, ws_size)
+        ws_size = create_ws(
+            prune, w, prios, p0, t, screened, C, n_screened, ws_size)
+        # if ws_size === n_features then argpartition will break:
+        if ws_size == n_features:
+            C = all_features
+        else:
+            C = np.argpartition(np.asarray(prios), ws_size)[
+                :ws_size].astype(np.int32)
+
+        notin_WS.fill(1)
+        notin_WS[C] = 0
+
+        if prune:
+            tol_in = 0.3 * gap
+        else:
+            tol_in = tol
 
         if verbose:
-            print("\n     {:d} feats in subpb ({:d} left)".format(
+            print(",{:d} feats in subpb ({:d} left)".format(
                 len(C), n_features - n_screened))
 
         # calling inner solver which will modify w and R inplace
