@@ -4,7 +4,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from numpy.linalg import norm
-    from numba import njit
+    from numba import njit, jit
 
 
 @njit
@@ -65,6 +65,7 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
     return n_screened
 
 
+@njit
 def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
     K = U.shape[0] + 1
     n_samples = R.shape[0]
@@ -91,20 +92,89 @@ def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
 
         out[:] = 0
         for k in range(K - 1):
-            out[i] += anderson[k] * last_K_R[k, :]
+            out += anderson[k] * last_K_R[k, :]
 
         out *= tmp
         # out now holds the extrapolated dual point:
         # LASSO: R_acc / (alpha * n_samples)
 
 
+@jit
+def create_ws(prune, w, prios, p0, t, screened, C, all_features, notin_WS,
+              n_screened, gap, tol, prev_ws_size):
+    n_features = w.shape[0]
+    if prune:
+        nnz = 0
+        for j in range(n_features):
+            if w[j] != 0:
+                prios[j] = -1.
+                nnz += 1
+
+        if t == 0:
+            ws_size = p0 if nnz == 0 else nnz
+        else:
+            ws_size = 2 * nnz
+
+    else:
+        for j in range(n_features):
+            if w[j] != 0:
+                prios[j] = - 1  # include active features
+        if t == 0:
+            ws_size = p0
+        else:
+            for j in range(prev_ws_size):
+                if not screened[C[j]]:
+                    # include previous features, if not screened
+                    prios[C[j]] = -1
+            ws_size = 2 * prev_ws_size
+    if ws_size > n_features - n_screened:
+        ws_size = n_features - n_screened
+
+    # if ws_size === n_features then argpartition will break:
+    if ws_size == n_features:
+        C = all_features
+    else:
+        C = np.argpartition(np.asarray(prios), ws_size)[
+            :ws_size].astype(np.int32)
+
+    for j in range(n_features):
+        notin_WS[j] = 1
+    for idx in range(ws_size):
+        notin_WS[C[idx]] = 0
+
+    if prune:
+        tol_in = 0.3 * gap
+    else:
+        tol_in = tol
+
+    return ws_size, tol_in
+
+
 @njit
+def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
+    for k in range(ws_size):
+        j = C[k]
+        if norms_X_col[j] == 0.:
+            continue
+        old_w_j = w[j]
+
+        w[j] += X[:, j] @ R * inv_lc[j]
+
+        w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
+
+        # R -= (w_j - old_w_j) (X[:, j]
+        tmp = old_w_j - w[j]
+        if tmp != 0.:
+            R += tmp * X[:, j]
+
+
 def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                 max_epochs=10_000, verbose=0):
     n_samples, n_features = X.shape
     w = np.zeros(n_features)
     R = y.copy()
     verbose_in = max(verbose-1, 0)
+    n_screened = 0
 
     # tol *= norm(y) ** 2 / n_samples
     if p0 > n_features:
@@ -116,16 +186,12 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
     # acceleration variables:
     K = 6
-    last_K_R = np.empty([K, n_samples], dtype=X.dtype)
-    U = np.empty([K - 1, n_samples], dtype=X.dtype)
-    UtU = np.empty([K - 1, K - 1], dtype=X.dtype)
-    onesK = np.ones(K - 1, dtype=X.dtype)
+    last_K_R = np.empty((K, n_samples), dtype=X.dtype)
+    U = np.empty((K - 1, n_samples), dtype=X.dtype)
+    UtU = np.empty((K - 1, K - 1), dtype=X.dtype)
 
-    inv_lc = np.zeros(n_features)
-    norms_X_col = np.zeros(n_features)
-    for j in range(n_features):
-        norms_X_col[j] = norm(X[:, j])
-        inv_lc[j] = 1 / norms_X_col[j] ** 2
+    norms_X_col = norm(X, axis=0)
+    inv_lc = 1 / norms_X_col ** 2
 
     norm_y2 = norm(y) ** 2
 
@@ -137,6 +203,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
     d_obj_from_inner = 0.
 
     all_features = np.arange(n_features, dtype=np.int32)
+    C = all_features.copy()  # weird init needed by numba ?
+    ws_size = p0  # just to pass something to create_ws at iter 0
 
     for t in range(n_iter):
         if t != 0:
@@ -162,15 +230,16 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
         highest_d_obj = d_obj
 
-        p_obj = primal_lasso(alpha, R, y, w)
+        p_obj = primal_lasso(alpha, R, w)
         gap = p_obj - highest_d_obj
         gaps[t] = gap
         if verbose:
-            print("Iter %d: primal %.10f, gap %.2e" % (t, p_obj, gap), end="")
+            print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(
+                t, p_obj, gap))
 
         if gap <= tol:
             if verbose:
-                print("\nEarly exit, gap: %.2e < %.2e" % (gap, tol))
+                print("\nEarly exit, gap: {:.2e} < {:.2e}".format(gap, tol))
             break
 
         radius = np.sqrt(2 * gap / n_samples) / alpha
@@ -178,53 +247,13 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         n_screened = set_prios(
             theta, X, norms_X_col, prios, screened, radius, n_screened)
 
-        if prune:
-            nnz = 0
-            for j in range(n_features):
-                if w[j] != 0:
-                    prios[j] = -1.
-                    nnz += 1
-
-            if t == 0:
-                ws_size = p0 if nnz == 0 else nnz
-            else:
-                ws_size = 2 * nnz
-
-        else:
-            for j in range(n_features):
-                if w[j] != 0:
-                    prios[j] = - 1  # include active features
-            if t == 0:
-                ws_size = p0
-            else:
-                for j in range(ws_size):
-                    if not screened[C[j]]:
-                        # include previous features, if not screened
-                        prios[C[j]] = -1
-                ws_size = 2 * ws_size
-        if ws_size > n_features - n_screened:
-            ws_size = n_features - n_screened
-
-        # if ws_size === n_features then argpartition will break:
-        if ws_size == n_features:
-            C = all_features
-        else:
-            C = np.argpartition(np.asarray(prios), ws_size)[
-                :ws_size].astype(np.int32)
-
-        for j in range(n_features):
-            notin_WS[j] = 1
-        for idx in range(ws_size):
-            notin_WS[C[idx]] = 0
-
-        if prune:
-            tol_in = 0.3 * gap
-        else:
-            tol_in = tol
+        ws_size, tol_in = create_ws(
+            prune, w, prios, p0, t, screened, C, all_features, notin_WS,
+            n_screened, gap, tol, ws_size)
 
         if verbose:
-            print(", %d feats in subpb (%d left)" %
-                  (len(C), n_features - n_screened))
+            print("\n     {:d} feats in subpb ({:d} left)".format(
+                len(C), n_features - n_screened))
 
         # calling inner solver which will modify w and R inplace
         highest_d_obj_in = 0
@@ -263,36 +292,25 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                 # CAUTION: code does not yet  include a best_theta.
                 # Can be an issue in screening: dgap and theta might disagree.
 
-                p_obj_in = primal_lasso(alpha, R, y, w)  # TODO maybe small
+                p_obj_in = primal_lasso(alpha, R, w)  # TODO maybe small
                 # improvement here
                 gap_in = p_obj_in - highest_d_obj_in
 
                 if verbose_in:
-                    print("Epoch %d, primal %.10f, gap: %.2e" %
-                          (epoch, p_obj_in, gap_in))
+                    print("Epoch {:d}, primal {:.10f}, gap: {:.2e}".format(
+                        epoch, p_obj_in, gap_in))
                 if gap_in < tol_in:
                     if verbose_in:
-                        print("Exit epoch %d, gap: %.2e < %.2e" %
-                              (epoch, gap_in, tol_in))
+                        print("Exit epoch {:d}, gap: {:.2e} < {:.2e}".format(
+                              epoch, gap_in, tol_in))
                     break
 
-            for k in range(ws_size):
-                j = C[k]
-                if norms_X_col[j] == 0.:
-                    continue
-                old_w_j = w[j]
+            cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc,
+                     n_samples)
 
-                w[j] += X[0, j] @ R[0] * inv_lc[j]
-
-                w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
-
-                # R -= (w_j - old_w_j) (X[:, j]
-                tmp = old_w_j - w[j]
-                if tmp != 0.:
-                    R += tmp * X[:, j]
         else:
             print("!!! Inner solver did not converge at epoch "
-                  "%d, gap: %.2e > %.2e" % (epoch, gap_in, tol_in))
+                  "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
 
 
 class Solver(BaseSolver):
