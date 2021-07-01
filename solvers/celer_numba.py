@@ -65,6 +65,39 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
     return n_screened
 
 
+def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
+    K = U.shape[0] + 1
+    n_samples = R.shape[0]
+    tmp = 1. / (n_samples * alpha)
+
+    if epoch // gap_freq < K:
+        last_K_R[(epoch // gap_freq), :] = R
+    else:
+        for k in range(K - 1):
+            last_K_R[k, :] = last_K_R[k + 1, :]
+        last_K_R[K - 1, :] = R
+        for k in range(K - 1):
+            U[k] = last_K_R[(k + 1), :] - last_K_R[k, :]
+
+        # double for loop but small : K**2/2
+        for k in range(K - 1):
+            for j in range(k, K - 1):
+                UtU[k, j] = U[k] @ U[j]
+                UtU[j, k] = UtU[k, j]
+
+        anderson = np.linalg.solve(UtU, np.ones(UtU.shape[0]))
+        # todo handle linalgerror
+        anderson /= np.sum(anderson)
+
+        out[:] = 0
+        for k in range(K - 1):
+            out[i] += anderson[k] * last_K_R[k, :]
+
+        out *= tmp
+        # out now holds the extrapolated dual point:
+        # LASSO: R_acc / (alpha * n_samples)
+
+
 @njit
 def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                 max_epochs=10_000, verbose=0):
@@ -83,7 +116,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
     # acceleration variables:
     K = 6
-    last_K_Xw = np.empty([K, n_samples], dtype=X.dtype)
+    last_K_R = np.empty([K, n_samples], dtype=X.dtype)
     U = np.empty([K - 1, n_samples], dtype=X.dtype)
     UtU = np.empty([K - 1, K - 1], dtype=X.dtype)
     onesK = np.ones(K - 1, dtype=X.dtype)
@@ -108,20 +141,17 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
     for t in range(n_iter):
         if t != 0:
             create_dual_pt(alpha, theta, R)
-
             scal = dnorm_l1(theta, X, screened)
-
             if scal > 1.:
                 theta /= scal
-
             d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
             # also test dual point returned by inner solver after 1st iter:
             scal = dnorm_l1(theta_in, X, screened)
             if scal > 1.:
                 theta_in /= scal
-
             d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
+
         else:
             d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
@@ -210,9 +240,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                 d_obj_in = dual_lasso(alpha, norm_y2, theta_in, y)
 
                 if True:  # also compute accelerated dual_point
-                    info_dposv = create_accel_pt(
-                        pb, n_samples, epoch, gap_freq, alpha, & Xw[0],
-                        & thetacc[0], & last_K_Xw[0, 0], U, UtU, onesK, y)
+                    create_accel_pt(
+                        epoch, gap_freq, alpha, R, thetacc, last_K_R, U, UtU)
 
                     if epoch // gap_freq >= K:
                         scal = dnorm_l1(thetacc, X, notin_WS)
@@ -224,7 +253,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                             alpha, norm_y2, thetacc, y)
                         if d_obj_accel > d_obj_in:
                             d_obj_in = d_obj_accel
-                            theta_in[:] = theta_acc
+                            theta_in[:] = thetacc
                             # fcopy(& n_samples, & thetacc[0], & inc,
                             #    & theta_in[0], & inc)
 
@@ -276,38 +305,5 @@ class Solver(BaseSolver):
         w = numba_celer(self.X, self.y, self.alpha, n_iter)
         self.w = w
 
-    def st(self, w, mu):
-        w -= np.clip(w, -mu, mu)
-        return w
-
     def get_result(self):
         return self.w
-
-    def compute_lipschitz_cste(self, n_iter=100):
-        if not sparse.issparse(self.X):
-            return np.linalg.norm(self.X, ord=2) ** 2
-
-        n, m = self.X.shape
-        if n < m:
-            A = self.X.T
-        else:
-            A = self.X
-
-        b_k = np.random.rand(A.shape[1])
-        b_k /= np.linalg.norm(b_k)
-        rk = np.inf
-
-        for _ in range(n_iter):
-            # calculate the matrix-by-vector product Ab
-            b_k1 = A.T @ (A @ b_k)
-
-            # compute the eigenvalue and stop if it does not move anymore
-            rk1 = rk
-            rk = b_k1 @ b_k
-            if abs(rk - rk1) < 1e-10:
-                break
-
-            # re normalize the vector
-            b_k = b_k1 / np.linalg.norm(b_k1)
-
-        return rk
