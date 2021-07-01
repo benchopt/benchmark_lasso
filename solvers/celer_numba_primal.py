@@ -14,7 +14,7 @@ def dual_lasso(alpha, norm_y2, theta, y):
     for i in range(n_samples):
         d_obj -= (y[i] / (alpha * n_samples) - theta[i]) ** 2
     d_obj *= 0.5 * alpha ** 2 * n_samples
-    d_obj += norm_y2 / (2. * n_samples)
+    d_obj += norm_y2 / (2.0 * n_samples)
     return d_obj
 
 
@@ -58,7 +58,7 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
             prios[j] = np.inf
             continue
         Xj_theta = X[:, j] @ theta
-        prios[j] = (1. - np.abs(Xj_theta)) / norms_X_col[j]
+        prios[j] = (1.0 - np.abs(Xj_theta)) / norms_X_col[j]
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
@@ -66,19 +66,17 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
 
 
 @njit
-def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
+def create_accel_primal_pt(epoch, gap_freq, w, out, last_K_w, U, UtU):
     K = U.shape[0] + 1
-    n_samples = R.shape[0]
-    tmp = 1. / (n_samples * alpha)
 
     if epoch // gap_freq < K:
-        last_K_R[(epoch // gap_freq), :] = R
+        last_K_w[(epoch // gap_freq), :] = w
     else:
         for k in range(K - 1):
-            last_K_R[k, :] = last_K_R[k + 1, :]
-        last_K_R[K - 1, :] = R
+            last_K_w[k, :] = last_K_w[k + 1, :]
+        last_K_w[K - 1, :] = w
         for k in range(K - 1):
-            U[k] = last_K_R[(k + 1), :] - last_K_R[k, :]
+            U[k] = last_K_w[(k + 1), :] - last_K_w[k, :]
 
         # double for loop but small : K**2/2
         for k in range(K - 1):
@@ -95,14 +93,9 @@ def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
             print("Singular matrix when computing accelerated point. Skipped.")
         else:
             anderson /= np.sum(anderson)
-
             out[:] = 0
             for k in range(K - 1):
-                out += anderson[k] * last_K_R[k, :]
-
-            out *= tmp
-            # out now holds the extrapolated dual point:
-            # LASSO: R_acc / (alpha * n_samples)
+                out += anderson[k] * last_K_w[k, :]
 
 
 @njit
@@ -112,7 +105,7 @@ def create_ws(prune, w, prios, p0, t, screened, C, n_screened, prev_ws_size):
         nnz = 0
         for j in range(n_features):
             if w[j] != 0:
-                prios[j] = -1.
+                prios[j] = -1.0
                 nnz += 1
 
         if t == 0:
@@ -142,7 +135,7 @@ def create_ws(prune, w, prios, p0, t, screened, C, n_screened, prev_ws_size):
 def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
     for k in range(ws_size):
         j = C[k]
-        if norms_X_col[j] == 0.:
+        if norms_X_col[j] == 0.0:
             continue
         old_w_j = w[j]
 
@@ -152,7 +145,7 @@ def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
 
         # R -= (w_j - old_w_j) (X[:, j]
         tmp = old_w_j - w[j]
-        if tmp != 0.:
+        if tmp != 0.0:
             R += tmp * X[:, j]
 
 
@@ -174,8 +167,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
     # acceleration variables:
     K = 6
-    last_K_R = np.empty((K, n_samples), dtype=X.dtype)
-    U = np.empty((K - 1, n_samples), dtype=X.dtype)
+    last_K_w = np.empty((K, n_features), dtype=X.dtype)
+    U = np.empty((K - 1, n_features), dtype=X.dtype)
     UtU = np.empty((K - 1, K - 1), dtype=X.dtype)
 
     norms_X_col = norm(X, axis=0)
@@ -187,8 +180,9 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
     theta = np.zeros(n_samples, dtype=X.dtype)
     theta_in = np.zeros(n_samples, dtype=X.dtype)
-    thetacc = np.zeros(n_samples, dtype=X.dtype)
-    d_obj_from_inner = 0.
+
+    wacc = np.zeros(n_features, dtype=X.dtype)
+    d_obj_from_inner = 0.0
 
     all_features = np.arange(n_features, dtype=np.int32)
     C = all_features.copy()  # weird init needed by numba ?
@@ -198,13 +192,13 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         # if t != 0:
         create_dual_pt(alpha, theta, R)
         scal = dnorm_l1(theta, X, screened)
-        if scal > 1.:
+        if scal > 1.0:
             theta /= scal
         d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         # also test dual point returned by inner solver after 1st iter:
         scal = dnorm_l1(theta_in, X, screened)
-        if scal > 1.:
+        if scal > 1.0:
             theta_in /= scal
         d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
@@ -222,8 +216,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         gap = p_obj - highest_d_obj
         gaps[t] = gap
         if verbose:
-            print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(t, p_obj, gap),
-                  end="")
+            print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(
+                  t, p_obj, gap), end="")
 
         if gap <= tol:
             if verbose:
@@ -232,17 +226,20 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
         radius = np.sqrt(2 * gap / n_samples) / alpha
 
-        n_screened = set_prios(theta, X, norms_X_col, prios, screened, radius,
-                               n_screened)
+        n_screened = set_prios(
+            theta, X, norms_X_col, prios, screened, radius, n_screened
+        )
 
-        ws_size = create_ws(prune, w, prios, p0, t, screened, C, n_screened,
-                            ws_size)
+        ws_size = create_ws(
+            prune, w, prios, p0, t, screened, C, n_screened, ws_size
+        )
         # if ws_size === n_features then argpartition will break:
         if ws_size == n_features:
             C = all_features
         else:
-            C = np.argpartition(np.asarray(prios), ws_size)[
-                :ws_size].astype(np.int32)
+            C = np.argpartition(np.asarray(prios), ws_size)[:ws_size].astype(
+                np.int32
+            )
 
         notin_WS.fill(1)
         notin_WS[C] = 0
@@ -264,27 +261,21 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
                 scal = dnorm_l1(theta_in, X, notin_WS)
 
-                if scal > 1.:
+                if scal > 1.0:
                     theta_in /= scal
 
                 d_obj_in = dual_lasso(alpha, norm_y2, theta_in, y)
 
-                if True:  # also compute accelerated dual_point
-                    create_accel_pt(epoch, gap_freq, alpha, R, thetacc,
-                                    last_K_R, U, UtU)
+                if True:  # also compute accelerated primal point
+                    create_accel_primal_pt(epoch, gap_freq, w, wacc, last_K_w,
+                                           U, UtU)
 
                     if epoch // gap_freq >= K:
-                        scal = dnorm_l1(thetacc, X, notin_WS)
+                        p_obj_accel = primal_lasso(alpha, R, wacc)
 
-                        if scal > 1.:
-                            thetacc /= scal
-
-                        d_obj_accel = dual_lasso(alpha, norm_y2, thetacc, y)
-                        if d_obj_accel > d_obj_in:
-                            d_obj_in = d_obj_accel
-                            theta_in[:] = thetacc
-                            # fcopy(& n_samples, & thetacc[0], & inc,
-                            #    & theta_in[0], & inc)
+                        if p_obj_accel < p_obj_in:
+                            p_obj_in = p_obj_accel
+                            w[:] = wacc
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
@@ -315,7 +306,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
 
 class Solver(BaseSolver):
-    name = "numba_mathurin"
+    name = "numba_celer_primal"
     stop_strategy = "iteration"
 
     def set_objective(self, X, y, lmbd):
