@@ -189,21 +189,21 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
     ws_size = p0  # just to pass something to create_ws at iter 0
 
     for t in range(n_iter):
-        if t != 0:
-            create_dual_pt(alpha, theta, R)
-            scal = dnorm_l1(theta, X, screened)
-            if scal > 1.:
-                theta /= scal
-            d_obj = dual_lasso(alpha, norm_y2, theta, y)
+        # if t != 0:
+        create_dual_pt(alpha, theta, R)
+        scal = dnorm_l1(theta, X, screened)
+        if scal > 1.:
+            theta /= scal
+        d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
-            # also test dual point returned by inner solver after 1st iter:
-            scal = dnorm_l1(theta_in, X, screened)
-            if scal > 1.:
-                theta_in /= scal
-            d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
+        # also test dual point returned by inner solver after 1st iter:
+        scal = dnorm_l1(theta_in, X, screened)
+        if scal > 1.:
+            theta_in /= scal
+        d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
-        else:
-            d_obj = dual_lasso(alpha, norm_y2, theta, y)
+        # else:
+        #     d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
@@ -247,7 +247,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
             tol_in = tol
 
         if verbose:
-            print(",{:d} feats in subpb ({:d} left)".format(
+            print(", {:d} feats in subpb ({:d} left)".format(
                 len(C), n_features - n_screened))
 
         # calling inner solver which will modify w and R inplace
@@ -306,13 +306,18 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
         else:
             print("!!! Inner solver did not converge at epoch "
                   "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
+    return w
 
 
 class Solver(BaseSolver):
     name = 'numba_mathurin'
 
     def set_objective(self, X, y, lmbd):
-        self.X, self.y, self.lmbd = X, y, lmbd
+        self.y, self.lmbd = y, lmbd
+        self.X = np.asfortranarray(X)
+
+        # Make sure we cache the numba compilation.
+        self.run(2)
 
     def run(self, n_iter):
         w = numba_celer(self.X, self.y, self.alpha, n_iter)
