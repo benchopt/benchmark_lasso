@@ -276,6 +276,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
                         if p_obj_accel < p_obj_in:
                             p_obj_in = p_obj_accel
                             w[:] = wacc
+                            R = y - X @ w
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
