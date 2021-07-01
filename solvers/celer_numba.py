@@ -33,8 +33,41 @@ def ST(x, tau):
 
 
 @njit
-def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
-                verbose=0):
+def create_dual_pt(alpha, out, R):
+    """Copied from cython code hence the unpythonic way to do it."""
+    n_samples = R.shape[0]
+    scal = 1 / (alpha * n_samples)
+    out[:] = R
+    out *= scal
+
+
+@njit
+def dnorm_l1(theta, X, skip):
+    dnorm = 0
+    for j in range(X.shape[1]):
+        if not skip[j]:
+            dnorm = max(dnorm, np.abs(X[:, j] @ theta))
+    return dnorm
+
+
+@njit
+def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
+    n_features = X.shape[1]
+    for j in range(n_features):
+        if screened[j] or norms_X_col[j] == 0:
+            prios[j] = np.inf
+            continue
+        Xj_theta = X[:, j] @ theta
+        prios[j] = (1. - np.abs(Xj_theta)) / norms_X_col[j]
+        if prios[j] > radius:
+            screened[j] = True
+            n_screened += 1
+    return n_screened
+
+
+@njit
+def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
+                max_epochs=10_000, verbose=0):
     n_samples, n_features = X.shape
     w = np.zeros(n_features)
     R = y.copy()
@@ -56,8 +89,10 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     onesK = np.ones(K - 1, dtype=X.dtype)
 
     inv_lc = np.zeros(n_features)
+    norms_X_col = np.zeros(n_features)
     for j in range(n_features):
-        inv_lc[j] = 1 / norm(X[:, j]) ** 2
+        norms_X_col[j] = norm(X[:, j])
+        inv_lc[j] = 1 / norms_X_col[j] ** 2
 
     norm_y2 = norm(y) ** 2
 
@@ -72,11 +107,9 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
     for t in range(n_iter):
         if t != 0:
-            create_dual_pt(pb, n_samples, alpha, & theta[0], & Xw[0], & y[0])
+            create_dual_pt(alpha, theta, R)
 
-            scal = dnorm_l1(
-                is_sparse, theta, X, X_data, X_indices, X_indptr, screened,
-                X_mean, weights, center, positive)
+            scal = dnorm_l1(theta, X, screened)
 
             if scal > 1.:
                 theta /= scal
@@ -84,9 +117,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
             d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
             # also test dual point returned by inner solver after 1st iter:
-            scal = dnorm_l1(
-                is_sparse, theta_in, X, X_data, X_indices, X_indptr,
-                screened, X_mean, weights, center, positive)
+            scal = dnorm_l1(theta_in, X, screened)
             if scal > 1.:
                 theta_in /= scal
 
@@ -114,9 +145,8 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
         radius = np.sqrt(2 * gap / n_samples) / alpha
 
-        set_prios(
-            is_sparse, theta, X, X_data, X_indices, X_indptr, norms_X_col,
-            weights, prios, screened, radius, & n_screened, positive)
+        n_screened = set_prios(
+            theta, X, norms_X_col, prios, screened, radius, n_screened)
 
         if prune:
             nnz = 0
@@ -170,29 +200,22 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         highest_d_obj_in = 0
         for epoch in range(max_epochs):
             if epoch != 0 and epoch % gap_freq == 0:
-                create_dual_pt(
-                    pb, n_samples, alpha, & theta_in[0], & Xw[0], & y[0])
+                create_dual_pt(alpha, theta_in, R)
 
-                scal = dnorm_l1(
-                    is_sparse, theta_in, X, X_data, X_indices, X_indptr,
-                    notin_WS, X_mean, weights, center, positive)
+                scal = dnorm_l1(theta_in, X, notin_WS)
 
                 if scal > 1.:
                     theta_in /= scal
 
-                d_obj_in = dual(
-                    alpha, norm_y2, theta_in, y)
+                d_obj_in = dual_lasso(alpha, norm_y2, theta_in, y)
 
-                if use_accel:  # also compute accelerated dual_point
+                if True:  # also compute accelerated dual_point
                     info_dposv = create_accel_pt(
                         pb, n_samples, epoch, gap_freq, alpha, & Xw[0],
                         & thetacc[0], & last_K_Xw[0, 0], U, UtU, onesK, y)
 
                     if epoch // gap_freq >= K:
-                        scal = dnorm_l1(
-                            is_sparse, thetacc, X, X_data, X_indices,
-                            X_indptr, notin_WS, X_mean, weights, center,
-                            positive)
+                        scal = dnorm_l1(thetacc, X, notin_WS)
 
                         if scal > 1.:
                             thetacc /= scal
