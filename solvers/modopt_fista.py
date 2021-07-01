@@ -46,9 +46,9 @@ class Solver(BaseSolver):
         self.fb = ForwardBackward(
             x=np.zeros(n_features),  # this is the coefficient w
             grad=GradBasic(
+                input_data=y,
                 op=lambda w: self.X@w,
                 trans_op=lambda res: self.X.T@res,
-                data=y,
             ),
             prox=SparseThreshold(Identity(), lmbd),
             beta_param=1.0,

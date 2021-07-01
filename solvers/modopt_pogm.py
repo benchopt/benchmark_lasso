@@ -39,9 +39,9 @@ class Solver(BaseSolver):
             y=var_init,
             z=var_init,
             grad=GradBasic(
+                input_data=y,
                 op=lambda w: self.X@w,
                 trans_op=lambda res: self.X.T@res,
-                data=y,
             ),
             prox=SparseThreshold(Identity(), lmbd),
             beta_param=1.0,

@@ -20,7 +20,7 @@ class Solver(BaseSolver):
     name = "R-PGD"
 
     install_cmd = 'conda'
-    requirements = ['r-base', '-c conda-forge r rpy2']
+    requirements = ['r-base', 'rpy2']
     stop_strategy = 'iteration'
     support_sparse = False
     references = [
@@ -35,15 +35,14 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
-        self.lmbd_max = np.max(np.abs(X.T @ y))
         self.r_pgd = robjects.r['proximal_gradient_descent']
 
     def run(self, n_iter):
         coefs = self.r_pgd(
             self.X, self.y[:, None], self.lmbd,
             n_iter=n_iter)
-        as_matrix = robjects.r['as']
-        self.w = np.array(as_matrix(coefs, "matrix"))
+        as_r = robjects.r['as']
+        self.w = np.array(as_r(coefs, "vector"))
 
     def get_result(self):
         return self.w.flatten()
