@@ -311,6 +311,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
 
 class Solver(BaseSolver):
     name = 'numba_mathurin'
+    stop_strategy = 'iteration'
 
     def set_objective(self, X, y, lmbd):
         self.y, self.lmbd = y, lmbd
@@ -320,7 +321,7 @@ class Solver(BaseSolver):
         self.run(2)
 
     def run(self, n_iter):
-        w = numba_celer(self.X, self.y, self.alpha, n_iter)
+        w = numba_celer(self.X, self.y, self.lmbd/len(self.y), n_iter)
         self.w = w
 
     def get_result(self):
