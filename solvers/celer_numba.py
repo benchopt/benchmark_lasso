@@ -164,7 +164,7 @@ def numba_celer(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True, gap_freq=10,
     verbose_in = max(verbose - 1, 0)
     n_screened = 0
 
-    # tol *= norm(y) ** 2 / n_samples
+    tol *= norm(y) ** 2 / n_samples
     if p0 > n_features:
         p0 = n_features
 
@@ -326,7 +326,10 @@ class Solver(BaseSolver):
         self.run(2)
 
     def run(self, n_iter):
-        w = numba_celer(self.X, self.y, self.lmbd / len(self.y), n_iter)
+        w = numba_celer(
+            self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+            max_epochs=50_000
+        )
         self.w = w
 
     def get_result(self):
