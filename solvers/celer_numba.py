@@ -66,7 +66,8 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
 
 
 @njit
-def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
+def create_accel_pt(
+        epoch, gap_freq, alpha, R, out, last_K_R, U, UtU, verbose):
     K = U.shape[0] + 1
     n_samples = R.shape[0]
     tmp = 1. / (n_samples * alpha)
@@ -92,7 +93,8 @@ def create_accel_pt(epoch, gap_freq, alpha, R, out, last_K_R, U, UtU):
             # np.linalg.LinAlgError
             # Numba only accepts Error/Exception inheriting from the generic
             # Exception class
-            print("Singular matrix when computing accelerated point. Skipped.")
+            if verbose:
+                print("Singular matrix when computing accelerated point.")
         else:
             anderson /= np.sum(anderson)
 
@@ -197,7 +199,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     verbose_in = max(verbose - 1, 0)
     n_screened = 0
 
-    # tol *= norm(y) ** 2 / n_samples
+    tol *= norm(y) ** 2 / n_samples
     if p0 > n_features:
         p0 = n_features
 
@@ -304,7 +306,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
                 if True:  # also compute accelerated dual_point
                     create_accel_pt(epoch, gap_freq, alpha, R, thetacc,
-                                    last_K_R, U, UtU)
+                                    last_K_R, U, UtU, verbose_in)
 
                     if epoch // gap_freq >= K:
                         scal = dnorm_l1(thetacc, X, notin_WS)
@@ -528,8 +530,10 @@ class Solver(BaseSolver):
         self.run(2)
 
     def run(self, n_iter):
-        w = numba_celer(self.X, self.y, self.lmbd / len(self.y), n_iter,
-                        self.acceleration)
+        w = numba_celer(
+            self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+            max_epochs=50_000
+        )
         self.w = w
 
     def get_result(self):
