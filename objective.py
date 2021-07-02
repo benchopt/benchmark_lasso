@@ -5,7 +5,7 @@ class Objective(BaseObjective):
     name = "Lasso Regression"
 
     parameters = {
-        'reg': [0.05, .1, .5]
+        'reg': [.005, .01, .05, .1]
     }
 
     def __init__(self, reg=.1, fit_intercept=False):
