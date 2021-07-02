@@ -348,7 +348,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
 
 def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
-                       gap_freq=10, max_epochs=10_000, verbose=0):
+                       gap_freq=10, max_epochs=100_000, verbose=0):
     n_samples, n_features = X.shape
     w = np.zeros(n_features)
     R = y.copy()

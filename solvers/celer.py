@@ -27,7 +27,7 @@ class Solver(BaseSolver):
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
-            alpha=self.lmbd / n_samples, max_iter=1, max_epochs=100000,
+            alpha=self.lmbd / n_samples, max_iter=1, max_epochs=100_000,
             tol=1e-12, prune=True, fit_intercept=False, normalize=False,
             warm_start=False, positive=False, verbose=False,
         )
