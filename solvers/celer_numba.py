@@ -506,11 +506,11 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     return w
 
 
-def numba_celer(X, y, alpha, n_iter, accel):
+def numba_celer(X, y, alpha, n_iter, accel, max_epochs):
     if accel == "primal":
-        return numba_celer_primal(X, y, alpha, n_iter)
+        return numba_celer_primal(X, y, alpha, n_iter, max_epochs)
     elif accel == "dual":
-        return numba_celer_dual(X, y, alpha, n_iter)
+        return numba_celer_dual(X, y, alpha, n_iter, max_epochs)
     else:
         raise ValueError("Wrong acceleration type. Got %s. Expected 'primal' " +
                          "or 'dual'" % accel)
@@ -532,7 +532,7 @@ class Solver(BaseSolver):
     def run(self, n_iter):
         w = numba_celer(
             self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
-            max_epochs=50_000
+            self.acceleration, max_epochs=50_000
         )
         self.w = w
 
