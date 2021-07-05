@@ -44,21 +44,26 @@ def create_dual_pt(alpha, out, R):
 @njit
 def dnorm_l1(theta, X, skip):
     dnorm = 0
+    #X_theta = np.empty(X.shape[1])
     for j in range(X.shape[1]):
         if not skip[j]:
-            dnorm = max(dnorm, np.abs(X[:, j] @ theta))
-    return dnorm
+            Xj_theta = X[:, j] @ theta
+            dnorm = max(dnorm, np.abs(Xj_theta))
+            #X_theta[j] = Xj_theta
+    return dnorm#, X_theta
 
 
 @njit
 def dnorm_l1_sparse(theta, X_data, X_indices, X_indptr, skip):
     dnorm = 0
+    #X_theta = np.empty(X_indptr.shape[0] - 1)
     for j in range(X_indptr.shape[0] - 1):
         if not skip[j]:
             Xj_theta = 0
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 Xj_theta += X_data[ix] * theta[X_indices[ix]]
             dnorm = max(dnorm, np.abs(Xj_theta))
+            #X_theta[j] = Xj_theta
     return dnorm
 
 
@@ -237,6 +242,21 @@ def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
         if diff != 0.:
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 R[X_indices[ix]] += diff * X_data[ix]
+
+
+@njit
+def compute_residual(X, y, w, is_sparse):
+    if is_sparse:
+        res = y.copy()
+        for j in range(len(res)):
+            tmp = 0
+            for ix in range(X.indptr[j], X.indptr[j + 1]):
+                tmp += X.data[ix] * w[X.indices[ix]]
+            res[j] = tmp
+        R = y - res
+    else:
+        R = y - X @ w
+    return R
 
 
 def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
@@ -579,16 +599,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                         if p_obj_accel < p_obj_in:
                             p_obj_in = p_obj_accel
                             w[:] = wacc
-                            if is_sparse:
-                                res = y.copy()
-                                for j in range(len(res)):
-                                    tmp = 0
-                                    for ix in range(X.indptr[j], X.indptr[j + 1]):
-                                        tmp += X.data[ix] * w[X.indices[ix]]
-                                    res[j] = tmp
-                                R = y - res  # TODO: CHECK!!!
-                            else:
-                                R = y - X @ w
+                            R = compute_residual(X, y, w, is_sparse)
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
