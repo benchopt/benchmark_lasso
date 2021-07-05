@@ -203,9 +203,8 @@ def create_ws(prune, w, prios, p0, t, screened, C, n_screened, prev_ws_size):
 
 
 @njit
-def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
-    for k in range(ws_size):
-        j = C[k]
+def cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
+    for j in C:
         if norms_X_col[j] == 0.:
             continue
         old_w_j = w[j]
@@ -266,12 +265,10 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
     if is_sparse:
         norms_X_col = sparse.linalg.norm(X, axis=0)
-        # Trick for element-wise power function
-        inv_lc = 1 / (norms_X_col.data ** 2)
     else:
         norms_X_col = norm(X, axis=0)
-        inv_lc = 1 / norms_X_col ** 2
 
+    inv_lc = 1 / norms_X_col ** 2
     norm_y2 = norm(y) ** 2
 
     gaps = np.zeros(n_iter, dtype=X.dtype)
@@ -420,10 +417,10 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     break
 
             if is_sparse:
-                cd_epoch_sparse(ws_size, C, norms_X_col, X.data, X.indices,
-                                X.indptr, R, alpha, w, inv_lc, n_samples)
+                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R, 
+                                alpha, w, inv_lc, n_samples)
             else:
-                cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc,
+                cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
                          n_samples)
         else:
             print("!!! Inner solver did not converge at epoch "
@@ -457,12 +454,10 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
     if is_sparse:
         norms_X_col = sparse.linalg.norm(X, axis=0)
-        # Trick for element-wise power function
-        inv_lc = 1 / (norms_X_col.data ** 2)
     else:
         norms_X_col = norm(X, axis=0)
-        inv_lc = 1 / norms_X_col ** 2
 
+    inv_lc = 1 / norms_X_col ** 2
     norm_y2 = norm(y) ** 2
 
     gaps = np.zeros(n_iter, dtype=X.dtype)
@@ -615,10 +610,10 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     break
 
             if is_sparse:
-                cd_epoch_sparse(ws_size, C, norms_X_col, X.data, X.indices,
-                                X.indptr, R, alpha, w, inv_lc, n_samples)
+                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R, 
+                                alpha, w, inv_lc, n_samples)
             else:
-                cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc,
+                cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
                          n_samples)
 
         else:
