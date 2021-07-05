@@ -93,6 +93,7 @@ def set_prios_sparse(theta, X_data, X_indices, X_indptr, norms_X_col, prios,
             n_screened += 1
     return n_screened
 
+
 @njit
 def create_accel_pt(
         epoch, gap_freq, alpha, R, out, last_K_R, U, UtU, verbose):
@@ -220,7 +221,7 @@ def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
 
 
 @njit
-def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w, 
+def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
                     inv_lc, n_samples):
     for j in C:
         if norms_X_col[j] == 0.:
@@ -423,7 +424,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                                 X.indptr, R, alpha, w, inv_lc, n_samples)
             else:
                 cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc,
-                        n_samples)
+                         n_samples)
         else:
             print("!!! Inner solver did not converge at epoch "
                   "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
@@ -644,7 +645,10 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd):
         self.y, self.lmbd = y, lmbd
-        self.X = np.asfortranarray(X)
+        if not sparse.issparse(X):
+            self.X = np.asfortranarray(X)
+        else:
+            self.X = X
 
         # Make sure we cache the numba compilation.
         self.run(2)
