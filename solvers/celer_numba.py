@@ -78,10 +78,20 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
 
 
 @njit
-def set_prios_sparse(theta, X, X_data, X_indices, X_indptr, norms_X_col, prios,
+def set_prios_sparse(theta, X_data, X_indices, X_indptr, norms_X_col, prios,
                      screened, radius, n_screened):
-    raise Exception("Not implemented yet")
-
+    for j in range(X_indptr.shape[0] - 1):
+        if screened[j] or norms_X_col[j] == 0:
+            prios[j] = np.inf
+            continue
+        Xj_theta = 0
+        for ix in range(X_indptr[j], X_indptr[j + 1]):
+            Xj_theta += X_data[ix] * theta[X_indices[ix]]
+        prios[j] = (1 - np.abs(Xj_theta)) / norms_X_col[j]
+        if prios[j] > radius:
+            screened[j] = True
+            n_screened += 1
+        return n_screened
 
 @njit
 def create_accel_pt(
@@ -549,7 +559,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                                     res[j] = tmp
                                 R = y - res  # TODO: CHECK!!!
                             else:
-                                R = y - X @ w  # TODO: change for sparse matrices
+                                R = y - X @ w 
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
