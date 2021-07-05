@@ -417,7 +417,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     break
 
             if is_sparse:
-                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R, 
+                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R,
                                 alpha, w, inv_lc, n_samples)
             else:
                 cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
@@ -610,7 +610,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     break
 
             if is_sparse:
-                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R, 
+                cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R,
                                 alpha, w, inv_lc, n_samples)
             else:
                 cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
@@ -636,7 +636,7 @@ class Solver(BaseSolver):
     name = "numba_mathurin"
     stop_strategy = "iteration"
 
-    parameters = {"acceleration": ("primal", "dual")}
+    # parameters = {"acceleration": "dual")}
 
     def set_objective(self, X, y, lmbd):
         self.y, self.lmbd = y, lmbd
@@ -646,12 +646,12 @@ class Solver(BaseSolver):
             self.X = X
 
         # Make sure we cache the numba compilation.
-        self.run(2)
+        self.run(1)
 
     def run(self, n_iter):
         w = numba_celer(
             self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
-            self.acceleration, max_epochs=50_000
+            "dual", max_epochs=50_000
         )
         self.w = w
 
