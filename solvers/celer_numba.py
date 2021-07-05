@@ -91,7 +91,7 @@ def set_prios_sparse(theta, X_data, X_indices, X_indptr, norms_X_col, prios,
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
-        return n_screened
+    return n_screened
 
 @njit
 def create_accel_pt(
@@ -220,10 +220,9 @@ def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
 
 
 @njit
-def cd_epoch_sparse(ws_size, C, norms_X_col, X_data, X_indices, X_indptr, R,
-                    alpha, w, inv_lc, n_samples):
-    for k in range(ws_size):
-        j = C[k]
+def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w, 
+                    inv_lc, n_samples):
+    for j in C:
         if norms_X_col[j] == 0.:
             continue
         old_w_j = w[j]
@@ -585,7 +584,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                             p_obj_in = p_obj_accel
                             w[:] = wacc
                             if is_sparse:
-                                res = np.zeros_like(y)
+                                res = y.copy()
                                 for j in range(len(res)):
                                     tmp = 0
                                     for ix in range(X.indptr[j], X.indptr[j + 1]):
@@ -651,7 +650,6 @@ class Solver(BaseSolver):
         self.run(2)
 
     def run(self, n_iter):
-        print(self.X.shape)
         w = numba_celer(
             self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
             self.acceleration, max_epochs=50_000
