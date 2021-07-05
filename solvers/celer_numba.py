@@ -649,9 +649,9 @@ class Solver(BaseSolver):
         self.run(1)
 
     def run(self, n_iter):
-        w = numba_celer(
+        w = numba_celer_dual(
             self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
-            "dual", max_epochs=50_000
+            max_epochs=50_000, verbose=2
         )
         self.w = w
 
