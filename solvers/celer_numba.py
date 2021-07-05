@@ -53,12 +53,12 @@ def dnorm_l1(theta, X, skip):
 @njit
 def dnorm_l1_sparse(theta, X_data, X_indices, X_indptr, skip):
     dnorm = 0
-    for j in range(X.shape[1]):
+    for j in range(X_indptr.shape[0] - 1):
         if not skip[j]:
-            tmp = 0
+            Xj_theta = 0
             for ix in range(X_indptr[j], X_indptr[j + 1]):
-                tmp += X_data[ix] * theta[X_indices[ix]]
-            dnorm = max(dnorm, tmp)
+                Xj_theta += X_data[ix] * theta[X_indices[ix]]
+            dnorm = max(dnorm, np.abs(Xj_theta))
     return dnorm
 
 
@@ -204,9 +204,9 @@ def cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
         w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
 
         # R -= (w_j - old_w_j) (X[:, j]
-        tmp = old_w_j - w[j]
-        if tmp != 0.:
-            R += tmp * X[:, j]
+        diff = old_w_j - w[j]
+        if diff != 0.:
+            R += diff * X[:, j]
 
 
 @njit
@@ -218,17 +218,16 @@ def cd_epoch_sparse(ws_size, C, norms_X_col, X_data, X_indices, X_indptr, R,
             continue
         old_w_j = w[j]
 
-        tmp = 0.
+        grad = 0.
         for ix in range(X_indptr[j], X_indptr[j + 1]):
-            tmp += X_data[ix] * R[X_indices[ix]]
+            grad += X_data[ix] * R[X_indices[ix]]
 
-        w[j] += tmp * inv_lc[j]
-        w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
+        w[j] = ST(w[j] + grad * inv_lc[j], alpha * inv_lc[j] * n_samples)
 
-        tmp = old_w_j - w[j]
-        if tmp != 0.:
+        diff = old_w_j - w[j]
+        if diff != 0.:
             for ix in range(X_indptr[j], X_indptr[j + 1]):
-                R[X_indices[ix]] += tmp * X_data[ix]
+                R[X_indices[ix]] += diff * X_data[ix]
 
 
 def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
@@ -548,9 +547,9 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                                     for ix in range(X.indptr[j], X.indptr[j + 1]):
                                         tmp += X.data[ix] * w[X.indices[ix]]
                                     res[j] = tmp
-                                R = y - res # TODO: CHECK!!!
+                                R = y - res  # TODO: CHECK!!!
                             else:
-                                R = y - X @ w # TODO: change for sparse matrices
+                                R = y - X @ w  # TODO: change for sparse matrices
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
@@ -576,7 +575,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                                 X.indptr, R, alpha, w, inv_lc, n_samples)
             else:
                 cd_epoch(ws_size, C, norms_X_col, X, R, alpha, w, inv_lc,
-                        n_samples)
+                         n_samples)
 
         else:
             print("!!! Inner solver did not converge at epoch "
