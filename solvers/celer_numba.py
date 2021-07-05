@@ -628,8 +628,8 @@ def numba_celer(X, y, alpha, n_iter, accel, max_epochs):
     elif accel == "dual":
         return numba_celer_dual(X, y, alpha, n_iter, max_epochs)
     else:
-        raise ValueError("Wrong acceleration type. Got %s. Expected 'primal' " +
-                         "or 'dual'" % accel)
+        raise ValueError("Wrong acceleration type. Got %s. "
+                         "Expected 'primal' or 'dual'." % accel)
 
 
 class Solver(BaseSolver):
