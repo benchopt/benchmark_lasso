@@ -243,20 +243,20 @@ def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 R[X_indices[ix]] += diff * X_data[ix]
 
-
 @njit
 def compute_residual(X, y, w, is_sparse):
     if is_sparse:
-        res = y.copy()
-        for j in range(len(res)):
-            tmp = 0
-            for ix in range(X.indptr[j], X.indptr[j + 1]):
-                tmp += X.data[ix] * w[X.indices[ix]]
-            res[j] = tmp
-        R = y - res
-    else:
-        R = y - X @ w
-    return R
+        n_samples, n_features = X.shape
+        R = np.empty(n_samples)
+        for j in range(n_features):
+            if w[j] != 0:
+                for ix in range(X.indptr[j], X.indptr[j + 1]):
+                    R[X.indices[ix]] += w[j] * X.data[ix]
+        for i in range(n_samples):
+            R[i] = y[i] - R[i]
+        return R
+    return y - X @ w
+
 
 
 @njit
