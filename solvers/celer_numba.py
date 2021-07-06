@@ -44,38 +44,37 @@ def create_dual_pt(alpha, out, R):
 @njit
 def dnorm_l1(theta, X, skip):
     dnorm = 0
-    #X_theta = np.empty(X.shape[1])
+    X_theta = np.zeros(X.shape[1])
     for j in range(X.shape[1]):
         if not skip[j]:
             Xj_theta = X[:, j] @ theta
             dnorm = max(dnorm, np.abs(Xj_theta))
-            #X_theta[j] = Xj_theta
-    return dnorm  # , X_theta
+            X_theta[j] = Xj_theta
+    return dnorm, X_theta
 
 
 @njit
 def dnorm_l1_sparse(theta, X_data, X_indices, X_indptr, skip):
     dnorm = 0
-    #X_theta = np.empty(X_indptr.shape[0] - 1)
+    X_theta = np.zeros(X_indptr.shape[0] - 1)
     for j in range(X_indptr.shape[0] - 1):
         if not skip[j]:
             Xj_theta = 0
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 Xj_theta += X_data[ix] * theta[X_indices[ix]]
             dnorm = max(dnorm, np.abs(Xj_theta))
-            #X_theta[j] = Xj_theta
-    return dnorm
+            X_theta[j] = Xj_theta
+    return dnorm, X_theta
 
 
 @njit
-def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
+def set_prios(X, norms_X_col, prios, screened, radius, n_screened, X_theta):
     n_features = X.shape[1]
     for j in range(n_features):
         if screened[j] or norms_X_col[j] == 0:
             prios[j] = np.inf
             continue
-        Xj_theta = X[:, j] @ theta
-        prios[j] = (1. - np.abs(Xj_theta)) / norms_X_col[j]
+        prios[j] = (1. - np.abs(X_theta[j])) / norms_X_col[j]
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
@@ -83,16 +82,13 @@ def set_prios(theta, X, norms_X_col, prios, screened, radius, n_screened):
 
 
 @njit
-def set_prios_sparse(theta, X_data, X_indices, X_indptr, norms_X_col, prios,
-                     screened, radius, n_screened):
+def set_prios_sparse(X_indptr, norms_X_col, prios, screened, radius,
+                     n_screened, X_theta):
     for j in range(X_indptr.shape[0] - 1):
         if screened[j] or norms_X_col[j] == 0:
             prios[j] = np.inf
             continue
-        Xj_theta = 0
-        for ix in range(X_indptr[j], X_indptr[j + 1]):
-            Xj_theta += X_data[ix] * theta[X_indices[ix]]
-        prios[j] = (1 - np.abs(Xj_theta)) / norms_X_col[j]
+        prios[j] = (1 - np.abs(X_theta[j])) / norms_X_col[j]
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
@@ -142,7 +138,7 @@ def create_accel_pt(
 
 
 @njit
-def create_accel_primal_pt(epoch, gap_freq, w, out, last_K_w, U, UtU):
+def create_accel_primal_pt(epoch, gap_freq, w, out, last_K_w, U, UtU, verbose):
     K = U.shape[0] + 1
 
     if epoch // gap_freq < K:
@@ -166,7 +162,9 @@ def create_accel_primal_pt(epoch, gap_freq, w, out, last_K_w, U, UtU):
             # np.linalg.LinAlgError
             # Numba only accepts Error/Exception inheriting from the generic
             # Exception class
-            print("Singular matrix when computing accelerated point. Skipped.")
+            if verbose:
+                print("Singular matrix when computing accelerated point. "
+                      "Skipped.")
         else:
             anderson /= np.sum(anderson)
             out[:] = 0
@@ -243,17 +241,25 @@ def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 R[X_indices[ix]] += diff * X_data[ix]
 
+
 @njit
-def compute_residual(X, y, w, is_sparse):
-    if is_sparse:
-        n_features = X.shape[1]
-        R = y.copy()
-        for j in range(n_features):
-            if w[j] != 0:
-                for ix in range(X.indptr[j], X.indptr[j + 1]):
-                    R[X.indices[ix]] -= w[j] * X.data[ix]
-        return R
-    return y - X @ w
+def compute_residual_sparse(X_data, X_indices, X_indptr, y, w):
+    R = y.copy()
+    for j in range(X_indptr.shape[0] - 1):
+        if w[j] != 0:
+            for ix in range(X_indptr[j], X_indptr[j + 1]):
+                R[X_indices[ix]] -= w[j] * X_data[ix]
+    return R
+
+
+@njit
+def compute_residual(X, y, w):
+    R = y.copy()
+    n_features = X.shape[1]
+    for j in range(n_features):
+        if w[j] != 0:
+            R[:] += w[j] * X[:, j]
+    return R
 
 
 @njit
@@ -316,23 +322,27 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                   screened)
+            scal, X_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
+                                            screened)
         else:
-            scal = dnorm_l1(theta, X, screened)
+            scal, X_theta = dnorm_l1(theta, X, screened)
 
         if scal > 1.:
             theta /= scal
+            X_theta /= scal
         d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
-            scal = dnorm_l1_sparse(theta_in, X.data, X.indices, X.indptr,
-                                   screened)
+            scal, X_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
+                                               X.indptr, screened)
         else:
-            scal = dnorm_l1(theta_in, X, screened)
+            scal, X_theta_in = dnorm_l1(theta_in, X, screened)
+
         if scal > 1.:
             theta_in /= scal
+            X_theta_in /= scal
+
         d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
         # else:
@@ -341,6 +351,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
             theta[:] = theta_in
+            X_theta[:] = X_theta_in
             # fcopy( & n_samples, & theta_in[0], & inc, & theta[0], & inc)
 
         highest_d_obj = d_obj
@@ -360,12 +371,12 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         radius = np.sqrt(2 * gap / n_samples) / alpha
 
         if is_sparse:
-            n_screened = set_prios_sparse(theta, X.data, X.indices, X.indptr,
-                                          norms_X_col, prios, screened, radius,
-                                          n_screened)
+            n_screened = set_prios_sparse(X.indptr, norms_X_col, prios,
+                                          screened, radius, n_screened,
+                                          X_theta)
         else:
-            n_screened = set_prios(theta, X, norms_X_col, prios, screened,
-                                   radius, n_screened)
+            n_screened = set_prios(X, norms_X_col, prios, screened, radius,
+                                   n_screened, X_theta)
 
         ws_size = create_ws(prune, w, prios, p0, t, screened, C, n_screened,
                             ws_size)
@@ -396,9 +407,9 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
                 if is_sparse:
                     scal = dnorm_l1_sparse(theta_in, X.data, X.indices,
-                                           X.indptr, notin_WS)
+                                           X.indptr, notin_WS)[0]
                 else:
-                    scal = dnorm_l1(theta_in, X, notin_WS)
+                    scal = dnorm_l1(theta_in, X, notin_WS)[0]
 
                 if scal > 1.:
                     theta_in /= scal
@@ -412,9 +423,9 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     if epoch // gap_freq >= K:
                         if is_sparse:
                             scal = dnorm_l1_sparse(thetacc, X.data, X.indices,
-                                                   X.indptr, notin_WS)
+                                                   X.indptr, notin_WS)[0]
                         else:
-                            scal = dnorm_l1(thetacc, X, notin_WS)
+                            scal = dnorm_l1(thetacc, X, notin_WS)[0]
 
                         if scal > 1.:
                             thetacc /= scal
@@ -482,7 +493,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     UtU = np.empty((K - 1, K - 1), dtype=X.dtype)
 
     if is_sparse:
-        norms_X_col = sparse.linalg.norm(X, axis=0)
+        norms_X_col = sparse_norm(X.data, X.indptr)
     else:
         norms_X_col = norm(X, axis=0)
 
@@ -506,25 +517,26 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                   screened)
+            scal, X_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
+                                            screened)
         else:
-            scal = dnorm_l1(theta, X, screened)
+            scal, X_theta = dnorm_l1(theta, X, screened)
 
         if scal > 1.0:
             theta /= scal
-
+            X_theta /= scal
         d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
-            scal = dnorm_l1_sparse(theta_in, X.data, X.indices, X.indptr,
-                                   screened)
+            scal, X_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
+                                               X.indptr, screened)
         else:
-            scal = dnorm_l1(theta_in, X, screened)
+            scal, X_theta_in = dnorm_l1(theta_in, X, screened)
 
-        if scal > 1.0:
+        if scal > 1.:
             theta_in /= scal
+            X_theta_in /= scal
 
         d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
@@ -534,6 +546,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
             theta[:] = theta_in
+            X_theta[:] = X_theta_in
             # fcopy( & n_samples, & theta_in[0], & inc, & theta[0], & inc)
 
         highest_d_obj = d_obj
@@ -553,12 +566,12 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         radius = np.sqrt(2 * gap / n_samples) / alpha
 
         if is_sparse:
-            n_screened = set_prios_sparse(theta, X.data, X.indices, X.indptr,
-                                          norms_X_col, prios, screened, radius,
-                                          n_screened)
+            n_screened = set_prios_sparse(X.indptr, norms_X_col, prios,
+                                          screened, radius, n_screened,
+                                          X_theta)
         else:
-            n_screened = set_prios(theta, X, norms_X_col, prios, screened,
-                                   radius, n_screened)
+            n_screened = set_prios(X, norms_X_col, prios, screened, radius,
+                                   n_screened, X_theta)
 
         ws_size = create_ws(prune, w, prios, p0, t, screened, C, n_screened,
                             ws_size)
@@ -589,18 +602,18 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
                 if is_sparse:
                     scal = dnorm_l1_sparse(theta_in, X.data, X.indices,
-                                           X.indptr, notin_WS)
+                                           X.indptr, notin_WS)[0]
                 else:
-                    scal = dnorm_l1(theta_in, X, notin_WS)
+                    scal = dnorm_l1(theta_in, X, notin_WS)[0]
 
-                if scal > 1.0:
+                if scal > 1.:
                     theta_in /= scal
 
                 d_obj_in = dual_lasso(alpha, norm_y2, theta_in, y)
 
                 if True:  # also compute accelerated primal point
                     create_accel_primal_pt(epoch, gap_freq, w, wacc, last_K_w,
-                                           U, UtU)
+                                           U, UtU, verbose)
 
                     if epoch // gap_freq >= K:
                         p_obj_accel = primal_lasso(alpha, R, wacc)
@@ -608,7 +621,11 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                         if p_obj_accel < p_obj_in:
                             p_obj_in = p_obj_accel
                             w[:] = wacc
-                            R = compute_residual(X, y, w, is_sparse)
+                            if is_sparse:
+                                R = compute_residual_sparse(X.data, X.indices,
+                                                            X.indptr, y, w)
+                            else:
+                                R = compute_residual(X, y, w)
 
                 if d_obj_in > highest_d_obj_in:
                     highest_d_obj_in = d_obj_in
@@ -641,22 +658,11 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                   "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
     return w
 
-
-def numba_celer(X, y, alpha, n_iter, accel, max_epochs):
-    if accel == "primal":
-        return numba_celer_primal(X, y, alpha, n_iter, max_epochs)
-    elif accel == "dual":
-        return numba_celer_dual(X, y, alpha, n_iter, max_epochs)
-    else:
-        raise ValueError("Wrong acceleration type. Got %s. "
-                         "Expected 'primal' or 'dual'." % accel)
-
-
 class Solver(BaseSolver):
     name = "numba_mathurin"
     stop_strategy = "iteration"
 
-    # parameters = {"acceleration": "dual")}
+    parameters = {"acceleration": ("primal", "dual")}
 
     def set_objective(self, X, y, lmbd):
         self.y, self.lmbd = y, lmbd
@@ -669,11 +675,21 @@ class Solver(BaseSolver):
         self.run(1)
 
     def run(self, n_iter):
-        w = numba_celer_dual(
-            self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
-            max_epochs=50_000, verbose=0
-        )
-        self.w = w
+        if self.acceleration == "dual":
+            w = numba_celer_dual(
+                self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+                max_epochs=100_000, verbose=0
+            )
+            self.w = w
+        elif self.acceleration == "primal":
+            w = numba_celer_primal(
+                self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+                max_epochs=100_000, verbose=0
+            )
+            self.w = w
+        else:
+            raise ValueError("Unexped acceleration type. Expected 'primal' "
+                             "or 'dual'. Got %s." % self.acceleration)
 
     def get_result(self):
         return self.w
