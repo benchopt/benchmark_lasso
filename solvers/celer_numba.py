@@ -50,7 +50,7 @@ def dnorm_l1(theta, X, skip):
             Xj_theta = X[:, j] @ theta
             dnorm = max(dnorm, np.abs(Xj_theta))
             #X_theta[j] = Xj_theta
-    return dnorm#, X_theta
+    return dnorm  # , X_theta
 
 
 @njit
@@ -259,6 +259,18 @@ def compute_residual(X, y, w, is_sparse):
     return R
 
 
+@njit
+def sparse_norm(X_data, X_indptr):
+    n_features = X_indptr.shape[0] - 1
+    norms = np.zeros(n_features)
+    for j in range(n_features):
+        sum_sq = 0
+        for ix in range(X_indptr[j], X_indptr[j + 1]):
+            sum_sq += X_data[ix] ** 2
+        norms[j] = np.sqrt(sum_sq)
+    return norms
+
+
 def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                      gap_freq=10, max_epochs=10_000, verbose=0):
     is_sparse = sparse.issparse(X)
@@ -284,7 +296,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     UtU = np.empty((K - 1, K - 1), dtype=X.dtype)
 
     if is_sparse:
-        norms_X_col = sparse.linalg.norm(X, axis=0)
+        norms_X_col = sparse_norm(X.data, X.indptr)
     else:
         norms_X_col = norm(X, axis=0)
 
@@ -662,7 +674,7 @@ class Solver(BaseSolver):
     def run(self, n_iter):
         w = numba_celer_dual(
             self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
-            max_epochs=50_000, verbose=2
+            max_epochs=50_000, verbose=0
         )
         self.w = w
 
