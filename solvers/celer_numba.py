@@ -44,37 +44,37 @@ def create_dual_pt(alpha, out, R):
 @njit
 def dnorm_l1(theta, X, skip):
     dnorm = 0
-    X_theta = np.zeros(X.shape[1])
+    XT_theta = np.zeros(X.shape[1])
     for j in range(X.shape[1]):
         if not skip[j]:
             Xj_theta = X[:, j] @ theta
             dnorm = max(dnorm, np.abs(Xj_theta))
-            X_theta[j] = Xj_theta
-    return dnorm, X_theta
+            XT_theta[j] = Xj_theta
+    return dnorm, XT_theta
 
 
 @njit
 def dnorm_l1_sparse(theta, X_data, X_indices, X_indptr, skip):
     dnorm = 0
-    X_theta = np.zeros(X_indptr.shape[0] - 1)
+    XT_theta = np.zeros(X_indptr.shape[0] - 1)
     for j in range(X_indptr.shape[0] - 1):
         if not skip[j]:
             Xj_theta = 0
             for ix in range(X_indptr[j], X_indptr[j + 1]):
                 Xj_theta += X_data[ix] * theta[X_indices[ix]]
             dnorm = max(dnorm, np.abs(Xj_theta))
-            X_theta[j] = Xj_theta
-    return dnorm, X_theta
+            XT_theta[j] = Xj_theta
+    return dnorm, XT_theta
 
 
 @njit
-def set_prios(X, norms_X_col, prios, screened, radius, n_screened, X_theta):
+def set_prios(X, norms_X_col, prios, screened, radius, n_screened, XT_theta):
     n_features = X.shape[1]
     for j in range(n_features):
         if screened[j] or norms_X_col[j] == 0:
             prios[j] = np.inf
             continue
-        prios[j] = (1. - np.abs(X_theta[j])) / norms_X_col[j]
+        prios[j] = (1. - np.abs(XT_theta[j])) / norms_X_col[j]
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
@@ -83,12 +83,12 @@ def set_prios(X, norms_X_col, prios, screened, radius, n_screened, X_theta):
 
 @njit
 def set_prios_sparse(X_indptr, norms_X_col, prios, screened, radius,
-                     n_screened, X_theta):
+                     n_screened, XT_theta):
     for j in range(X_indptr.shape[0] - 1):
         if screened[j] or norms_X_col[j] == 0:
             prios[j] = np.inf
             continue
-        prios[j] = (1 - np.abs(X_theta[j])) / norms_X_col[j]
+        prios[j] = (1 - np.abs(XT_theta[j])) / norms_X_col[j]
         if prios[j] > radius:
             screened[j] = True
             n_screened += 1
@@ -258,7 +258,7 @@ def compute_residual(X, y, w):
     n_features = X.shape[1]
     for j in range(n_features):
         if w[j] != 0:
-            R[:] += w[j] * X[:, j]
+            R[:] -= w[j] * X[:, j]
     return R
 
 
@@ -322,26 +322,26 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal, X_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
+            scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
                                             screened)
         else:
-            scal, X_theta = dnorm_l1(theta, X, screened)
+            scal, XT_theta = dnorm_l1(theta, X, screened)
 
         if scal > 1.:
             theta /= scal
-            X_theta /= scal
+            XT_theta /= scal
         d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
-            scal, X_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
+            scal, XT_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
                                                X.indptr, screened)
         else:
-            scal, X_theta_in = dnorm_l1(theta_in, X, screened)
+            scal, XT_theta_in = dnorm_l1(theta_in, X, screened)
 
         if scal > 1.:
             theta_in /= scal
-            X_theta_in /= scal
+            XT_theta_in /= scal
 
         d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
@@ -351,7 +351,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
             theta[:] = theta_in
-            X_theta[:] = X_theta_in
+            XT_theta[:] = XT_theta_in
             # fcopy( & n_samples, & theta_in[0], & inc, & theta[0], & inc)
 
         highest_d_obj = d_obj
@@ -373,10 +373,10 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if is_sparse:
             n_screened = set_prios_sparse(X.indptr, norms_X_col, prios,
                                           screened, radius, n_screened,
-                                          X_theta)
+                                          XT_theta)
         else:
             n_screened = set_prios(X, norms_X_col, prios, screened, radius,
-                                   n_screened, X_theta)
+                                   n_screened, XT_theta)
 
         ws_size = create_ws(prune, w, prios, p0, t, screened, C, n_screened,
                             ws_size)
@@ -517,26 +517,26 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal, X_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
+            scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
                                             screened)
         else:
-            scal, X_theta = dnorm_l1(theta, X, screened)
+            scal, XT_theta = dnorm_l1(theta, X, screened)
 
         if scal > 1.0:
             theta /= scal
-            X_theta /= scal
+            XT_theta /= scal
         d_obj = dual_lasso(alpha, norm_y2, theta, y)
 
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
-            scal, X_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
+            scal, XT_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
                                                X.indptr, screened)
         else:
-            scal, X_theta_in = dnorm_l1(theta_in, X, screened)
+            scal, XT_theta_in = dnorm_l1(theta_in, X, screened)
 
         if scal > 1.:
             theta_in /= scal
-            X_theta_in /= scal
+            XT_theta_in /= scal
 
         d_obj_from_inner = dual_lasso(alpha, norm_y2, theta_in, y)
 
@@ -546,7 +546,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if d_obj_from_inner > d_obj:
             d_obj = d_obj_from_inner
             theta[:] = theta_in
-            X_theta[:] = X_theta_in
+            XT_theta[:] = XT_theta_in
             # fcopy( & n_samples, & theta_in[0], & inc, & theta[0], & inc)
 
         highest_d_obj = d_obj
@@ -568,10 +568,10 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         if is_sparse:
             n_screened = set_prios_sparse(X.indptr, norms_X_col, prios,
                                           screened, radius, n_screened,
-                                          X_theta)
+                                          XT_theta)
         else:
             n_screened = set_prios(X, norms_X_col, prios, screened, radius,
-                                   n_screened, X_theta)
+                                   n_screened, XT_theta)
 
         ws_size = create_ws(prune, w, prios, p0, t, screened, C, n_screened,
                             ws_size)
