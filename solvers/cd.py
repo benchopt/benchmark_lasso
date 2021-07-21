@@ -27,6 +27,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['numba']
+    parameters = {"step": [0.5, 0.8, 1, 1.5, 1.8, 1.95]}
     references = [
         'W. J. Fu, "Penalized Regressions: the Bridge versus the Lasso", '
         'J. Comput. Graph. Statist., vol.7, no. 3, pp. 397-416, '
@@ -53,15 +54,15 @@ class Solver(BaseSolver):
             L = np.array((self.X.multiply(self.X)).sum(axis=0)).squeeze()
             self.w = self.sparse_cd(
                 self.X.data, self.X.indices, self.X.indptr, self.y, self.lmbd,
-                L, n_iter
+                L, self.step, n_iter
             )
         else:
             L = (self.X ** 2).sum(axis=0)
-            self.w = self.cd(self.X, self.y, self.lmbd, L, n_iter)
+            self.w = self.cd(self.X, self.y, self.lmbd, L, self.step, n_iter)
 
     @staticmethod
     @njit
-    def cd(X, y, lmbd, L, n_iter):
+    def cd(X, y, lmbd, L, step, n_iter):
         n_features = X.shape[1]
         R = np.copy(y)
         w = np.zeros(n_features)
@@ -70,7 +71,8 @@ class Solver(BaseSolver):
                 if L[j] == 0.:
                     continue
                 old = w[j]
-                w[j] = st(w[j] + X[:, j] @ R / L[j], lmbd / L[j])
+                w[j] = st(w[j] + X[:, j] @ R * step / L[j],
+                          lmbd * step / L[j])
                 diff = old - w[j]
                 if diff != 0:
                     R += diff * X[:, j]
@@ -78,7 +80,7 @@ class Solver(BaseSolver):
 
     @staticmethod
     @njit
-    def sparse_cd(X_data, X_indices, X_indptr, y, lmbd, L, n_iter):
+    def sparse_cd(X_data, X_indices, X_indptr, y, lmbd, L, step, n_iter):
         n_features = len(X_indptr) - 1
         w = np.zeros(n_features)
         R = np.copy(y)
@@ -91,7 +93,7 @@ class Solver(BaseSolver):
                 scal = 0.
                 for ind in range(start, end):
                     scal += X_data[ind] * R[X_indices[ind]]
-                w[j] = st(w[j] + scal / L[j], lmbd / L[j])
+                w[j] = st(w[j] + scal * step / L[j], lmbd * step / L[j])
                 diff = old - w[j]
                 if diff != 0:
                     for ind in range(start, end):
