@@ -6,6 +6,7 @@ class Objective(BaseObjective):
 
     parameters = {
         'reg': [0.05, .1, .5]
+        # 'reg': [.5]
     }
 
     def __init__(self, reg=.1, fit_intercept=False):

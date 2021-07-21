@@ -10,7 +10,8 @@ class Solver(BaseSolver):
     stop_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
-    parameters = {'use_acceleration': [False, True]}
+    parameters = {'use_acceleration': [False],
+                  'step': [0.1, 0.5, 1, 1.5, 1.7, 1.9, 1.99]}
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '
@@ -42,8 +43,8 @@ class Solver(BaseSolver):
                 w = self.st(z, self.lmbd / L)
                 z = w + (t_old - 1.) / t_new * (w - w_old)
             else:
-                w -= self.X.T @ (self.X @ w - self.y) / L
-                w = self.st(w, self.lmbd / L)
+                w -= self.X.T @ (self.X @ w - self.y) * (self.step / L)
+                w = self.st(w, self.lmbd * self.step / L)
 
         self.w = w
 
