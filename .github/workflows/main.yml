@@ -1,14 +1,15 @@
-name: build
+name: Tests
 
 on:
-  create:
+  push:
     branches:
-      - 'master'
+      - main
+  create:
     tags:
       - '**'
   pull_request:
     branches:
-      - master
+      - main
   schedule:
     # Run every day at 7:42am UTC.
     - cron:  '42 7 * * *'
@@ -25,6 +26,7 @@ jobs:
       CONDA_ENV: 'test_env'
       VERSION_PYTHON: ${{ matrix.version_python }}
       BENCHOPT_BRANCH: benchopt:master
+      BENCHOPT_DEBUG: 1
 
     defaults:
       run:
@@ -55,17 +57,8 @@ jobs:
         pip install -U git+https://github.com/$user/benchopt@$branch
 
     - name: Test
-      env:
-        BENCHOPT_DEBUG: 1
       run: |
         benchopt test . --env-name bench_test_env -vl
-
-        echo '-----------------------------------------'
-        conda activate bench_test_env
-        conda config --show channels
-        conda activate ${{ env.CONDA_ENV }}
-        echo '-----------------------------------------'
-
         benchopt test . --env-name bench_test_env -vl --skip-install
 
 
