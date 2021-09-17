@@ -21,8 +21,16 @@ class Solver(BaseSolver):
         'vol. 2, no. 1, pp. 183-202 (2009)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - not implemented but not too complicated to implement
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
 
     def run(self, callback):
         L = self.compute_lipschitz_constant()

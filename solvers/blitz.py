@@ -20,7 +20,13 @@ class Solver(BaseSolver):
         'vol. 37, pp. 1171-1179 (2015)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
 
         blitzl1.set_use_intercept(False)
