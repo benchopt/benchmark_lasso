@@ -3,6 +3,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import numpy as np
     from lightning.regression import CDRegressor
 
 
@@ -22,16 +23,27 @@ class Solver(BaseSolver):
         'Mach. Learn., vol. 93, no. 1, pp. 31-52 (2013)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
 
         self.clf = CDRegressor(
-            loss='squared', penalty='l1', C=1, alpha=self.lmbd,
-            tol=1e-15)
+            loss='squared', penalty='l1', C=.5, alpha=self.lmbd,
+            tol=1e-15
+        )
 
     def run(self, n_iter):
         self.clf.max_iter = n_iter
         self.clf.fit(self.X, self.y)
 
     def get_result(self):
-        return self.clf.coef_.flatten()
+        beta = self.clf.coef_.flatten()
+        if self.fit_intercept:
+            beta = np.r_[beta, self.clf.intercept_]
+        return beta
