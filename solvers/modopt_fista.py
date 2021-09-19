@@ -30,9 +30,14 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
-    def set_objective(self, X, y, lmbd):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
-        n_features = self.X.shape[1]
+        self.fit_intercept = fit_intercept
+
+        n_samples, n_features = self.X.shape
+        x_shape = n_features
+        if fit_intercept:
+            x_shape += n_samples
         if self.restart_strategy == 'greedy':
             min_beta = 1.0
             s_greedy = 1.1
@@ -43,11 +48,18 @@ class Solver(BaseSolver):
             s_greedy = None
             p_lazy = 1 / 30
             q_lazy = 1 / 10
+
+        if fit_intercept:
+            def op(w):
+                return self.X@w[:n_features] + w[n_features:]
+        else:
+            def op(w):
+                return self.X @ w
+
         self.fb = ForwardBackward(
-            x=np.zeros(n_features),  # this is the coefficient w
+            x=np.zeros(x_shape),  # this is the coefficient w
             grad=GradBasic(
-                input_data=y,
-                op=lambda w: self.X@w,
+                input_data=y, op=op,
                 trans_op=lambda res: self.X.T@res,
             ),
             prox=SparseThreshold(Identity(), lmbd),

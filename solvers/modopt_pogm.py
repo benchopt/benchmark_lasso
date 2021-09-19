@@ -28,10 +28,18 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - not implemented but not too complicated here.
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
         n_features = self.X.shape[1]
-        sigma_bar = 0.96
+
         var_init = np.zeros(n_features)
         self.pogm = POGM(
             x=var_init,  # this is the coefficient w
@@ -46,7 +54,7 @@ class Solver(BaseSolver):
             prox=SparseThreshold(Identity(), lmbd),
             beta_param=1.0,
             metric_call_period=None,
-            sigma_bar=sigma_bar,
+            sigma_bar=0.96,
             auto_iterate=False,
             progress=False,
             cost=None,

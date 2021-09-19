@@ -33,8 +33,15 @@ class Solver(BaseSolver):
         'vol. 2, no. 1, pp. 183-202 (2009)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
         self.r_pgd = robjects.r['proximal_gradient_descent']
 
     def run(self, n_iter):

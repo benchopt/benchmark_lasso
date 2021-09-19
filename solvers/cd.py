@@ -36,7 +36,14 @@ class Solver(BaseSolver):
         'pp. 302-332 (2007)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - not implemented but this should be quite easy
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.y, self.lmbd = y, lmbd
 
         if sparse.issparse(X):
