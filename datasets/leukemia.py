@@ -16,7 +16,7 @@ class Dataset(BaseDataset):
     requirements = ['scikit-learn']
 
     def get_data(self):
-
+        # this is the whole leukemia with train + test data (72 samples)
         X, y = fetch_openml("leukemia", return_X_y=True)
         X = X.to_numpy()
         y = LabelBinarizer().fit_transform(y)[:, 0].astype(X.dtype)
