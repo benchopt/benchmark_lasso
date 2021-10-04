@@ -206,15 +206,15 @@ def create_ws(prune, w, prios, p0, t, screened, C, n_screened, prev_ws_size):
 
 
 @njit
-def cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
+def cd_epoch(C, norms_X_col, X, R, alpha, w, n_samples):
     for j in C:
         if norms_X_col[j] == 0.:
             continue
         old_w_j = w[j]
 
-        w[j] += X[:, j] @ R * inv_lc[j]
+        w[j] += X[:, j] @ R / norms_X_col[j]
 
-        w[j] = ST(w[j], alpha * inv_lc[j] * n_samples)
+        w[j] = ST(w[j], alpha / norms_X_col[j] * n_samples)
 
         # R -= (w_j - old_w_j) (X[:, j]
         diff = old_w_j - w[j]
@@ -224,7 +224,7 @@ def cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc, n_samples):
 
 @njit
 def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
-                    inv_lc, n_samples):
+                    n_samples):
     for j in C:
         if norms_X_col[j] == 0.:
             continue
@@ -234,7 +234,8 @@ def cd_epoch_sparse(C, norms_X_col, X_data, X_indices, X_indptr, R, alpha, w,
         for ix in range(X_indptr[j], X_indptr[j + 1]):
             grad += X_data[ix] * R[X_indices[ix]]
 
-        w[j] = ST(w[j] + grad * inv_lc[j], alpha * inv_lc[j] * n_samples)
+        w[j] = ST(w[j] + grad / norms_X_col[j],
+                  alpha / norms_X_col[j] * n_samples)
 
         diff = old_w_j - w[j]
         if diff != 0.:
@@ -303,7 +304,6 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     else:
         norms_X_col = norm(X, axis=0)
 
-    inv_lc = 1 / norms_X_col ** 2
     norm_y2 = norm(y) ** 2
 
     gaps = np.zeros(n_iter, dtype=X.dtype)
@@ -458,10 +458,9 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
             if is_sparse:
                 cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R,
-                                alpha, w, inv_lc, n_samples)
+                                alpha, w, n_samples)
             else:
-                cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
-                         n_samples)
+                cd_epoch(C, norms_X_col, X, R, alpha, w, n_samples)
         else:
             print("!!! Inner solver did not converge at epoch "
                   "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
@@ -497,7 +496,6 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
     else:
         norms_X_col = norm(X, axis=0)
 
-    inv_lc = 1 / norms_X_col ** 2
     norm_y2 = norm(y) ** 2
 
     gaps = np.zeros(n_iter, dtype=X.dtype)
@@ -648,10 +646,9 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
             if is_sparse:
                 cd_epoch_sparse(C, norms_X_col, X.data, X.indices, X.indptr, R,
-                                alpha, w, inv_lc, n_samples)
+                                alpha, w, n_samples)
             else:
-                cd_epoch(C, norms_X_col, X, R, alpha, w, inv_lc,
-                         n_samples)
+                cd_epoch(C, norms_X_col, X, R, alpha, w, n_samples)
 
         else:
             print("!!! Inner solver did not converge at epoch "

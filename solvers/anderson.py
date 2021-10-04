@@ -20,7 +20,7 @@ class Solver(BaseSolver):
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000,
-            tol=1e-12, prune=True, fit_intercept=False, normalize=False,
+            tol=1e-12, prune=True, fit_intercept=False,
             warm_start=False, verbose=False,
         )
 
