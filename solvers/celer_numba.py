@@ -323,7 +323,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
         if is_sparse:
             scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                            screened)
+                                             screened)
         else:
             scal, XT_theta = dnorm_l1(theta, X, screened)
 
@@ -335,7 +335,7 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
             scal, XT_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
-                                               X.indptr, screened)
+                                                X.indptr, screened)
         else:
             scal, XT_theta_in = dnorm_l1(theta_in, X, screened)
 
@@ -518,7 +518,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
 
         if is_sparse:
             scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                            screened)
+                                             screened)
         else:
             scal, XT_theta = dnorm_l1(theta, X, screened)
 
@@ -530,7 +530,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         # also test dual point returned by inner solver after 1st iter:
         if is_sparse:
             scal, XT_theta_in = dnorm_l1_sparse(theta_in, X.data, X.indices,
-                                               X.indptr, screened)
+                                                X.indptr, screened)
         else:
             scal, XT_theta_in = dnorm_l1(theta_in, X, screened)
 
@@ -658,14 +658,15 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                   "{:d}, gap: {:.2e} > {:.2e}".format(epoch, gap_in, tol_in))
     return w
 
+
 class Solver(BaseSolver):
     name = "numba_mathurin"
     stop_strategy = "iteration"
 
     parameters = {"acceleration": ("primal", "dual")}
 
-    def set_objective(self, X, y, lmbd):
-        self.y, self.lmbd = y, lmbd
+    def set_objective(self, X, y, lmbd, fit_intercept):
+        self.y, self.lmbd, self.fit_intercept = y, lmbd, fit_intercept
         if not sparse.issparse(X):
             self.X = np.asfortranarray(X)
         else:
@@ -688,7 +689,7 @@ class Solver(BaseSolver):
             )
             self.w = w
         else:
-            raise ValueError("Unexped acceleration type. Expected 'primal' "
+            raise ValueError("Unexpected acceleration type. Expected 'primal' "
                              "or 'dual'. Got %s." % self.acceleration)
 
     def get_result(self):
