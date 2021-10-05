@@ -24,6 +24,8 @@ class Solver(BaseSolver):
             warm_start=False, verbose=False,
         )
 
+        self.run(1)
+
     def run(self, n_iter):
         self.lasso.max_iter = n_iter + 1
         self.lasso.fit(self.X, self.y)
