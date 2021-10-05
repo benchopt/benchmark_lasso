@@ -13,7 +13,7 @@ class Solver(BaseSolver):
     name = 'anderson'
     stop_strategy = 'iteration'
 
-    def set_objective(self, X, y, lmbd):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
 
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
