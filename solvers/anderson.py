@@ -13,14 +13,24 @@ class Solver(BaseSolver):
     name = 'anderson'
     stop_strategy = 'iteration'
 
+    parameters = {'ws': [True, False]}
+
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
 
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         n_samples = self.X.shape[0]
+
+        if self.ws:
+            p0 = 10
+            prune = True
+        else:
+            p0 = X.shape[1]
+            prune = False
+
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000,
-            tol=1e-12, prune=True, fit_intercept=False,
+            tol=1e-12, prune=prune, p0=p0, fit_intercept=False,
             warm_start=False, verbose=False,
         )
 
