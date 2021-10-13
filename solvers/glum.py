@@ -1,11 +1,9 @@
-import warnings
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
     import numpy as np
-    from sklearn.exceptions import ConvergenceWarning
     from glum import GeneralizedLinearRegressor
 
 
@@ -25,7 +23,6 @@ class Solver(BaseSolver):
             alpha=self.lmbd / n_samples,
             fit_intercept=fit_intercept
         )
-        warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
     def run(self, n_iter):
         self.model.max_iter = n_iter + 1
