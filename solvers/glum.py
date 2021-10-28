@@ -14,6 +14,9 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['glum']
+    stop_strategy = 'tolerance'
+
+    support_sparse = False
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -25,11 +28,12 @@ class Solver(BaseSolver):
             alpha=self.lmbd / n_samples,
             fit_intercept=fit_intercept,
             gradient_tol=1e-8,
+            max_iter=1
         )
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
-    def run(self, n_iter):
-        self.model.max_iter = n_iter + 1
+    def run(self, tol):
+        self.model.gradient_tol = tol ** 2
         self.model.fit(self.X, self.y)
 
     def get_result(self):
