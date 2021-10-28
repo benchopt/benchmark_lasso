@@ -5,12 +5,12 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
-    from andersoncd import Lasso
+    from flashcd import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):
-    name = 'anderson'
+    name = 'flashcd'
     stop_strategy = 'iteration'
 
     parameters = {'ws': [True, False]}

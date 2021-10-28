@@ -35,7 +35,7 @@ class Solver(BaseSolver):
         )
 
     def run(self, n_iter):
-        self.lasso.max_iter = n_iter + 1
+        self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
 
     def get_result(self):

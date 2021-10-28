@@ -5,8 +5,8 @@ class Objective(BaseObjective):
     name = "Lasso Regression"
 
     parameters = {
-        # 'reg': [0.05, .1, .5],
-        'reg': [.5],
+        'reg': [0.001, 0.01, 0.05, .1, .5],
+        # 'reg': [.5],
         'fit_intercept': [False]
     }
 

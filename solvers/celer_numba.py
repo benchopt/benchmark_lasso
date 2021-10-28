@@ -675,13 +675,13 @@ class Solver(BaseSolver):
     def run(self, n_iter):
         if self.acceleration == "dual":
             w = numba_celer_dual(
-                self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+                self.X, self.y, self.lmbd / len(self.y), n_iter,
                 max_epochs=100_000, verbose=0
             )
             self.w = w
         elif self.acceleration == "primal":
             w = numba_celer_primal(
-                self.X, self.y, self.lmbd / len(self.y), n_iter + 1,
+                self.X, self.y, self.lmbd / len(self.y), n_iter,
                 max_epochs=100_000, verbose=0
             )
             self.w = w
