@@ -31,11 +31,11 @@ class Solver(BaseSolver):
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=100000,
             tol=1e-12, prune=True, fit_intercept=fit_intercept,
-            normalize=False, warm_start=False, positive=False, verbose=False,
+            warm_start=False, positive=False, verbose=False,
         )
 
     def run(self, n_iter):
-        self.lasso.max_iter = n_iter + 1
+        self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
 
     def get_result(self):
