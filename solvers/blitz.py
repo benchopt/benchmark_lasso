@@ -12,7 +12,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/tommoral/blitzl1.git@FIX_setup_deps'
+        'pip:git+https://github.com/tbjohns/blitzl1.git@master'
     ]
     references = [
         'T. B. Johnson and C. Guestrin, "Blitz: A Principled Meta-Algorithm '
