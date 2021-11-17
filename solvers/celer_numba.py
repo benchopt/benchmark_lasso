@@ -6,6 +6,11 @@ with safe_import_context() as import_ctx:
     from numpy.linalg import norm
     from numba import njit
 
+if import_ctx.failed_import:
+
+    def njit(f):  # noqa: F811
+        return f
+
 
 @njit
 def dual_lasso(alpha, norm_y2, theta, y):
