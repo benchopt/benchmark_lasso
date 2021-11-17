@@ -13,6 +13,8 @@ class Solver(BaseSolver):
     name = 'anderson'
     stop_strategy = 'iteration'
 
+    requirements = ["pip:git+https://github.com/mathurinm/andersoncd.git"]
+
     parameters = {'ws': [True, False]}
 
     def set_objective(self, X, y, lmbd, fit_intercept):
