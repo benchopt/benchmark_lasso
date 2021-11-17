@@ -13,6 +13,7 @@ class Solver(BaseSolver):
     name = 'anderson'
     stop_strategy = 'iteration'
 
+    install_cmd = 'conda'
     requirements = ["pip:git+https://github.com/mathurinm/andersoncd.git"]
 
     parameters = {'ws': [True, False]}
