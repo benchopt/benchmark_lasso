@@ -661,6 +661,9 @@ class Solver(BaseSolver):
     name = "celer_numba"
     stop_strategy = "iteration"
 
+    install_cmd = 'conda'
+    requirements = ["numba"]
+
     parameters = {"acceleration": ("primal", "dual")}
 
     def set_objective(self, X, y, lmbd, fit_intercept):

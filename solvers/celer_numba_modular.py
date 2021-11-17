@@ -470,6 +470,9 @@ class Solver(BaseSolver):
     name = "celer_numba_modular"
     stop_strategy = "iteration"
 
+    install_cmd = 'conda'
+    requirements = ["numba"]
+
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.y, self.lmbd, self.fit_intercept = y, lmbd, fit_intercept
         if not sparse.issparse(X):
