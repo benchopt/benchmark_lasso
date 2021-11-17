@@ -4,7 +4,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from numpy.linalg import norm
-    from numba import njit, jit
+    from numba import njit
 
 
 @njit
@@ -119,7 +119,7 @@ def create_accel_pt(
 
         try:
             anderson = np.linalg.solve(UtU, np.ones(UtU.shape[0]))
-        except:
+        except:  # noqa E722
             # np.linalg.LinAlgError
             # Numba only accepts Error/Exception inheriting from the generic
             # Exception class
@@ -158,7 +158,7 @@ def create_accel_primal_pt(epoch, gap_freq, w, out, last_K_w, U, UtU, verbose):
 
         try:
             anderson = np.linalg.solve(UtU, np.ones(UtU.shape[0]))
-        except:
+        except:  # noqa E722
             # np.linalg.LinAlgError
             # Numba only accepts Error/Exception inheriting from the generic
             # Exception class
@@ -322,8 +322,8 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                             screened)
+            scal, XT_theta = dnorm_l1_sparse(
+                theta, X.data, X.indices, X.indptr, screened)
         else:
             scal, XT_theta = dnorm_l1(theta, X, screened)
 
@@ -360,8 +360,9 @@ def numba_celer_dual(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         gap = p_obj - highest_d_obj
         gaps[t] = gap
         if verbose:
-            print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(t, p_obj, gap),
-                  end="")
+            print("Iter {:d}: primal {:.10f}, gap {:.2e}".format(
+                t, p_obj, gap),
+                end="")
 
         if gap <= tol:
             if verbose:
@@ -515,8 +516,8 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
         create_dual_pt(alpha, theta, R)
 
         if is_sparse:
-            scal, XT_theta = dnorm_l1_sparse(theta, X.data, X.indices, X.indptr,
-                                             screened)
+            scal, XT_theta = dnorm_l1_sparse(
+                theta, X.data, X.indices, X.indptr, screened)
         else:
             scal, XT_theta = dnorm_l1(theta, X, screened)
 
@@ -616,7 +617,7 @@ def numba_celer_primal(X, y, alpha, n_iter, p0=10, tol=1e-12, prune=True,
                     if epoch // gap_freq >= K:
                         p_obj_accel = primal_lasso(alpha, R, wacc)
 
-                        if p_obj_accel < p_obj_in:
+                        if p_obj_accel < p_obj_in:  # noqa F821
                             p_obj_in = p_obj_accel
                             w[:] = wacc
                             if is_sparse:
