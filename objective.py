@@ -1,3 +1,6 @@
+import numpy as np
+from numpy.linalg import norm
+
 from benchopt import BaseObjective
 
 
@@ -5,8 +8,9 @@ class Objective(BaseObjective):
     name = "Lasso Regression"
 
     parameters = {
-        'reg': [0.05, .1, .5],
-        'fit_intercept': [True, False]
+        # 'reg': [0.05, .1, .5],
+        'reg': [.5],
+        'fit_intercept': [False]
     }
 
     def __init__(self, reg=.1, fit_intercept=False):
@@ -19,12 +23,21 @@ class Objective(BaseObjective):
         self.n_features = self.X.shape[1]
 
     def compute(self, beta):
+        # compute residuals
         if self.fit_intercept:
             beta, intercept = beta[:self.n_features], beta[self.n_features:]
         diff = self.y - self.X.dot(beta)
         if self.fit_intercept:
             diff -= intercept
-        return .5 * diff.dot(diff) + self.lmbd * abs(beta).sum()
+        # compute primal objective and duality gap
+        p_obj = .5 * diff.dot(diff) + self.lmbd * abs(beta).sum()
+        theta = diff / self.lmbd
+        theta /= norm(self.X.T @ theta, ord=np.inf)
+        d_obj = (norm(self.y) ** 2 / 2. - self.lmbd ** 2 *
+                 norm(self.y / self.lmbd - theta) ** 2 / 2)
+        return dict(value=p_obj,
+                    support_size=(beta != 0).sum(),
+                    duality_gap=p_obj - d_obj,)
 
     def _get_lambda_max(self):
         return abs(self.X.T.dot(self.y)).max()
