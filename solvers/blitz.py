@@ -30,10 +30,10 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
 
         blitzl1.set_use_intercept(False)
+        blitzl1.set_tolerance(0)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
     def run(self, n_iter):
-        blitzl1.set_tolerance(0)
         self.coef_ = self.problem.solve(self.lmbd, max_iter=n_iter).x
 
     def get_result(self):
