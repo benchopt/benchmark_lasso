@@ -8,7 +8,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'Blitz'
-    stop_strategy = 'tolerance'
+    stop_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = [
@@ -32,9 +32,9 @@ class Solver(BaseSolver):
         blitzl1.set_use_intercept(False)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
-    def run(self, tolerance):
-        blitzl1.set_tolerance(tolerance)
-        self.coef_ = self.problem.solve(self.lmbd).x
+    def run(self, n_iter):
+        blitzl1.set_tolerance(0)
+        self.coef_ = self.problem.solve(self.lmbd, max_iter=n_iter).x
 
     def get_result(self):
         return self.coef_.flatten()
