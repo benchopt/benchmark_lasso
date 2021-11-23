@@ -8,11 +8,11 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'Blitz'
-    stop_strategy = 'tolerance'
+    stop_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/tommoral/blitzl1.git@FIX_setup_deps'
+        'pip:git+https://github.com/tbjohns/blitzl1.git@master'
     ]
     references = [
         'T. B. Johnson and C. Guestrin, "Blitz: A Principled Meta-Algorithm '
@@ -30,11 +30,11 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
 
         blitzl1.set_use_intercept(False)
+        blitzl1.set_tolerance(0)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
-    def run(self, tolerance):
-        blitzl1.set_tolerance(tolerance)
-        self.coef_ = self.problem.solve(self.lmbd).x
+    def run(self, n_iter):
+        self.coef_ = self.problem.solve(self.lmbd, max_iter=n_iter).x
 
     def get_result(self):
         return self.coef_.flatten()
