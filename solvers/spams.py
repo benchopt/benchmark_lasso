@@ -21,6 +21,7 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not work with fit_intercept"
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
