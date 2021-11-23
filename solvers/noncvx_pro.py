@@ -15,15 +15,23 @@ class Solver(BaseSolver):
     def set_objective(self, X, y, lmbd):
         self.X, self.y, self.lmbd = X, y, lmbd
 
+    def efficient_solve(self, X, y, lmbd):
+        n_samples, n_features = X.shape
+        if n_samples >= n_features:
+            M = lmbd * np.eye(n_features) + np.dot(X.T, X)
+            v1 = np.linalg.solve(M, X.T @ y)
+        else:
+            M = lmbd * np.eye(n_samples) + np.dot(X, X.T)
+            v1 = X.T @ np.linalg.solve(M, y)
+        return v1
+
     def run(self, n_iter):
         X, y, lmbd = self.X, self.y, self.lmbd
-        n_features = X.shape[1]
+        n_samples, n_features = X.shape
 
         def objfn(u):
             Xu = X * u
-            M = lmbd * np.eye(n_features) + np.dot(Xu.T, Xu)
-
-            v1 = np.linalg.solve(M, Xu.T @ y)
+            v1 = self.efficient_solve(Xu, y, lmbd)
 
             res = X @ (v1 * u) - y
             grad = (X * v1).T @ res + lmbd * u
@@ -42,9 +50,7 @@ class Solver(BaseSolver):
         )
         u1 = lbfgs_res.x
         Xu1 = X * u1
-        M = lmbd * np.eye(n_features) + np.dot(Xu1.T, Xu1)
-
-        v1 = np.linalg.solve(M, Xu1.T @ y)
+        v1 = self.efficient_solve(Xu1, y, lmbd)
 
         self.w = u1 * v1
 
