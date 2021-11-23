@@ -14,7 +14,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['glum']
-    stop_strategy = SufficientProgressCriterion(
+    stopping_criterion = SufficientProgressCriterion(
         patience=5, strategy='tolerance')
 
     def set_objective(self, X, y, lmbd, fit_intercept):
