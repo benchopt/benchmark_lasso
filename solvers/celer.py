@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import numpy as np
     from celer import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
@@ -21,14 +22,15 @@ class Solver(BaseSolver):
         'vol. 80, pp. 3321-3330 (2018)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
 
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=100000,
-            tol=1e-12, prune=True, fit_intercept=False, normalize=False,
+            tol=1e-12, prune=True, fit_intercept=fit_intercept,
             warm_start=False, positive=False, verbose=False,
         )
 
@@ -37,4 +39,8 @@ class Solver(BaseSolver):
         self.lasso.fit(self.X, self.y)
 
     def get_result(self):
-        return self.lasso.coef_.flatten()
+
+        beta = self.lasso.coef_.flatten()
+        if self.fit_intercept:
+            beta = np.r_[beta, self.lasso.intercept_]
+        return beta

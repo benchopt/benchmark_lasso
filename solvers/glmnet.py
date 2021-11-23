@@ -27,8 +27,17 @@ class Solver(BaseSolver):
     stop_strategy = 'iteration'
     support_sparse = False
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - glmnet support intercept, adapt the API
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
+
         self.lmbd_max = np.max(np.abs(X.T @ y))
         self.glmnet = robjects.r['glmnet']
 

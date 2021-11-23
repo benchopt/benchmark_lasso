@@ -18,8 +18,15 @@ class Solver(BaseSolver):
         'ICML, vol. 382, pp. 689-696, ACM (2009)'
     ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not work with fit_intercept"
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
+
         if scipy.sparse.issparse(self.X):
             if scipy.sparse.isspmatrix_csr(self.X):
                 self.X = scipy.spares.csc_matrix(self.X)

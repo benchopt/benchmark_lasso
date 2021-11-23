@@ -32,7 +32,7 @@ Apart from the problem, options can be passed to `benchopt run`, to restrict the
 
 .. code-block::
 
-	$ benchopt run ./benchmark_lasso -s sklearn -d boston --max-runs 10 --n-repetitions 10
+	$ benchopt run ./benchmark_lasso -s sklearn -d leukemia --max-runs 10 --n-repetitions 10
 
 
 Use `benchopt run -h` for more details about these options, or visit https://benchopt.github.io/api.html.
@@ -50,11 +50,11 @@ If issues persist, you can also try running the benchmark in local mode with the
 
 .. code-block::
 
-  $ benchopt run ./benchmark_lasso -l -s sklearn -d boston --max-runs 10 --n-repetitions 10
+  $ benchopt run ./benchmark_lasso -l -s sklearn -d leukemia --max-runs 10 --n-repetitions 10
 
 Note that in this case, only solvers which dependencies are installed in the current env will be run.
 
-.. |Build Status| image:: https://github.com/benchopt/benchmark_lasso/workflows/build/badge.svg
+.. |Build Status| image:: https://github.com/benchopt/benchmark_lasso/workflows/Tests/badge.svg
    :target: https://github.com/benchopt/benchmark_lasso/actions
 .. |Python 3.6+| image:: https://img.shields.io/badge/python-3.6%2B-blue
    :target: https://www.python.org/downloads/release/python-360/
