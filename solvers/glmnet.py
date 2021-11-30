@@ -42,14 +42,15 @@ class Solver(BaseSolver):
         self.glmnet = robjects.r['glmnet']
 
     def run(self, n_iter):
-        fit_dict = {"lambda.min.ratio": self.lmbd / self.lmbd_max}
+        fit_dict = {"lambda": self.lmbd}
+
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
                                  standardize=False, maxit=n_iter,
                                  thresh=1e-14, **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
-        self.w = coefs[:, -1]
+        self.w = coefs.flatten()
 
     def get_result(self):
         return self.w
