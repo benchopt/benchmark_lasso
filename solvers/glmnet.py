@@ -41,7 +41,7 @@ class Solver(BaseSolver):
         self.glmnet = robjects.r['glmnet']
 
     def run(self, n_iter):
-        fit_dict = {"lambda": self.lmbd}
+        fit_dict = {"lambda": self.lmbd / self.X.shape[0]}
 
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
                                  standardize=False, maxit=n_iter,
