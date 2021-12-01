@@ -19,6 +19,12 @@ X = np.random.randn(n, p)
 
 lmbd_max = np.max(np.abs(X.T @ y)) / n
 
+
+def p_obj(X, y, w, lmbd):
+    R = y - X @ w
+    return np.mean(R ** 2) / 2. + lmbd * norm(w, ord=1)
+
+
 for ratio in [0.1, 1e-3]:
     lmbd = ratio * lmbd_max
 
@@ -34,3 +40,5 @@ for ratio in [0.1, 1e-3]:
     print(beta)
     print(clf.coef_)
     print(f"norm of difference: {norm(beta - clf.coef_)}")
+    print(f"celer  obj: {p_obj(X, y, clf.coef_, lmbd)}")
+    print(f"GLMnet obj: {p_obj(X, y, beta, lmbd)}")
