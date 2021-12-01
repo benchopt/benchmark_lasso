@@ -38,7 +38,6 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
-        self.lmbd_max = np.max(np.abs(X.T @ y))
         self.glmnet = robjects.r['glmnet']
 
     def run(self, n_iter):
