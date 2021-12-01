@@ -25,7 +25,8 @@ def p_obj(X, y, w, lmbd):
     return np.mean(R ** 2) / 2. + lmbd * norm(w, ord=1)
 
 
-for ratio in [0.1, 1e-3]:
+for ratio in [1, 0.95, 1e-3]:
+    print("#" * 80)
     lmbd = ratio * lmbd_max
 
     fit_dict2 = {"lambda": lmbd}
