@@ -1,12 +1,12 @@
-from benchopt import BaseSolver
-from benchopt import safe_import_context
+from benchopt import BaseSolver, safe_import_context
 
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy import sparse
 
     from rpy2 import robjects
-    from rpy2.robjects import numpy2ri
+    from rpy2.robjects import numpy2ri, packages
     from benchopt.helpers.r_lang import import_rpackages
 
     # Setup the system to allow rpy2 running
@@ -18,14 +18,14 @@ class Solver(BaseSolver):
     name = "glmnet"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2', 'r-glmnet']
+    requirements = ['r-base', 'rpy2', 'r-glmnet', 'r-matrix']
     references = [
         'J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths '
         'for generalized linear models via coordinate descent", '
         'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
     ]
     stop_strategy = 'iteration'
-    support_sparse = False
+    support_sparse = True
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - glmnet support intercept, adapt the API
@@ -35,7 +35,17 @@ class Solver(BaseSolver):
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        self.X, self.y, self.lmbd = X, y, lmbd
+        if sparse.issparse(X):
+            r_Matrix = packages.importr("Matrix")
+            self.X = r_Matrix.sparseMatrix(
+                i=robjects.IntVector(X.row + 1),
+                j=robjects.IntVector(X.col + 1),
+                x=robjects.FloatVector(X.data),
+                dims=robjects.IntVector(X.shape)
+            )
+        else:
+            self.X = X
+        self.y, self.lmbd = y, lmbd
         self.fit_intercept = fit_intercept
 
         self.lmbd_max = np.max(np.abs(X.T @ y))
