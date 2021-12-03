@@ -10,9 +10,9 @@ def check_test_solver_install(solver_class):
 
     # Skip test_solver_install for julia in OSX as there is a version
     # conflict with conda packages for R
-    # See issue benchopt/benchopt#64.
-    if 'julia' in solver_class.name.lower() and sys.platform == 'darwin':
-        pytest.xfail('Julia causes segfault on OSX for now.')
+    # See issue benchopt/benchopt#64, PR benchopt/benchopt#252
+    if 'julia' in solver_class.name.lower():
+        pytest.xfail('Julia install from conda fails currently.')
 
     # Lightning install is broken on python3.9+.
     # See issue scikit-learn-contrib/lightning#153.
