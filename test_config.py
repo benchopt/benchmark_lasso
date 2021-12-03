@@ -14,12 +14,6 @@ def check_test_solver_install(solver_class):
     if 'julia' in solver_class.name.lower() and sys.platform == 'darwin':
         pytest.xfail('Julia causes segfault on OSX for now.')
 
-    # Lightning install is broken on python3.9+.
-    # See issue scikit-learn-contrib/lightning#153.
-    if (solver_class.name.lower() == 'lightning'
-            and sys.version_info >= (3, 9)):
-        pytest.xfail('Lightning install is broken on python3.9+.')
-
     # ModOpt install change numpy version, breaking celer install.
     # See CEA-COSMIC/ModOpt#144. Skipping for now
     if ('modopt' in solver_class.name.lower()):
