@@ -12,7 +12,7 @@ def check_test_solver_install(solver_class):
     # conflict with conda packages for R
     # See issue benchopt/benchopt#64, PR benchopt/benchopt#252
     if 'julia' in solver_class.name.lower():
-        pytest.xfail('Julia install from conda fails now.')
+        pytest.xfail('Julia install from conda fails currently.')
 
     # Lightning install is broken on python3.9+.
     # See issue scikit-learn-contrib/lightning#153.
