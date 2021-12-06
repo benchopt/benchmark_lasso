@@ -24,7 +24,7 @@ class Solver(BaseSolver):
         'for generalized linear models via coordinate descent", '
         'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
     ]
-    stop_strategy = 'iteration'
+    stop_strategy = 'tolerance'
     support_sparse = False
 
     def skip(self, X, y, lmbd, fit_intercept):
@@ -40,12 +40,14 @@ class Solver(BaseSolver):
 
         self.glmnet = robjects.r['glmnet']
 
-    def run(self, n_iter):
-        fit_dict = {"lambda": self.lmbd / self.X.shape[0]}
+    def run(self, tol):
+        fit_dict = {"lambda": self.lmbd / len(self.y)}
+
+        print(tol)
 
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
-                                 standardize=False, maxit=n_iter,
-                                 thresh=1e-14, **fit_dict)
+                                 standardize=False, maxit=1_000_000,
+                                 thresh=tol / len(self.y), **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
