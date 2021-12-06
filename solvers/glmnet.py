@@ -1,5 +1,6 @@
 from benchopt import BaseSolver
 from benchopt import safe_import_context
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
 
 with safe_import_context() as import_ctx:
@@ -24,8 +25,10 @@ class Solver(BaseSolver):
         'for generalized linear models via coordinate descent", '
         'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
     ]
-    stop_strategy = 'tolerance'
     support_sparse = False
+
+    stopping_criterion = SufficientProgressCriterion(
+        patience=5, eps=1e-38, strategy='tolerance')
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - glmnet support intercept, adapt the API
@@ -42,8 +45,6 @@ class Solver(BaseSolver):
 
     def run(self, tol):
         fit_dict = {"lambda": self.lmbd / len(self.y)}
-
-        print(tol)
 
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
                                  standardize=False, maxit=1_000_000,
