@@ -1,45 +1,86 @@
+import sys
+from timeit import default_timer as timer
+
+import benchopt
+from benchopt.datasets import make_correlated_data
 import numpy as np
+from numpy.linalg import norm
 from rpy2 import robjects
 from rpy2.robjects import numpy2ri
 from rpy2.robjects.packages import importr
-import celer
-from numpy.linalg import norm
+import matplotlib.pyplot as plt
+from celer import Lasso
+import time
 
+# Setup the system to allow rpy2 running
 numpy2ri.activate()
 glmnet = importr('glmnet')
+
 as_matrix = robjects.r['as']
 
-n = 10
-p = 30
+n = 100
+p = 500
 
 np.random.seed(1532)
 
 y = np.random.randn(n)
-X = np.random.randn(n, p)
+x, y, _ = make_correlated_data(n, p, random_state=0)
 
-lmbd_max = np.max(np.abs(X.T @ y)) / n
+lmbd_max = np.max(np.abs(x.T @ y))
+
+lmbd = lmbd_max * 0.01
+
+fit_dict = {"lambda": lmbd / n}
+
+tols = np.geomspace(1e-1, 1e-16, 11)
 
 
-def p_obj(X, y, w, lmbd):
-    R = y - X @ w
-    return np.mean(R ** 2) / 2. + lmbd * norm(w, ord=1)
+def compute_gap(x, y, beta, lmbd):
+    # compute residuals
+    diff = y - x.dot(beta)
+
+    # compute primal objective and duality gap
+    p_obj = .5 * diff.dot(diff) + lmbd * np.abs(beta).sum()
+    theta = diff / lmbd
+    theta /= norm(x.T @ theta, ord=np.inf)
+    d_obj = (norm(y)**2 / 2. - lmbd**2 * norm(y / lmbd - theta)**2 / 2)
+
+    return p_obj - d_obj
 
 
-for ratio in [1, 0.95, 1e-3]:
-    print("#" * 80)
-    lmbd = ratio * lmbd_max
+n_tols = len(tols)
 
-    fit_dict2 = {"lambda": lmbd}
-    fit2 = glmnet.glmnet(X, y, intercept=False,
-                         standardize=False, **fit_dict2)
-    results2 = dict(zip(fit2.names, list(fit2)))
+times = np.empty(n_tols)
+gaps = np.empty(n_tols)
 
-    beta = np.squeeze(np.array(as_matrix(results2["beta"], "matrix")))
+for i, tol in enumerate(tols):
+    print(i, tol)
+    t0 = timer()
 
-    clf = celer.Lasso(fit_intercept=False, alpha=lmbd, tol=1e-6).fit(X, y)
-    print(f"lambda = {ratio}*lambda_max")
-    print(beta)
-    print(clf.coef_)
-    print(f"norm of difference: {norm(beta - clf.coef_)}")
-    print(f"celer  obj: {p_obj(X, y, clf.coef_, lmbd)}")
-    print(f"GLMnet obj: {p_obj(X, y, beta, lmbd)}")
+    fit = glmnet.glmnet(x,
+                        y,
+                        intercept=False,
+                        standardize=False,
+                        **fit_dict,
+                        thresh=tol,
+                        maxit=10_000_000)
+
+    times[i] = timer() - t0
+
+    results = dict(zip(fit.names, list(fit)))
+    coefs = np.array(as_matrix(results["beta"], "matrix"))
+    beta = coefs.flatten()
+
+    gaps[i] = compute_gap(x, y, beta, lmbd)
+
+plt.close('all')
+plt.semilogy(times, gaps)
+plt.xlabel("time (s)")
+plt.ylabel("duality gap")
+plt.show(block=False)
+
+
+t0 = time.time()
+clf = Lasso(alpha=lmbd/n, fit_intercept=False, tol=1e-14, verbose=1).fit(x, y)
+t1 = time.time()
+print(t1 - t0)
