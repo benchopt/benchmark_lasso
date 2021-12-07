@@ -1,5 +1,5 @@
-from benchopt import BaseSolver
-from benchopt import safe_import_context
+from benchopt import BaseSolver, safe_import_context
+from benchopt.runner import INFINITY
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
 
@@ -44,11 +44,12 @@ class Solver(BaseSolver):
         self.glmnet = robjects.r['glmnet']
 
     def run(self, tol):
+        maxit = 0 if tol == INFINITY else 1_000_000
         fit_dict = {"lambda": self.lmbd / len(self.y)}
 
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
-                                 standardize=False, maxit=1_000_000,
-                                 thresh=tol / len(self.y), **fit_dict)
+                                 standardize=False, maxit=maxit,
+                                 thresh=tol ** 2.3, **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
