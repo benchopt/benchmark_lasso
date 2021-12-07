@@ -28,7 +28,7 @@ class Solver(BaseSolver):
     support_sparse = False
 
     stopping_criterion = SufficientProgressCriterion(
-        patience=5, eps=1e-38, strategy='tolerance')
+        patience=7, eps=1e-38, strategy='tolerance')
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - glmnet support intercept, adapt the API
