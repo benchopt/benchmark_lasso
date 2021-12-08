@@ -44,12 +44,24 @@ class Solver(BaseSolver):
         self.glmnet = robjects.r['glmnet']
 
     def run(self, tol):
-        maxit = 0 if tol == INFINITY else 1_000_000
+        # even if maxit=0, glmnet can return non zero coefficients. To get the
+        # initial point on the curve, we set tol=0: this way, glmnet
+        # convergence check fails, and rather than returning the current
+        # iterate, it returns a 0 model.
+        if tol == INFINITY:
+            maxit = 0
+            thresh = 0
+        else:
+            maxit = 1_000_000
+            # we need thresh to decay fast, otherwise the objective curve can
+            # plateau before convergence
+            thresh = tol ** 1.8
+
         fit_dict = {"lambda": self.lmbd / len(self.y)}
 
         glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
                                  standardize=False, maxit=maxit,
-                                 thresh=tol ** 2.3, **fit_dict)
+                                 thresh=thresh, **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
