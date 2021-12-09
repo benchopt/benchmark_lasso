@@ -33,13 +33,6 @@ class Solver(BaseSolver):
         patience=7, eps=1e-38, strategy='tolerance'
     )
 
-    def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - glmnet support intercept, adapt the API
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
-
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
@@ -66,13 +59,15 @@ class Solver(BaseSolver):
         # no other way to force glmnet to solve for a prescribed lambda.
         fit_dict = {"lambda": self.lmbd / len(self.y)}
 
-        glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
+        glmnet_fit = self.glmnet(self.X, self.y, intercept=self.fit_intercept,
                                  standardize=False, maxit=maxit,
                                  thresh=thresh, **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
-        self.w = coefs.flatten()
+        beta = coefs.flatten()
+
+        self.w = np.r_[beta, results["a0"]] if self.fit_intercept else beta
 
     def get_result(self):
         return self.w
