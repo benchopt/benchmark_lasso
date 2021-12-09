@@ -27,10 +27,11 @@ class Solver(BaseSolver):
     ]
     support_sparse = True
 
-    stopping_criterion = SufficientProgressCriterion(
-        patience=7, eps=1e-38, strategy='tolerance')
     # We use the tolerance strategy because if maxit is too low and glmnet
     # convergence check fails, it returns an empty model
+    stopping_criterion = SufficientProgressCriterion(
+        patience=7, eps=1e-38, strategy='tolerance'
+    )
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - glmnet support intercept, adapt the API
@@ -54,7 +55,6 @@ class Solver(BaseSolver):
         self.y, self.lmbd = y, lmbd
         self.fit_intercept = fit_intercept
 
-        self.lmbd_max = np.max(np.abs(X.T @ y))
         self.glmnet = robjects.r['glmnet']
 
     def run(self, tol):
