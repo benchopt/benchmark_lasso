@@ -38,6 +38,9 @@ class Solver(BaseSolver):
         self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
 
+    def get_next(self, previous):
+        return previous + 1
+
     def get_result(self):
 
         beta = self.lasso.coef_.flatten()

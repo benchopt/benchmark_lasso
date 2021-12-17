@@ -33,6 +33,9 @@ class Solver(BaseSolver):
         blitzl1.set_tolerance(0)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
+    def get_next(self, previous):
+        return previous + 1
+
     def run(self, n_iter):
         self.coef_ = self.problem.solve(self.lmbd, max_iter=n_iter).x
 
