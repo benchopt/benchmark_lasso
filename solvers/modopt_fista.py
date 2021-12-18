@@ -84,6 +84,7 @@ class Solver(BaseSolver):
             beta_param = 1 / L
         self.fb.beta_param = beta_param
         self.fb._beta = self.fb.step_size or beta_param
+
         self.fb.iterate(max_iter=n_iter)
 
     def get_result(self):
