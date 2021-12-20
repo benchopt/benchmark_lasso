@@ -79,7 +79,7 @@ class Solver(BaseSolver):
     def run(self, n_iter):
         L = np.linalg.norm(self.X, ord=2) ** 2
         if self.restart_strategy == 'greedy':
-            beta_param = 1.3 * (1/L)
+            beta_param = 1.3 / L
         else:
             beta_param = 1 / L
         self.fb.beta_param = beta_param
