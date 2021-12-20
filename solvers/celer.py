@@ -40,7 +40,7 @@ class Solver(BaseSolver):
 
     @staticmethod
     def get_next(previous):
-            "Linear growth for n_iter."
+        "Linear growth for n_iter."
         return previous + 1
 
     def get_result(self):
