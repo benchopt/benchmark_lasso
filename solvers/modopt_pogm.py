@@ -64,7 +64,8 @@ class Solver(BaseSolver):
         L = np.linalg.norm(self.X, ord=2) ** 2
         beta_param = 1 / L
         self.pogm._beta = self.pogm.step_size or beta_param
-        self.pogm.iterate(max_iter=n_iter)
+        # no attribute x_final if max_iter=0
+        self.pogm.iterate(max_iter=n_iter + 1)
 
     def get_result(self):
         return self.pogm.x_final
