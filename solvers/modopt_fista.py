@@ -51,7 +51,7 @@ class Solver(BaseSolver):
 
         if fit_intercept:
             def op(w):
-                return self.X@w[:n_features] + w[n_features:]
+                return self.X @ w[:n_features] + w[n_features:]
         else:
             def op(w):
                 return self.X @ w
