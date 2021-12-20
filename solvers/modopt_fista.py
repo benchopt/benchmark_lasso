@@ -30,6 +30,12 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
@@ -55,6 +61,7 @@ class Solver(BaseSolver):
         else:
             def op(w):
                 return self.X @ w
+        # TODO implement correct gradient if fit_intercept
 
         self.fb = ForwardBackward(
             x=np.zeros(x_shape),  # this is the coefficient w
@@ -87,6 +94,10 @@ class Solver(BaseSolver):
 
         # no attribute x_final if max_iter=0
         self.fb.iterate(max_iter=n_iter + 1)
+        # MM: modopt makes input not writeable, this breaks other solvers
+        # so we revert manually
+        self.X.flags.writeable = True
+        self.y.flags.writeable = True
 
     def get_result(self):
         return self.fb.x_final

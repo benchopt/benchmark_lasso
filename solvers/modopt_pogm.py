@@ -66,6 +66,10 @@ class Solver(BaseSolver):
         self.pogm._beta = self.pogm.step_size or beta_param
         # no attribute x_final if max_iter=0
         self.pogm.iterate(max_iter=n_iter + 1)
+        # MM: modopt makes input not writeable, this breaks other solvers
+        # so we revert manually
+        self.X.flags.writeable = True
+        self.y.flags.writeable = True
 
     def get_result(self):
         return self.pogm.x_final
