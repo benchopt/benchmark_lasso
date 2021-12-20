@@ -40,12 +40,12 @@ class Solver(BaseSolver):
         self.fit_intercept = fit_intercept
         n_features = self.X.shape[1]
 
-        var_init = np.zeros(n_features)
+        self.var_init = np.zeros(n_features)
         self.pogm = POGM(
-            x=var_init,  # this is the coefficient w
-            u=var_init,
-            y=var_init,
-            z=var_init,
+            x=self.var_init,  # this is the coefficient w
+            u=self.var_init,
+            y=self.var_init,
+            z=self.var_init,
             grad=GradBasic(
                 input_data=y,
                 op=lambda w: self.X@w,
@@ -65,11 +65,16 @@ class Solver(BaseSolver):
         beta_param = 1 / L
         self.pogm._beta = self.pogm.step_size or beta_param
         # no attribute x_final if max_iter=0
+        self.pogm.x = self.var_init
+        self.pogm.u = self.var_init
+        self.pogm.y = self.var_init
+        self.pogm.z = self.var_init
         self.pogm.iterate(max_iter=n_iter + 1)
         # MM: modopt makes input not writeable, this breaks other solvers
         # so we revert manually
         self.X.flags.writeable = True
         self.y.flags.writeable = True
+        print(np.linalg.norm(self.var_init))
 
     def get_result(self):
         return self.pogm.x_final
