@@ -64,17 +64,14 @@ class Solver(BaseSolver):
         L = np.linalg.norm(self.X, ord=2) ** 2
         beta_param = 1 / L
         self.pogm._beta = self.pogm.step_size or beta_param
-        # no attribute x_final if max_iter=0
-        self.pogm.x = self.var_init
-        self.pogm.u = self.var_init
-        self.pogm.y = self.var_init
-        self.pogm.z = self.var_init
+        # we need to reset this internal state otherwise warm start is used:
+        self.pogm._x_old = self.var_init.copy()
+        # no attribute x_final if max_iter=0:
         self.pogm.iterate(max_iter=n_iter + 1)
         # MM: modopt makes input not writeable, this breaks other solvers
         # so we revert manually
         self.X.flags.writeable = True
         self.y.flags.writeable = True
-        print(np.linalg.norm(self.var_init))
 
     def get_result(self):
         return self.pogm.x_final
