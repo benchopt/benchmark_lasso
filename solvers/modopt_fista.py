@@ -44,6 +44,7 @@ class Solver(BaseSolver):
         x_shape = n_features
         if fit_intercept:
             x_shape += n_samples
+        self.var_init = np.zeros(x_shape)
         if self.restart_strategy == 'greedy':
             min_beta = 1.0
             s_greedy = 1.1
@@ -64,7 +65,7 @@ class Solver(BaseSolver):
         # TODO implement correct gradient if fit_intercept
 
         self.fb = ForwardBackward(
-            x=np.zeros(x_shape),  # this is the coefficient w
+            x=self.var_init,  # this is the coefficient w
             grad=GradBasic(
                 input_data=y, op=op,
                 trans_op=lambda res: self.X.T@res,
@@ -92,6 +93,9 @@ class Solver(BaseSolver):
         self.fb.beta_param = beta_param
         self.fb._beta = self.fb.step_size or beta_param
 
+        # reset this internal state otherwise warm start is used:
+        self.fb._x_old = self.var_init
+        self.fb._z_old = self.var_init
         # no attribute x_final if max_iter=0
         self.fb.iterate(max_iter=n_iter + 1)
         # MM: modopt makes input not writeable, this breaks other solvers
