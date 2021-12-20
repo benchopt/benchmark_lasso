@@ -14,6 +14,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
+        'cython',
         'pip:git+https://github.com/scikit-learn-contrib/lightning.git'
     ]
     references = [
@@ -35,7 +36,7 @@ class Solver(BaseSolver):
 
         self.clf = CDRegressor(
             loss='squared', penalty='l1', C=.5, alpha=self.lmbd,
-            tol=1e-15
+            tol=1e-15, random_state=0, permute=False
         )
 
     def run(self, n_iter):
