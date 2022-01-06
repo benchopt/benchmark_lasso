@@ -38,6 +38,11 @@ class Solver(BaseSolver):
         self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
 
+    @staticmethod
+    def get_next(previous):
+        "Linear growth for n_iter."
+        return previous + 1
+
     def get_result(self):
 
         beta = self.lasso.coef_.flatten()
