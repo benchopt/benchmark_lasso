@@ -10,6 +10,7 @@ class Solver(BaseSolver):
     name = "pycasso"
     stopping_strategy = 'iteration'
 
+    install_cmd = "conda"
     requirements = ['pip:pycasso']
 
     def set_objective(self, X, y, lmbd, fit_intercept):
