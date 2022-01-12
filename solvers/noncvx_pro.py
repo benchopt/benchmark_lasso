@@ -18,30 +18,13 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
 
     def efficient_solve(self, A, b, lmbd):
-        """Solve (A.T @ A + lmbd Id) x = b without forming the LHS matrix."""
         n_samples, n_features = A.shape
-        if self.old:
-            if n_samples >= n_features:
-                M = lmbd * np.eye(n_features) + np.dot(A.T, A)
-                v1 = np.linalg.solve(M, A.T @ b)
-            else:
-                M = lmbd * np.eye(n_samples) + np.dot(A, A.T)
-                v1 = A.T @ np.linalg.solve(M, b)
+        if n_samples >= n_features:
+            M = lmbd * np.eye(n_features) + np.dot(A.T, A)
+            v1 = np.linalg.solve(M, A.T @ b)
         else:
-            if n_samples >= n_features:
-                def mv(x):
-                    return lmbd * x + A.T @ (A @ x)
-                linop = slinalg.LinearOperator(
-                    shape=(n_features, n_features), matvec=mv
-                )
-                v1 = slinalg.cg(linop, A.T @ b)[0]
-            else:
-                def mv(z):
-                    return lmbd * z + A @ (A.T @ z)
-                linop = slinalg.LinearOperator(
-                    shape=(n_samples, n_samples), matvec=mv
-                )
-                v1 = A.T @ slinalg.cg(linop, b)[0]
+            M = lmbd * np.eye(n_samples) + np.dot(A, A.T)
+            v1 = A.T @ np.linalg.solve(M, b)
         return v1
 
     def v_opt(self, X, y, lmbd, u):
