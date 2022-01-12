@@ -4,15 +4,17 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     import scipy.optimize as sciop
+    from scipy.sparse import linalg as slinalg
 
 
 class Solver(BaseSolver):
-    name = "Noncvx-Pro"
+    name = "noncvx-pro"
 
     stop_strategy = 'iteration'
     support_sparse = False
+    parameters = {'old': [True, False]}
 
-    def set_objective(self, X, y, lmbd):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
 
     def efficient_solve(self, X, y, lmbd):
@@ -25,13 +27,46 @@ class Solver(BaseSolver):
             v1 = X.T @ np.linalg.solve(M, y)
         return v1
 
+    def v_opt(self, X, y, lmbd, u):
+        """Optimal v for a fixed u.
+        Minimizes in v:
+            .5 * norm(X @ (u * v) - y) ** 2
+            + .5 * lmbd * (norm(u) ** 2 + norm(v) ** 2)
+
+        with Xu = X * u, X @ (u * v) = Xu @ v and so the solution v solves:
+            (Xu.T @ Xu + lambda eye(n_features)) v = Xu.T @ y
+
+        We use Sherman Morrison trick when n_samples > n_features.
+        """
+        n_samples, n_features = X.shape
+        if n_samples >= n_features:
+            def mv(x):
+                # Xu.T @ Xu @ x = u * (X.T @ X @ (u * x))
+                return lmbd * x + u * (X.T @ (X @ (u * x)))
+            linop = slinalg.LinearOperator(
+                shape=(n_features, n_features), matvec=mv
+            )
+            v = slinalg.cg(linop, u * (X.T @ y))[0]
+        else:
+            def mv(z):
+                # Xu @ Xu.T @ z = Xu @ (u * (X.T @ z))
+                return lmbd * z + X @ (u * (u * (X.T @ z)))
+            linop = slinalg.LinearOperator(
+                shape=(n_samples, n_samples), matvec=mv
+            )
+            v = u * (X.T @ slinalg.cg(linop, y)[0])
+        return v
+
     def run(self, n_iter):
         X, y, lmbd = self.X, self.y, self.lmbd
         n_samples, n_features = X.shape
 
         def objfn(u):
-            Xu = X * u
-            v1 = self.efficient_solve(Xu, y, lmbd)
+            if self.old:
+                Xu = X * u  # This breaks for sparse matrices
+                v1 = self.efficient_solve(Xu, y, lmbd)
+            else:
+                v1 = self.v_opt(X, y, lmbd, u)
 
             res = X @ (v1 * u) - y
             grad = (X * v1).T @ res + lmbd * u
