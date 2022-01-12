@@ -69,7 +69,7 @@ class Solver(BaseSolver):
                 v1 = self.v_opt(X, y, lmbd, u)
 
             res = X @ (v1 * u) - y
-            grad = (X * v1).T @ res + lmbd * u
+            grad = v1 * (X.T @ res) + lmbd * u
             f = (
                 (res * res).sum() / 2
                 + lmbd / 2 * ((u * u).sum() + (v1 * v1).sum())
