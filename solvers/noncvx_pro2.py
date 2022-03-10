@@ -53,7 +53,7 @@ class Solver(BaseSolver):
         #         return f, g
 
         # run lbfgs
-        opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 1e-10}
+        opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 0}
         u0 = np.ones(n_features)
 
         lbfgs_res = sciop.minimize(
