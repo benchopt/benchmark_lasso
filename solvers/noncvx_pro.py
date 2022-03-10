@@ -12,7 +12,7 @@ class Solver(BaseSolver):
 
     stop_strategy = 'iteration'
     support_sparse = False
-    parameters = {'old': [True, False]}
+    parameters = {'old': [False]}
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
