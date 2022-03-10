@@ -10,7 +10,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "L-BFGS-B"
 
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
     support_sparse = False
     references = [
         'R. H. Byrd, P. Lu and J. Nocedal, '
