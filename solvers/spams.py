@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = 'spams'
 
     install_cmd = 'conda'
-    requirements = ['python-spams']
+    requirements = ['mkl', 'pip:spams']
     references = [
         'J. Mairal, F. Bach, J. Ponce and G. Sapiro, '
         '"Online dictionary learning for sparse coding", '
