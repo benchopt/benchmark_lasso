@@ -43,7 +43,7 @@ class Solver(JuliaSolver):
         self.solve_lasso = jl.include(JULIA_SOLVER_FILE)
 
     def run(self, n_iter):
-        self.beta = self.solve_lasso(self.X, self.y, self.lmbd, n_iter)
+        self.w = self.solve_lasso(self.X, self.y, self.lmbd, n_iter)
 
     def get_result(self):
-        return self.beta.ravel()
+        return self.w.ravel()

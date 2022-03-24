@@ -41,8 +41,8 @@ class Solver(BaseSolver):
                         **self.solver_parameter)
 
     def get_result(self):
-        beta = self.solver.get_weights()
+        w = self.solver.get_weights()
         if self.fit_intercept:
-            beta, intercept = beta
-            beta = np.r_[beta.flatten(), intercept]
-        return beta
+            w, intercept = w
+            w = np.r_[w.flatten(), intercept]
+        return w

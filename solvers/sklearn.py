@@ -37,7 +37,7 @@ class Solver(BaseSolver):
         self.clf.fit(self.X, self.y)
 
     def get_result(self):
-        beta = self.clf.coef_.flatten()
+        w = self.clf.coef_.flatten()
         if self.fit_intercept:
-            beta = np.r_[beta, self.clf.intercept_]
-        return beta
+            w = np.r_[w, self.clf.intercept_]
+        return w

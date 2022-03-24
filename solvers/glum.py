@@ -48,7 +48,7 @@ class Solver(BaseSolver):
         self.model.fit(self.X, self.y)
 
     def get_result(self):
-        beta = self.model.coef_.flatten()
+        w = self.model.coef_.flatten()
         if self.fit_intercept:
-            beta = np.r_[beta, self.model.intercept_]
-        return beta
+            w = np.r_[w, self.model.intercept_]
+        return w

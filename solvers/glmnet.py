@@ -76,9 +76,9 @@ class Solver(BaseSolver):
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
-        beta = coefs.flatten()
+        w = coefs.flatten()
 
-        self.w = np.r_[beta, results["a0"]] if self.fit_intercept else beta
+        self.w = np.r_[w, results["a0"]] if self.fit_intercept else w
 
     def get_result(self):
         return self.w

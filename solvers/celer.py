@@ -45,7 +45,7 @@ class Solver(BaseSolver):
 
     def get_result(self):
 
-        beta = self.lasso.coef_.flatten()
+        w = self.lasso.coef_.flatten()
         if self.fit_intercept:
-            beta = np.r_[beta, self.lasso.intercept_]
-        return beta
+            w = np.r_[w, self.lasso.intercept_]
+        return w
