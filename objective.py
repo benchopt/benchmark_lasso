@@ -38,7 +38,10 @@ class Objective(BaseObjective):
                     duality_gap=p_obj - d_obj,)
 
     def _get_lambda_max(self):
-        return abs(self.X.T.dot(self.y)).max()
+        if self.fit_intercept:
+            return abs(self.X.T @ (self.y - self.y.mean())).max()
+        else:
+            return abs(self.X.T.dot(self.y)).max()
 
     def to_dict(self):
         return dict(X=self.X, y=self.y, lmbd=self.lmbd,
