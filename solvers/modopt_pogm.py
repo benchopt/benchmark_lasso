@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'ModOpt-POGM'
-    stopping_strategy = 'iteration'
+    stopping_strategy = 'callback'
 
     install_cmd = 'conda'
     requirements = [
@@ -50,6 +50,7 @@ class Solver(BaseSolver):
                 input_data=y,
                 op=lambda w: self.X@w,
                 trans_op=lambda res: self.X.T@res,
+                input_data_writeable=True,
             ),
             prox=SparseThreshold(Identity(), lmbd),
             beta_param=1.0,
@@ -60,18 +61,13 @@ class Solver(BaseSolver):
             cost=None,
         )
 
-    def run(self, n_iter):
+    def run(self, callback):
         L = np.linalg.norm(self.X, ord=2) ** 2
         beta_param = 1 / L
         self.pogm._beta = self.pogm.step_size or beta_param
-        # we need to reset this internal state otherwise warm start is used:
-        self.pogm._x_old = self.var_init.copy()
-        # no attribute x_final if max_iter=0:
-        self.pogm.iterate(max_iter=n_iter + 1)
-        # MM: modopt makes input not writeable, this breaks other solvers
-        # so we revert manually
-        self.X.flags.writeable = True
-        self.y.flags.writeable = True
+        self.pogm.iterate(max_iter=1)
+        while callback(self.pogm.x_final):
+            self.pogm.iterate(max_iter=10)
 
     def get_result(self):
         return self.pogm.x_final

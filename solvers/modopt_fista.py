@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'ModOpt-FISTA'
-    stopping_strategy = 'iteration'
+    stopping_strategy = 'callback'
     install_cmd = 'conda'
     requirements = [
         'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
@@ -69,6 +69,7 @@ class Solver(BaseSolver):
             grad=GradBasic(
                 input_data=y, op=op,
                 trans_op=lambda res: self.X.T@res,
+                input_data_writeable=True,
             ),
             prox=SparseThreshold(Identity(), lmbd),
             beta_param=1.0,
@@ -84,7 +85,7 @@ class Solver(BaseSolver):
             cost=None,
         )
 
-    def run(self, n_iter):
+    def run(self, callback):
         L = np.linalg.norm(self.X, ord=2) ** 2
         if self.restart_strategy == 'greedy':
             beta_param = 1.3 / L
@@ -93,15 +94,10 @@ class Solver(BaseSolver):
         self.fb.beta_param = beta_param
         self.fb._beta = self.fb.step_size or beta_param
 
-        # reset this internal state otherwise warm start is used:
-        self.fb._x_old = self.var_init
-        self.fb._z_old = self.var_init
-        # no attribute x_final if max_iter=0
-        self.fb.iterate(max_iter=n_iter + 1)
-        # MM: modopt makes input not writeable, this breaks other solvers
-        # so we revert manually
-        self.X.flags.writeable = True
-        self.y.flags.writeable = True
+        self.fb.iterate(max_iter=1)
+
+        while callback(self.fb.x_final):
+            self.fb.iterate(max_iter=10)
 
     def get_result(self):
-        return self.fb.x_final
+        return self.fb.x_final.copy()
