@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'ModOpt-POGM'
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = [

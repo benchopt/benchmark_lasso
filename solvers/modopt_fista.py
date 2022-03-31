@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'ModOpt-FISTA'
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
     install_cmd = 'conda'
     requirements = [
         'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
