@@ -30,10 +30,9 @@ class Objective(BaseObjective):
             diff -= intercept
         # compute primal objective and duality gap
         p_obj = .5 * diff.dot(diff) + self.lmbd * abs(beta).sum()
-        theta = diff / self.lmbd
-        theta /= norm(self.X.T @ theta, ord=np.inf)
-        d_obj = (norm(self.y) ** 2 / 2. - self.lmbd ** 2 *
-                 norm(self.y / self.lmbd - theta) ** 2 / 2)
+        scaling = max(1, norm(self.X.T @ diff, ord=np.inf) / self.lmbd)
+        d_obj = (norm(self.y) ** 2 / 2.
+                 - norm(self.y - diff / scaling) ** 2 / 2)
         return dict(value=p_obj,
                     support_size=(beta != 0).sum(),
                     duality_gap=p_obj - d_obj,)

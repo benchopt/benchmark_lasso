@@ -17,7 +17,7 @@ class Solver(JuliaSolver):
 
     # Config of the solver
     name = 'Julia-PGD'
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '
