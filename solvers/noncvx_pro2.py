@@ -5,7 +5,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from numpy.linalg import norm
     import scipy.optimize as sciop
-    from scipy.sparse import issparse
+    # from scipy.sparse import issparse
 
 
 class Solver(BaseSolver):

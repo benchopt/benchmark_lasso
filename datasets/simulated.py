@@ -15,7 +15,7 @@ class Dataset(BaseDataset):
             (200, 500),
             # (500, 200)
         ],
-        'rho': [0.5],
+        'rho': [0.6],
     }
 
     def __init__(self, n_samples=10, n_features=50, rho=0, random_state=27):
