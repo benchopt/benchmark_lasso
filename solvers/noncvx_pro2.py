@@ -19,6 +19,7 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+        # XXX: make this solver work with sparse matrices.
         if issparse(X):
             return True, f"{self.name} does not support sparse design matrices"
         return False, None
@@ -36,9 +37,10 @@ class Solver(BaseSolver):
 
             def nabla_f(v):
                 u = u_opt(v)
-                f = 1/(2 * lmbd) * norm(X @ (u*v) - y)**2 + \
+                res = X @ (u*v) - y
+                f = 1/(2 * lmbd) * norm(res)**2 + \
                     (norm(u)**2 + norm(v)**2) / 2
-                g = u * (X.T @ (X @ (u*v) - y)) / lmbd + v
+                g = u * (X.T @ res) / lmbd + v
                 return f, g
         else:
             C = X.T @ X
@@ -52,9 +54,10 @@ class Solver(BaseSolver):
             def nabla_f(v):
                 u = u_opt(v)
                 x = u * v
-                E = (C@x) @ x + y2 - 2 * x @ Xty
+                Cx = C @ x
+                E = Cx @ x + y2 - 2 * x @ Xty
                 f = 1/(2*lmbd) * E + (norm(u)**2 + norm(v)**2)/2
-                g = u * (C @ x - Xty) / lmbd + v
+                g = u * (Cx - Xty) / lmbd + v
                 return f, g
 
         opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 0}
