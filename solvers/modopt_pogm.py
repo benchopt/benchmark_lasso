@@ -17,7 +17,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
+        'pip:modopt',
     ]
     references = [
         'S. Farrens, A. Grigis, L. El Gueddari, Z. Ramzi, G. R. Chaithya, '
@@ -39,21 +39,23 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
         n_features = self.X.shape[1]
-
         self.var_init = np.zeros(n_features)
+
+    def run(self, callback):
+        L = np.linalg.norm(self.X, ord=2) ** 2  # TODO sparse X?
         self.pogm = POGM(
             x=self.var_init,  # this is the coefficient w
             u=self.var_init,
             y=self.var_init,
             z=self.var_init,
             grad=GradBasic(
-                input_data=y,
+                input_data=self.y,
                 op=lambda w: self.X@w,
                 trans_op=lambda res: self.X.T@res,
                 input_data_writeable=True,
             ),
-            prox=SparseThreshold(Identity(), lmbd),
-            beta_param=1.0,
+            prox=SparseThreshold(Identity(), self.lmbd),
+            beta_param=1. / L,
             metric_call_period=None,
             sigma_bar=0.96,
             auto_iterate=False,
@@ -61,10 +63,6 @@ class Solver(BaseSolver):
             cost=None,
         )
 
-    def run(self, callback):
-        L = np.linalg.norm(self.X, ord=2) ** 2
-        beta_param = 1 / L
-        self.pogm._beta = self.pogm.step_size or beta_param
         self.pogm.iterate(max_iter=1)
         while callback(self.pogm.x_final):
             self.pogm.iterate(max_iter=10)

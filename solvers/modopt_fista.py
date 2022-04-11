@@ -16,7 +16,7 @@ class Solver(BaseSolver):
     stopping_strategy = 'callback'
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/CEA-COSMIC/ModOpt.git',
+        'pip:modopt',
     ]
     parameters = {
         'restart_strategy': ['greedy', 'adaptive-1'],
@@ -45,18 +45,25 @@ class Solver(BaseSolver):
         if fit_intercept:
             x_shape += n_samples
         self.var_init = np.zeros(x_shape)
+
+    def run(self, callback):
+        L = np.linalg.norm(self.X, ord=2) ** 2
+
         if self.restart_strategy == 'greedy':
-            min_beta = 1.0
+            beta_param = 1.3 / L
+            min_beta = 1. / L
             s_greedy = 1.1
-            p_lazy = 1.0
-            q_lazy = 1.0
+            p_lazy = 1.
+            q_lazy = 1.
         else:
+            beta_param = 1. / L
             min_beta = None
             s_greedy = None
             p_lazy = 1 / 30
             q_lazy = 1 / 10
 
-        if fit_intercept:
+        n_features = self.X.shape[1]
+        if self.fit_intercept:
             def op(w):
                 return self.X @ w[:n_features] + w[n_features:]
         else:
@@ -67,12 +74,12 @@ class Solver(BaseSolver):
         self.fb = ForwardBackward(
             x=self.var_init,  # this is the coefficient w
             grad=GradBasic(
-                input_data=y, op=op,
+                input_data=self.y, op=op,
                 trans_op=lambda res: self.X.T@res,
                 input_data_writeable=True,
             ),
-            prox=SparseThreshold(Identity(), lmbd),
-            beta_param=1.0,
+            prox=SparseThreshold(Identity(), self.lmbd),
+            beta_param=beta_param,
             min_beta=min_beta,
             metric_call_period=None,
             restart_strategy=self.restart_strategy,
@@ -85,17 +92,7 @@ class Solver(BaseSolver):
             cost=None,
         )
 
-    def run(self, callback):
-        L = np.linalg.norm(self.X, ord=2) ** 2
-        if self.restart_strategy == 'greedy':
-            beta_param = 1.3 / L
-        else:
-            beta_param = 1 / L
-        self.fb.beta_param = beta_param
-        self.fb._beta = self.fb.step_size or beta_param
-
         self.fb.iterate(max_iter=1)
-
         while callback(self.fb.x_final):
             self.fb.iterate(max_iter=10)
 
