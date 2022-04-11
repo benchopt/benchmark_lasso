@@ -28,21 +28,20 @@ class Objective(BaseObjective):
         diff = self.y - self.X @ beta
         if self.fit_intercept:
             diff -= intercept
-
-        # compute primal objective
-        p_obj = .5 * diff @ diff + self.lmbd * abs(beta).sum()
-
-        # compute duality gap
-        theta = diff / self.lmbd
-        theta /= norm(self.X.T @ theta, ord=np.inf)
-        d_obj = (norm(self.y) ** 2 / 2. - self.lmbd ** 2 *
-                 norm(self.y / self.lmbd - theta) ** 2 / 2)
+        # compute primal objective and duality gap
+        p_obj = .5 * diff.dot(diff) + self.lmbd * abs(beta).sum()
+        scaling = max(1, norm(self.X.T @ diff, ord=np.inf) / self.lmbd)
+        d_obj = (norm(self.y) ** 2 / 2.
+                 - norm(self.y - diff / scaling) ** 2 / 2)
         return dict(value=p_obj,
                     support_size=(beta != 0).sum(),
                     duality_gap=p_obj - d_obj,)
 
     def _get_lambda_max(self):
-        return abs(self.X.T.dot(self.y)).max()
+        if self.fit_intercept:
+            return abs(self.X.T @ (self.y - self.y.mean())).max()
+        else:
+            return abs(self.X.T.dot(self.y)).max()
 
     def to_dict(self):
         return dict(X=self.X, y=self.y, lmbd=self.lmbd,

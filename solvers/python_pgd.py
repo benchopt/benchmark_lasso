@@ -7,7 +7,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
-    stop_strategy = "callback"
+    stopping_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
     parameters = {'use_acceleration': [False, True]}

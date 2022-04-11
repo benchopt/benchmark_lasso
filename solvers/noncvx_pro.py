@@ -10,9 +10,8 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "noncvx-pro"
 
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
     support_sparse = False
-    parameters = {'old': [False]}
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -62,11 +61,7 @@ class Solver(BaseSolver):
         n_samples, n_features = X.shape
 
         def objfn(u):
-            if self.old:
-                Xu = X * u  # This breaks for sparse matrices
-                v1 = self.efficient_solve(Xu, y, lmbd)
-            else:
-                v1 = self.v_opt(X, y, lmbd, u)
+            v1 = self.v_opt(X, y, lmbd, u)
 
             res = X @ (v1 * u) - y
             grad = v1 * (X.T @ res) + lmbd * u
