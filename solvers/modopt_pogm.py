@@ -28,13 +28,6 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
-    def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - not implemented but not too complicated here.
-        # if fit_intercept:
-        #     return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
-
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
@@ -64,7 +57,7 @@ class Solver(BaseSolver):
 
             weights = np.full(self.X.shape[1], self.lmbd)
 
-        L = np.linalg.norm(self.X, ord=2) ** 2  # TODO sparse X?
+        L = np.linalg.norm(self.X, ord=2) ** 2
         self.pogm = POGM(
             x=self.var_init,  # this is the coefficient w
             u=self.var_init,
