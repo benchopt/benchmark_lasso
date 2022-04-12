@@ -3,86 +3,72 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from numpy.linalg import norm
     import scipy.optimize as sciop
-    from scipy.sparse import linalg as slinalg
+    from scipy.sparse import issparse
 
 
 class Solver(BaseSolver):
-    name = "noncvx-pro"
+    name = "noncvx-pro2"
 
     stopping_strategy = 'iteration'
-    support_sparse = False
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
 
-    def efficient_solve(self, A, b, lmbd):
-        n_samples, n_features = A.shape
-        if n_samples >= n_features:
-            M = lmbd * np.eye(n_features) + np.dot(A.T, A)
-            v1 = np.linalg.solve(M, A.T @ b)
-        else:
-            M = lmbd * np.eye(n_samples) + np.dot(A, A.T)
-            v1 = A.T @ np.linalg.solve(M, b)
-        return v1
-
-    def v_opt(self, X, y, lmbd, u):
-        """Optimal v for a fixed u.
-        Minimizes in v:
-            .5 * norm(X @ (u * v) - y) ** 2
-            + .5 * lmbd * (norm(u) ** 2 + norm(v) ** 2)
-
-        with Xu = X * u, X @ (u * v) = Xu @ v and so the solution v solves:
-            (Xu.T @ Xu + lambda eye(n_features)) v = Xu.T @ y
-
-        We use Sherman Morrison trick when n_samples > n_features.
-        """
-        n_samples, n_features = X.shape
-        if n_samples >= n_features:
-            def mv(x):
-                # Xu.T @ Xu @ x = u * (X.T @ X @ (u * x))
-                return lmbd * x + u * (X.T @ (X @ (u * x)))
-            linop = slinalg.LinearOperator(
-                shape=(n_features, n_features), matvec=mv
-            )
-            v = slinalg.cg(linop, u * (X.T @ y))[0]
-        else:
-            def mv(z):
-                # Xu @ Xu.T @ z = Xu @ (u * (X.T @ z))
-                return lmbd * z + X @ (u * (u * (X.T @ z)))
-            linop = slinalg.LinearOperator(
-                shape=(n_samples, n_samples), matvec=mv
-            )
-            v = u * (X.T @ slinalg.cg(linop, y)[0])
-        return v
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+        # XXX: make this solver work with sparse matrices.
+        if issparse(X):
+            return True, f"{self.name} does not support sparse design matrices"
+        return False, None
 
     def run(self, n_iter):
+        # implementation from: https://github.com/gpeyre/numerical-tours/blob/
+        # master/python/optim_7_noncvx_pro.ipynb
         X, y, lmbd = self.X, self.y, self.lmbd
         n_samples, n_features = X.shape
 
-        def objfn(u):
-            v1 = self.v_opt(X, y, lmbd, u)
+        if n_samples < n_features:
+            def u_opt(v):
+                S = X @ np.diag(v**2) @ X.T + lmbd * np.eye(n_samples)
+                return v * (X.T @ np.linalg.solve(S, y))
 
-            res = X @ (v1 * u) - y
-            grad = v1 * (X.T @ res) + lmbd * u
-            f = (
-                (res * res).sum() / 2
-                + lmbd / 2 * ((u * u).sum() + (v1 * v1).sum())
-            )
-            return f, grad
+            def nabla_f(v):
+                u = u_opt(v)
+                res = X @ (u*v) - y
+                f = 1/(2 * lmbd) * norm(res)**2 + \
+                    (norm(u)**2 + norm(v)**2) / 2
+                g = u * (X.T @ res) / lmbd + v
+                return f, g
+        else:
+            C = X.T @ X
+            Xty = X.T @ y
+            y2 = y @ y
 
-        # run lbfgs
-        myopts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 0}
+            def u_opt(v):
+                T = np.outer(v, v) * C + lmbd * np.eye(n_features)
+                return np.linalg.solve(T, v * Xty)
+
+            def nabla_f(v):
+                u = u_opt(v)
+                x = u * v
+                Cx = C @ x
+                E = Cx @ x + y2 - 2 * x @ Xty
+                f = 1/(2*lmbd) * E + (norm(u)**2 + norm(v)**2)/2
+                g = u * (Cx - Xty) / lmbd + v
+                return f, g
+
+        opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 0}
         u0 = np.ones(n_features)
 
         lbfgs_res = sciop.minimize(
-            objfn, u0, method='L-BFGS-B', jac=True, options=myopts
+            nabla_f, u0, method='L-BFGS-B', jac=True, options=opts
         )
-        u1 = lbfgs_res.x
-        Xu1 = X * u1
-        v1 = self.efficient_solve(Xu1, y, lmbd)
+        v = lbfgs_res.x
 
-        self.w = u1 * v1
+        self.w = v * u_opt(v)
 
     def get_result(self):
         return self.w.flatten()
