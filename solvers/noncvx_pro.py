@@ -9,7 +9,7 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "noncvx-pro2"
+    name = "noncvx-pro"
 
     stopping_strategy = 'iteration'
 
