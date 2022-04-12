@@ -30,21 +30,14 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
-    def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
-
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
-
-        n_samples, n_features = self.X.shape
-        x_shape = n_features
+        n_features = self.X.shape[1]
         if fit_intercept:
-            x_shape += n_samples
-        self.var_init = np.zeros(x_shape)
+            self.var_init = np.zeros(n_features + 1)
+        else:
+            self.var_init = np.zeros(n_features)
 
     def run(self, callback):
         L = np.linalg.norm(self.X, ord=2) ** 2
@@ -65,20 +58,31 @@ class Solver(BaseSolver):
         n_features = self.X.shape[1]
         if self.fit_intercept:
             def op(w):
-                return self.X @ w[:n_features] + w[n_features:]
+                return self.X @ w[:n_features] + w[-1]
+
+            def trans_op(res):
+                return np.hstack([self.X.T @ res, res.sum()])
+
+            weights = np.full(self.X.shape[1] + 1, self.lmbd)
+            weights[-1] = 0
         else:
             def op(w):
                 return self.X @ w
-        # TODO implement correct gradient if fit_intercept
+
+            def trans_op(res):
+                return self.X.T @ res
+
+            weights = np.full(self.X.shape[1], self.lmbd)
 
         self.fb = ForwardBackward(
             x=self.var_init,  # this is the coefficient w
             grad=GradBasic(
-                input_data=self.y, op=op,
-                trans_op=lambda res: self.X.T@res,
+                input_data=self.y,
+                op=op,
+                trans_op=trans_op,
                 input_data_writeable=True,
             ),
-            prox=SparseThreshold(Identity(), self.lmbd),
+            prox=SparseThreshold(Identity(), weights),
             beta_param=beta_param,
             min_beta=min_beta,
             metric_call_period=None,

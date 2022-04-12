@@ -30,8 +30,8 @@ class Solver(BaseSolver):
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - not implemented but not too complicated here.
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        # if fit_intercept:
+        #     return True, f"{self.name} does not handle fit_intercept"
 
         return False, None
 
@@ -39,9 +39,31 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
         n_features = self.X.shape[1]
-        self.var_init = np.zeros(n_features)
+        if fit_intercept:
+            self.var_init = np.zeros(n_features + 1)
+        else:
+            self.var_init = np.zeros(n_features)
 
     def run(self, callback):
+        if self.fit_intercept:
+            def op(w):
+                return self.X @ w[:self.X.shape[1]] + w[-1]
+
+            def trans_op(res):
+                return np.hstack([self.X.T @ res, res.sum()])
+
+            weights = np.full(self.X.shape[1] + 1, self.lmbd)
+            weights[-1] = 0
+
+        else:
+            def op(w):
+                return self.X @ w
+
+            def trans_op(res):
+                return self.X.T @ res
+
+            weights = np.full(self.X.shape[1], self.lmbd)
+
         L = np.linalg.norm(self.X, ord=2) ** 2  # TODO sparse X?
         self.pogm = POGM(
             x=self.var_init,  # this is the coefficient w
@@ -50,11 +72,11 @@ class Solver(BaseSolver):
             z=self.var_init,
             grad=GradBasic(
                 input_data=self.y,
-                op=lambda w: self.X@w,
-                trans_op=lambda res: self.X.T@res,
+                op=op,
+                trans_op=trans_op,
                 input_data_writeable=True,
             ),
-            prox=SparseThreshold(Identity(), self.lmbd),
+            prox=SparseThreshold(Identity(), weights),
             beta_param=1. / L,
             metric_call_period=None,
             sigma_bar=0.96,
