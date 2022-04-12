@@ -2,12 +2,12 @@ from benchopt import BaseSolver, safe_import_context
 from benchopt.runner import INFINITY
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
-
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy import sparse
 
     from rpy2 import robjects
-    from rpy2.robjects import numpy2ri
+    from rpy2.robjects import numpy2ri, packages
     from benchopt.helpers.r_lang import import_rpackages
 
     # Setup the system to allow rpy2 running
@@ -19,13 +19,13 @@ class Solver(BaseSolver):
     name = "glmnet"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2', 'r-glmnet']
+    requirements = ['r-base', 'rpy2', 'r-glmnet', 'r-matrix']
     references = [
         'J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths '
         'for generalized linear models via coordinate descent", '
         'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
     ]
-    support_sparse = False
+    support_sparse = True
 
     # We use the tolerance strategy because if maxit is too low and glmnet
     # convergence check fails, it returns an empty model
@@ -33,15 +33,19 @@ class Solver(BaseSolver):
         patience=7, eps=1e-38, strategy='tolerance'
     )
 
-    def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - glmnet support intercept, adapt the API
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
-
     def set_objective(self, X, y, lmbd, fit_intercept):
-        self.X, self.y, self.lmbd = X, y, lmbd
+        if sparse.issparse(X):
+            r_Matrix = packages.importr("Matrix")
+            X = X.tocoo()
+            self.X = r_Matrix.sparseMatrix(
+                i=robjects.IntVector(X.row + 1),
+                j=robjects.IntVector(X.col + 1),
+                x=robjects.FloatVector(X.data),
+                dims=robjects.IntVector(X.shape)
+            )
+        else:
+            self.X = X
+        self.y, self.lmbd = y, lmbd
         self.fit_intercept = fit_intercept
 
         self.glmnet = robjects.r['glmnet']
@@ -66,13 +70,15 @@ class Solver(BaseSolver):
         # no other way to force glmnet to solve for a prescribed lambda.
         fit_dict = {"lambda": self.lmbd / len(self.y)}
 
-        glmnet_fit = self.glmnet(self.X, self.y, intercept=False,
+        glmnet_fit = self.glmnet(self.X, self.y, intercept=self.fit_intercept,
                                  standardize=False, maxit=maxit,
                                  thresh=thresh, **fit_dict)
         results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
-        self.w = coefs.flatten()
+        beta = coefs.flatten()
+
+        self.w = np.r_[beta, results["a0"]] if self.fit_intercept else beta
 
     def get_result(self):
         return self.w

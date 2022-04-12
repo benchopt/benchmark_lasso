@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'Celer'
-    stop_strategy = 'iteration'
+    stopping_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = ['pip:celer']
@@ -37,6 +37,11 @@ class Solver(BaseSolver):
     def run(self, n_iter):
         self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
+
+    @staticmethod
+    def get_next(previous):
+        "Linear growth for n_iter."
+        return previous + 1
 
     def get_result(self):
 
