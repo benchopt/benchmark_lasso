@@ -25,7 +25,7 @@ class Objective(BaseObjective):
         # compute residuals
         if self.fit_intercept:
             beta, intercept = beta[:self.n_features], beta[self.n_features:]
-        diff = self.y - self.X.dot(beta)
+        diff = self.y - self.X @ beta
         if self.fit_intercept:
             diff -= intercept
         # compute primal objective and duality gap
