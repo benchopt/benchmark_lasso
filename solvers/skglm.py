@@ -13,9 +13,10 @@ class Solver(BaseSolver):
     name = "skglm"
     stopping_strategy = "iteration"
 
-    # TODO: uncomment when available on pip
-    # install_cmd = 'conda'
-    # requirements = ['pip:skglm']
+    install_cmd = 'conda'
+    requirements = [
+        'pip:git+https://github.com/mathurinm/skglm@main'
+    ]
     references = [
         'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel and M. Massias'
         '"Beyond L1: Faster and Better Sparse Models with skglm", '
