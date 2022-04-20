@@ -4,6 +4,7 @@ from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
+    import numpy as np
     from skglm import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
@@ -30,18 +31,18 @@ class Solver(BaseSolver):
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000, tol=1e-12,
             fit_intercept=False, warm_start=False, verbose=False)
-        
+
         # Cache Numba compilation
         self.run(1)
-    
+
     def run(self, n_iter):
         self.lasso.max_iter = n_iter
         self.lasso.fit(self.X, self.y)
-    
+
     @staticmethod
     def get_next(stop_val):
         return stop_val + 1
-    
+
     def get_result(self):
         beta = self.lasso.coef_.flatten()
         if self.fit_intercept:
