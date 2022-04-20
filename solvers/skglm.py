@@ -18,7 +18,8 @@ class Solver(BaseSolver):
         'pip:git+https://github.com/mathurinm/skglm@main'
     ]
     references = [
-        'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel and M. Massias'
+        'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel'
+        'and M. Massias'
         '"Beyond L1: Faster and Better Sparse Models with skglm", '
         'https://arxiv.org/abs/2204.07826'
     ]
@@ -30,8 +31,8 @@ class Solver(BaseSolver):
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
-            alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000, tol=1e-12,
-            fit_intercept=False, warm_start=False, verbose=False)
+            alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000,
+            tol=1e-12, fit_intercept=False, warm_start=False, verbose=False)
 
         # Cache Numba compilation
         self.run(1)
