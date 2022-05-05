@@ -24,6 +24,13 @@ class Solver(BaseSolver):
         'https://arxiv.org/abs/2204.07826'
     ]
 
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - not implemented but this should be quite easy
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
