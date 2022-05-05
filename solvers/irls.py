@@ -11,7 +11,9 @@ class Solver(BaseSolver):
     stopping_criterion = SufficientProgressCriterion(
         patience=6, strategy="iteration"
     )
-    # any parameter defined here is accessible as a class attribute
+    name = "IRLS"  # Iterative reweighted Least Squares
+    stopping_strategy = "iteration"
+
     references = ["???"]
     # see for instance: https://homepages.laas.fr/vmagron/masmode/Gabriel.pdf
 
