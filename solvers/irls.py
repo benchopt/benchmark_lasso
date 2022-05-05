@@ -6,11 +6,9 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "IRLS"  # proximal gradient, optionally accelerated
+    name = "IRLS"  # Iterative reweighted Least Squares
     stopping_strategy = "iteration"
 
-    # any parameter defined here is accessible as a class attribute
-    parameters = {"use_acceleration": [False]}
     references = ["???"]
     # see for instance: https://homepages.laas.fr/vmagron/masmode/Gabriel.pdf
 
