@@ -1,4 +1,5 @@
 from benchopt import BaseSolver, safe_import_context
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
@@ -6,11 +7,11 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "IRLS"  # proximal gradient, optionally accelerated
-    stopping_strategy = "iteration"
-
+    name = "IRLS"  # Iterative Reweighted Least Squares
+    stopping_criterion = SufficientProgressCriterion(
+        patience=6, strategy="iteration"
+    )
     # any parameter defined here is accessible as a class attribute
-    parameters = {"use_acceleration": [False]}
     references = ["???"]
     # see for instance: https://homepages.laas.fr/vmagron/masmode/Gabriel.pdf
 
@@ -26,26 +27,23 @@ class Solver(BaseSolver):
         self.fit_intercept = fit_intercept
 
     def run(self, n_iter):
-        epsilon = 1e-10
+        epsilon = 1e-25
 
         def w_opt(eta):
-            T = self.X.T @ self.X + self.lmbd * np.diag(1 / eta)
+            T = self.X.T @ self.X + self.lmbd * np.diag(1.0 / eta)
             return np.linalg.solve(T, self.X.T @ self.y)
 
         def eta_opt(w):
             return (w ** 2 + epsilon) ** 0.5
 
         n_features = self.X.shape[1]
-        eta = np.full(n_features, epsilon)  # init
+        eta = self.X.T @ self.y  # init
+        # np.full(n_features, np.infty)  # init
         w = np.zeros(n_features)
 
         for i in range(n_iter):
-            # w_old = w.copy()
             w = w_opt(eta)
             eta = eta_opt(w)
-            # z = w + (t_old - 1.0) / t_new * (w - w_old)
-            # w -= self.X.T @ (self.X @ w - self.y) / L
-            # w = self.st(w, self.lmbd / L)
 
         self.w = w
 
