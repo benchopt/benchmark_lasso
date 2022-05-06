@@ -6,7 +6,7 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "Python-PGD"  # proximal gradient, optionally accelerated
+    name = 'Python-PGD'  # proximal gradient, optionally accelerated
     stopping_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
