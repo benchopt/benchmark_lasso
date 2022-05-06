@@ -38,7 +38,7 @@ class Solver(BaseSolver):
 
         def w_opt(eta):
             ridge = Ridge(alpha=self.lmbd, fit_intercept=False).fit(
-                self.X @ np.diag(eta ** 0.5), self.y
+                self.X * eta ** 0.5, self.y
             )
             return ridge.coef_ * eta ** 0.5
 
