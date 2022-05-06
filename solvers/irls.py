@@ -3,7 +3,6 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
-    from scipy import sparse
 
 
 class Solver(BaseSolver):
@@ -40,7 +39,6 @@ class Solver(BaseSolver):
 
         n_features = self.X.shape[1]
         eta = self.X.T @ self.y  # init
-        # np.full(n_features, np.infty)  # init
         w = np.zeros(n_features)
 
         for i in range(n_iter):
