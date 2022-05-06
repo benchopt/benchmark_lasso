@@ -11,8 +11,6 @@ class Solver(BaseSolver):
     stopping_criterion = SufficientProgressCriterion(
         patience=6, strategy="iteration"
     )
-    name = "IRLS"  # Iterative reweighted Least Squares
-    stopping_strategy = "iteration"
 
     references = [
         "Y. Grandvalet, "
@@ -41,17 +39,8 @@ class Solver(BaseSolver):
             )
             return ridge.coef_ * sqrt_eta
 
-        # # # Equivalent to
-        # def w_opt(eta):
-        #     T = self.X.T @ self.X + self.lmbd * np.diag(1.0 / eta)
-        #     return np.linalg.solve(T, self.X.T @ self.y)
-
-        # epsilon = 1e-25
-
         def eta_opt(w):
             return np.abs(w)
-
-            # return (w ** 2 + epsilon) ** 0.5
 
         n_features = self.X.shape[1]
         eta = np.abs(self.X.T @ self.y)  # init needs to be > 0
