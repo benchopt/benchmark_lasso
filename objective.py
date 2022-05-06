@@ -22,7 +22,10 @@ class Objective(BaseObjective):
         self.n_features = self.X.shape[1]
 
     def get_one_solution(self):
-        return np.zeros(self.n_features)
+        n_features = self.n_features
+        if self.fit_intercept:
+            n_features += 1
+        return np.zeros(n_features)
 
     def compute(self, beta):
         # compute residuals
