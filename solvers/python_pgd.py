@@ -10,7 +10,7 @@ class Solver(BaseSolver):
     stopping_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
-    parameters = {"use_acceleration": [False, True]}
+    parameters = {'use_acceleration': [False, True]}
     references = [
         "I. Daubechies, M. Defrise and C. De Mol, "
         '"An iterative thresholding algorithm for linear inverse problems '
