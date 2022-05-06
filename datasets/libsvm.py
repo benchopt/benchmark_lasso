@@ -27,4 +27,4 @@ class Dataset(BaseDataset):
 
         data = dict(X=X, y=y)
 
-        return X.shape[1], data
+        return data
