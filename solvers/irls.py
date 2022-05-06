@@ -14,8 +14,13 @@ class Solver(BaseSolver):
     name = "IRLS"  # Iterative reweighted Least Squares
     stopping_strategy = "iteration"
 
-    references = ["???"]
-    # see for instance: https://homepages.laas.fr/vmagron/masmode/Gabriel.pdf
+    references = [
+        "Y. Grandvalet, "
+        '"Least absolute shrinkage is equivalent to quadratic penalization" '
+        "International Conference on Artificial Neural Networks, "
+        "pp. 201-206, (1998)",
+    ]
+    # see also: https://homepages.laas.fr/vmagron/masmode/Gabriel.pdf
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - not implemented but not too complicated to implement
