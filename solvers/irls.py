@@ -3,6 +3,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from sklearn.linear_model import Ridge
 
 
 class Solver(BaseSolver):
@@ -31,14 +32,21 @@ class Solver(BaseSolver):
         epsilon = 1e-25
 
         def w_opt(eta):
-            T = self.X.T @ self.X + self.lmbd * np.diag(1.0 / eta)
-            return np.linalg.solve(T, self.X.T @ self.y)
+            ridge = Ridge(alpha=self.lmbd, fit_intercept=False).fit(
+                self.X @ np.diag(eta ** 0.5), self.y
+            )
+            return ridge.coef_ * eta ** 0.5
+
+        # # # Equivalent to
+        # def w_opt(eta):
+        #     T = self.X.T @ self.X + self.lmbd * np.diag(1.0 / eta)
+        #     return np.linalg.solve(T, self.X.T @ self.y)
 
         def eta_opt(w):
             return (w ** 2 + epsilon) ** 0.5
 
         n_features = self.X.shape[1]
-        eta = self.X.T @ self.y  # init
+        eta = np.abs(self.X.T @ self.y)  # init needs to be > 0
         w = np.zeros(n_features)
 
         for i in range(n_iter):
