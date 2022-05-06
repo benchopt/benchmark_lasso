@@ -1,9 +1,9 @@
-import warnings
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import warnings
     import numpy as np
     from sklearn.linear_model import LassoLars
     from sklearn.exceptions import ConvergenceWarning
@@ -27,8 +27,7 @@ class Solver(BaseSolver):
         n_samples = self.X.shape[0]
 
         self.clf = LassoLars(
-            alpha=self.lmbd / n_samples, fit_intercept=fit_intercept,
-            normalize=False,
+            alpha=self.lmbd / n_samples, fit_intercept=fit_intercept, normalize=False,
         )
 
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
