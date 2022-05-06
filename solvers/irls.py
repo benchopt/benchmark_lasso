@@ -34,21 +34,24 @@ class Solver(BaseSolver):
         self.fit_intercept = fit_intercept
 
     def run(self, n_iter):
-        epsilon = 1e-25
-
         def w_opt(eta):
+            sqrt_eta = np.sqrt(eta)
             ridge = Ridge(alpha=self.lmbd, fit_intercept=False).fit(
-                self.X * eta ** 0.5, self.y
+                self.X * sqrt_eta, self.y
             )
-            return ridge.coef_ * eta ** 0.5
+            return ridge.coef_ * sqrt_eta
 
         # # # Equivalent to
         # def w_opt(eta):
         #     T = self.X.T @ self.X + self.lmbd * np.diag(1.0 / eta)
         #     return np.linalg.solve(T, self.X.T @ self.y)
 
+        # epsilon = 1e-25
+
         def eta_opt(w):
-            return (w ** 2 + epsilon) ** 0.5
+            return np.abs(w)
+
+            # return (w ** 2 + epsilon) ** 0.5
 
         n_features = self.X.shape[1]
         eta = np.abs(self.X.T @ self.y)  # init needs to be > 0
