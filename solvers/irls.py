@@ -43,7 +43,7 @@ class Solver(BaseSolver):
             return np.abs(w)
 
         n_features = self.X.shape[1]
-        eta = np.abs(self.X.T @ self.y)  # init needs to be > 0
+        eta = np.ones(n_features)
         w = np.zeros(n_features)
 
         for i in range(n_iter):
