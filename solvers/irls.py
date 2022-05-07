@@ -12,6 +12,9 @@ class Solver(BaseSolver):
         patience=6, strategy="iteration"
     )
 
+    install_cmd = "conda"
+    requirements = ["scikit-learn"]
+
     references = [
         "Y. Grandvalet, "
         '"Least absolute shrinkage is equivalent to quadratic penalization" '
@@ -43,7 +46,7 @@ class Solver(BaseSolver):
             return np.abs(w)
 
         n_features = self.X.shape[1]
-        eta = np.ones(n_features)
+        eta = np.ones(n_features)  # first iteration: non weighted Ridge
         w = np.zeros(n_features)
 
         for i in range(n_iter):
