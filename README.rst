@@ -37,6 +37,17 @@ Apart from the problem, options can be passed to `benchopt run`, to restrict the
 
 Use `benchopt run -h` for more details about these options, or visit https://benchopt.github.io/api.html.
 
+Quickstart
+----------
+
+To perform a quick benchmark, one can run:
+
+.. code-block::
+
+   $ benchopt run ./benchmark_lasso --config ./benchmark_lasso/example_config.yml
+
+The config file `example_config.yml` will perform benchmarks of `celer`, `cd` (coordinate-descent), and `sklearn` implementation of the sparse solver on small toy datasets.
+
 Troubleshooting
 ---------------
 

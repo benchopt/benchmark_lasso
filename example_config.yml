@@ -1,0 +1,13 @@
+# config for quick benchmark on small simulated dataset
+
+dataset: # dataset to run benchmark on
+  - simulated[n_samples=100,n_features=50]
+  - simulated[n_samples=100,n_features=200]
+
+force-solver: # list of example solvers to do benchmark
+  - celer
+  - cd
+  - sklearn
+
+# note: increase to more than 1 repetitions to have error bar on the plot
+n-repetitions: 1
