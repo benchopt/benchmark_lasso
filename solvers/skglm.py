@@ -1,9 +1,8 @@
-import warnings
-
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
+    import warnings
     import numpy as np
     from skglm import Lasso
     from sklearn.exceptions import ConvergenceWarning
@@ -15,7 +14,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/mathurinm/skglm@main'
+        'pip:skglm'
     ]
     references = [
         'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel'
@@ -44,15 +43,20 @@ class Solver(BaseSolver):
         self.run(1)
 
     def run(self, n_iter):
-        self.lasso.max_iter = n_iter
-        self.lasso.fit(self.X, self.y)
+        if n_iter == 0:
+            self.coef = np.zeros([self.X.shape[1] + self.fit_intercept])
+        else:
+            self.lasso.max_iter = n_iter
+            self.lasso.fit(self.X, self.y)
+
+            coef = self.lasso.coef_.flatten()
+            if self.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_]
+            self.coef = coef
 
     @staticmethod
     def get_next(stop_val):
         return stop_val + 1
 
     def get_result(self):
-        beta = self.lasso.coef_.flatten()
-        if self.fit_intercept:
-            beta = np.r_[beta, self.lasso.intercept_]
-        return beta
+        return self.coef
