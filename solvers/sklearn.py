@@ -29,7 +29,7 @@ class Solver(BaseSolver):
 
         n_samples = self.X.shape[0]
         self.lasso = Lasso(alpha=self.lmbd/n_samples,
-                         fit_intercept=fit_intercept, tol=0)
+                           fit_intercept=fit_intercept, tol=0)
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
     def run(self, n_iter):
