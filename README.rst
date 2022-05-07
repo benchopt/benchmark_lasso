@@ -18,7 +18,7 @@ where n (or n_samples) stands for the number of samples, p (or n_features) stand
  y \in \mathbb{R}^n, X = [x_1^\top, \dots, x_n^\top]^\top \in \mathbb{R}^{n \times p}
 
 Install
---------
+-------
 
 This benchmark can be run using the following commands:
 
@@ -26,9 +26,14 @@ This benchmark can be run using the following commands:
 
    $ pip install -U benchopt
    $ git clone https://github.com/benchopt/benchmark_lasso
-   $ benchopt run ./benchmark_lasso
 
-Apart from the problem, options can be passed to `benchopt run`, to restrict the benchmarks to some solvers or datasets, e.g.:
+To demonstrate the use of benchopt, one can run:
+
+.. code-block::
+
+   $ benchopt run ./benchmark_lasso --config ./benchmark_lasso/example_config.yml
+
+Alternatively, one can use the command line interface to select which problems, datasets and solvers are used:
 
 .. code-block::
 
@@ -36,17 +41,6 @@ Apart from the problem, options can be passed to `benchopt run`, to restrict the
 
 
 Use `benchopt run -h` for more details about these options, or visit https://benchopt.github.io/api.html.
-
-Quickstart
-----------
-
-To perform a quick benchmark, one can run:
-
-.. code-block::
-
-   $ benchopt run ./benchmark_lasso --config ./benchmark_lasso/example_config.yml
-
-The config file `example_config.yml` will perform benchmarks of `celer`, `cd` (coordinate-descent), and `sklearn` implementation of the sparse solver on small toy datasets.
 
 Troubleshooting
 ---------------
