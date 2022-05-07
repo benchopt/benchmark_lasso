@@ -33,11 +33,16 @@ class Solver(BaseSolver):
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
     def run(self, n_iter):
-        self.clf.max_iter = n_iter
-        self.clf.fit(self.X, self.y)
+        if n_iter == 0:
+            self.coef = np.zeros([self.X.shape[1] + self.fit_intercept])
+        else:
+            self.lasso.max_iter = n_iter
+            self.lasso.fit(self.X, self.y)
+
+            coef = self.lasso.coef_.flatten()
+            if self.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_]
+            self.coef = coef
 
     def get_result(self):
-        beta = self.clf.coef_.flatten()
-        if self.fit_intercept:
-            beta = np.r_[beta, self.clf.intercept_]
-        return beta
+        return self.coef
