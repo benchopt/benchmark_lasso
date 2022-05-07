@@ -28,7 +28,7 @@ class Solver(BaseSolver):
         self.fit_intercept = fit_intercept
 
         n_samples = self.X.shape[0]
-        self.clf = Lasso(alpha=self.lmbd/n_samples,
+        self.lasso = Lasso(alpha=self.lmbd/n_samples,
                          fit_intercept=fit_intercept, tol=0)
         warnings.filterwarnings('ignore', category=ConvergenceWarning)
 
