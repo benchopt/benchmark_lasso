@@ -10,6 +10,7 @@ from celer.plot_utils import configure_plt
 # BENCH_NAME = "benchopt_run_2022-05-09_15h46m52.csv"  # leukemia
 BENCH_NAME = "benchopt_run_2022-05-09_16h19m53.csv"  # simu 500x5k
 FLOATING_PRECISION = 1e-11
+MIN_XLIM = 1e-3
 
 configure_plt()
 cmap = plt.get_cmap('tab10')
@@ -61,6 +62,7 @@ for idx_data, dataset in enumerate(datasets):
                 curve["time"], y, color=color, marker="o", markersize=3,
                 label=solver_name, linewidth=3)
 
+        ax.set_xlim([MIN_XLIM, ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel(
             "Time (s)", fontsize=fontsize - 2)
         axarr[0, idx_obj].set_title(
