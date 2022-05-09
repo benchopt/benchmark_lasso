@@ -9,7 +9,8 @@ from celer.plot_utils import configure_plt
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
 # BENCH_NAME = "benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
-BENCH_NAME = "benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
+# BENCH_NAME = "benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
+BENCH_NAME = "benchopt_run_2022-05-09_18h23m07.csv"  # dbg
 FLOATING_PRECISION = 1e-11
 MIN_XLIM = 1e-3
 
@@ -59,11 +60,11 @@ for idx_data, dataset in enumerate(datasets):
             q9 = df3.groupby('stop_val')['time'].quantile(.9)
             y = curve["objective_value"] - c_star
             color = cmap(i)
-            ax.loglog(
+            ax.semilogy(
                 curve["time"], y, color=color, marker="o", markersize=3,
                 label=solver_name, linewidth=3)
 
-        ax.set_xlim([MIN_XLIM, ax.get_xlim()[1]])
+        # ax.set_xlim([MIN_XLIM, ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel(
             "Time (s)", fontsize=fontsize - 2)
         axarr[0, idx_obj].set_title(
