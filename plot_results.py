@@ -1,4 +1,5 @@
 import re
+import itertools
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +9,7 @@ from celer.plot_utils import configure_plt
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
 # BENCH_NAME = "benchopt_run_2022-05-09_15h46m52.csv"  # leukemia
-BENCH_NAME = "benchopt_run_2022-05-09_16h19m53.csv"  # simu 500x5k
+BENCH_NAME = "benchopt_run_2022-05-09_17h09m22.csv"  # simu 500x5k
 FLOATING_PRECISION = 1e-11
 MIN_XLIM = 1e-3
 
@@ -18,7 +19,7 @@ cmap = plt.get_cmap('tab10')
 df = pd.read_csv("./outputs/" + BENCH_NAME, header=0, index_col=0)
 
 solvers = df["solver_name"].unique()
-solvers = np.array(sorted(solvers, key=str.lower))
+solvers = np.array(sorted(solvers, key=str.lower))[:-2]
 datasets = df["data_name"].unique()
 objectives = df["objective_name"].unique()
 
@@ -84,11 +85,15 @@ plt.show(block=False)
 
 
 fig2, ax2 = plt.subplots(1, 1, figsize=(20, 4))
-ncol = 3
-if ncol is None:
-    ncol = len(axarr[0, 0].lines)
-legend = ax2.legend(ax.lines, [line.get_label() for line in ax.lines], ncol=ncol,
-                    loc="upper center")
+n_col = 3
+if n_col is None:
+    n_col = len(axarr[0, 0].lines)
+
+lines_ordered = itertools.chain(*[ax.lines[i::n_col] for i in range(n_col)])
+# lines_ordered = ax.lines
+legend = ax2.legend(
+    lines_ordered, [line.get_label() for line in lines_ordered], ncol=n_col,
+    loc="upper center")
 fig2.canvas.draw()
 fig2.tight_layout()
 width = legend.get_window_extent().width
