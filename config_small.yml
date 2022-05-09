@@ -1,0 +1,13 @@
+objective:
+  - Lasso Regression[fit_intercept=False,reg=0.1]
+  - Lasso Regression[fit_intercept=False,reg=0.01]
+  - Lasso Regression[fit_intercept=False,reg=0.001]
+dataset:
+  - leukemia
+n-repetitions: 1
+n-jobs: 4
+
+solver:
+- celer
+- sklearn
+- cd
