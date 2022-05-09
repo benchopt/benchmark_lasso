@@ -13,7 +13,7 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pip:snapml"]
 
-    parameters = {"gpu": [True, False]}
+    parameters = {"gpu": [False, True]}
 
     def skip(self, X, y, lmbd, fit_intercept):
         if self.gpu and _get_cuda_version() is None:
