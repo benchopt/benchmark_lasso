@@ -7,7 +7,7 @@ from celer.plot_utils import configure_plt
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
-BENCH_NAME = "benchopt_run_2022-05-09_14h34m02.csv"
+BENCH_NAME = "benchopt_run_2022-05-09_15h34m25.csv"
 FLOATING_PRECISION = 1e-11
 
 configure_plt()
@@ -29,13 +29,16 @@ fig, axarr = plt.subplots(
     len(objectives),
     sharex=False,
     sharey=True,
-    figsize=[12, 6],
+    figsize=[12, 4.8],
     constrained_layout=True)
 
 # handle if there is only 1 dataset/objective:
 if len(datasets) == 1:
-    axarr = axarr[None, :]
-if len(objectives) == 1:
+    if len(objectives) == 1:
+        axarr = np.atleast_2d(axarr)
+    else:
+        axarr = axarr[None, :]
+elif len(objectives) == 1:
     axarr = axarr[:, None]
 
 for idx_data, dataset in enumerate(datasets):
@@ -48,11 +51,11 @@ for idx_data, dataset in enumerate(datasets):
             df3 = df2[df2['solver_name'] == solver_name]
             curve = df3.groupby('stop_val').median()
 
-            # q1 = df3.groupby('stop_val')['time'].quantile(.1)
-            # q9 = df3.groupby('stop_val')['time'].quantile(.9)
+            q1 = df3.groupby('stop_val')['time'].quantile(.1)
+            q9 = df3.groupby('stop_val')['time'].quantile(.9)
             y = curve["objective_value"] - c_star
             color = cmap(i)
-            ax.semilogy(
+            ax.loglog(
                 curve["time"], y, color=color, marker="o", markersize=3,
                 label=solver_name, linewidth=3)
         # axarr[idx_data, idx_obj].set_xlim(
@@ -69,4 +72,17 @@ for idx_data, dataset in enumerate(datasets):
     # axarr[idx_data, 0].set_ylim([1e-7, 1])
 
 fig.suptitle(regex.sub('', objective), fontsize=fontsize)
+plt.show(block=False)
+
+
+fig2, ax2 = plt.subplots(1, 1, figsize=(20, 4))
+ncol = 3
+if ncol is None:
+    ncol = len(axarr[0, 0].lines)
+legend = ax2.legend(ax.lines, [line.get_label() for line in ax.lines], ncol=ncol,
+                    loc="upper center")
+fig2.canvas.draw()
+fig2.tight_layout()
+legend_width = legend.get_window_extent().width
+fig2.set_size_inches((legend_width // 15, legend.get_window_extent().height // 15))
 plt.show(block=False)

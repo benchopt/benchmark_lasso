@@ -4,10 +4,16 @@ objective:
   - Lasso Regression[fit_intercept=False,reg=0.001]
 dataset:
   - leukemia
-n-repetitions: 1
+n-repetitions: 5
 n-jobs: 4
-
+# timeout:
 solver:
 - celer
 - sklearn
 - cd
+- glmnet
+- lars
+- modopt-fista
+- skglm
+# - noncvx-pro
+- blitz
