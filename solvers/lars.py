@@ -19,6 +19,7 @@ class Solver(BaseSolver):
         '"Least Angle Regression", Annals of Statistics, '
         " vol. 32 (2), pp. 407-499 (2004)"
     ]
+    support_sparse = False
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

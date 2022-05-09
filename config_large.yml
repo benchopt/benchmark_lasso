@@ -1,0 +1,21 @@
+objective:
+    - Lasso Regression[fit_intercept=False,reg=0.1]
+    - Lasso Regression[fit_intercept=False,reg=0.01]
+    - Lasso Regression[fit_intercept=False,reg=0.001]
+dataset:
+    - libsvm[dataset=rcv1.binary]
+    # - simulated[n_features=5000,n_samples=500,rho=0.3]
+  # n-repetitions: 5
+n-repetitions: 1
+n-jobs: 4
+timeout: 100
+solver:
+  - celer
+  - sklearn
+  - cd
+  - glmnet
+  - lars
+  - modopt-fista
+  - skglm
+  # - noncvx-pro
+  - blitz
