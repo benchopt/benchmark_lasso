@@ -8,8 +8,8 @@ from celer.plot_utils import configure_plt
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
-BENCH_NAME = "benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
-# BENCH_NAME = "benchopt_run_2022-05-09_17h47m49.csv"  # rcv1
+# BENCH_NAME = "benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
+BENCH_NAME = "benchopt_run_2022-05-09_17h59m19.csv"  # rcv1
 FLOATING_PRECISION = 1e-11
 MIN_XLIM = 1e-3
 
