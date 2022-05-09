@@ -15,7 +15,7 @@ class Solver(BaseSolver):
 
     parameters = {"gpu": [True, False]}
 
-    def skip(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
         if self.gpu and _get_cuda_version() is None:
             return True, "snapml[gpu=True] needs a GPU to run"
         return False, None

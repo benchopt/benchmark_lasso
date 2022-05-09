@@ -1,6 +1,7 @@
 import sys
-from benchopt.utils.sys_info import _get_cuda_version
 import pytest
+
+from benchopt.utils.sys_info import _get_cuda_version
 
 
 def check_test_solver_install(solver_class):
