@@ -7,7 +7,8 @@ from celer.plot_utils import configure_plt
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
-BENCH_NAME = "benchopt_run_2022-05-09_15h34m25.csv"
+# BENCH_NAME = "benchopt_run_2022-05-09_15h46m52.csv"  # leukemia
+BENCH_NAME = "benchopt_run_2022-05-09_16h19m53.csv"  # simu 500x5k
 FLOATING_PRECISION = 1e-11
 
 configure_plt()
@@ -16,6 +17,7 @@ cmap = plt.get_cmap('tab10')
 df = pd.read_csv("./outputs/" + BENCH_NAME, header=0, index_col=0)
 
 solvers = df["solver_name"].unique()
+solvers = np.array(sorted(solvers, key=str.lower))
 datasets = df["data_name"].unique()
 objectives = df["objective_name"].unique()
 
@@ -29,7 +31,7 @@ fig, axarr = plt.subplots(
     len(objectives),
     sharex=False,
     sharey=True,
-    figsize=[12, 4.8],
+    figsize=[12, 0.8 + 2.5 * len(datasets)],
     constrained_layout=True)
 
 # handle if there is only 1 dataset/objective:
@@ -58,16 +60,20 @@ for idx_data, dataset in enumerate(datasets):
             ax.loglog(
                 curve["time"], y, color=color, marker="o", markersize=3,
                 label=solver_name, linewidth=3)
-        # axarr[idx_data, idx_obj].set_xlim(
-            # 0, dict_xlim[dataset, div_alpha])
 
         axarr[len(datasets)-1, idx_obj].set_xlabel(
             "Time (s)", fontsize=fontsize - 2)
         axarr[0, idx_obj].set_title(
-            regex.search(objective).group(1), fontsize=fontsize - 2)
+            '\n'.join(regex.search(objective).group(1).split(",")), fontsize=fontsize - 2)
         ax.tick_params(axis='both', which='major', labelsize=labelsize)
 
-    axarr[idx_data, 0].set_ylabel(dataset, fontsize=fontsize)
+    if regex.search(dataset) is not None:
+        dataset_label = (regex.sub("", dataset) + '\n' +
+                         '\n'.join(regex.search(dataset).group(1).split(',')))
+    else:
+        dataset_label = dataset
+    axarr[idx_data, 0].set_ylabel(
+        dataset_label, fontsize=fontsize - 6)
     # axarr[idx_data, 0].set_yticks([1, 1e-7])
     # axarr[idx_data, 0].set_ylim([1e-7, 1])
 
@@ -83,6 +89,8 @@ legend = ax2.legend(ax.lines, [line.get_label() for line in ax.lines], ncol=ncol
                     loc="upper center")
 fig2.canvas.draw()
 fig2.tight_layout()
-legend_width = legend.get_window_extent().width
-fig2.set_size_inches((legend_width // 15, legend.get_window_extent().height // 15))
+width = legend.get_window_extent().width
+height = legend.get_window_extent().height
+fig2.set_size_inches((width / 80,  height / 80))
+plt.axis('off')
 plt.show(block=False)
