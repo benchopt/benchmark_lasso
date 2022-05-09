@@ -1,5 +1,5 @@
 import sys
-
+from benchopt.utils.sys_info import _get_cuda_version
 import pytest
 
 
@@ -21,3 +21,7 @@ def check_test_solver_install(solver_class):
             'Modopt breaks other package installation by changing '
             'numpy version. Skipping for now.'
         )
+
+    if solver_class.name.lower() == "snapml[gpu=True]".lower():
+        if _get_cuda_version() is None:
+            pytest.skip("snapml[gpu=True] needs a GPU to run")
