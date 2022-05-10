@@ -11,7 +11,8 @@ from celer.plot_utils import configure_plt
 # BENCH_NAME = "benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
 # BENCH_NAME = "benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
 # BENCH_NAME = "benchopt_run_2022-05-09_18h23m07.csv"  # dbg
-BENCH_NAME = "benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01
+# BENCH_NAME = "benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01
+BENCH_NAME = "benchopt_run_2022-05-10_11h48m27.csv"  # finance
 FLOATING_PRECISION = 1e-11
 MIN_XLIM = 1e-3
 
@@ -52,6 +53,13 @@ for idx_data, dataset in enumerate(datasets):
     for idx_obj, objective in enumerate(objectives):
         df2 = df1[df1['objective_name'] == objective]
         ax = axarr[idx_data, idx_obj]
+        # check that at least one solver converged to compute c_star
+        if df2["objective_duality_gap"].min() > FLOATING_PRECISION * df2["objective_duality_gap"].max():
+            print(
+                f"No solver reached a duality gap below {FLOATING_PRECISION}, "
+                "cannot safely evaluate minimum objective."
+            )
+            continue
         c_star = np.min(df2["objective_value"]) - FLOATING_PRECISION
         for i, solver_name in enumerate(solvers):
             df3 = df2[df2['solver_name'] == solver_name]
