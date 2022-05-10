@@ -5,9 +5,9 @@ dataset: # dataset to run benchmark on
   - leukemia
 
 solver: # list of example solvers to do benchmark
-  - celer
   - python-pgd[use_acceleration=True]
   - sklearn
+  - lars
 
 # note: use more repetitions to have quantiles on the plot
 n-repetitions: 1

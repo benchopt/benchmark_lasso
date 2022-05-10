@@ -26,12 +26,14 @@ This benchmark can be run using the following commands:
 
    $ pip install -U benchopt
    $ git clone https://github.com/benchopt/benchmark_lasso
+   $ cd benchmark_lasso/
 
-To demonstrate the use of benchopt, one can run:
+To demonstrate the use of benchopt, one can run, from the `benchmark_lasso` folder:
 
 .. code-block::
 
-   $ benchopt run ./benchmark_lasso --config ./benchmark_lasso/example_config.yml
+   $ benchopt install . -s sklearn -s python-pgd --env
+   $ benchopt run . --config example_config.yml --env
 
 Alternatively, one can use the command line interface to select which problems, datasets and solvers are used:
 
@@ -55,7 +57,7 @@ If issues persist, you can also try running the benchmark in local mode with the
 
 .. code-block::
 
-  $ benchopt run ./benchmark_lasso -l -s sklearn -d leukemia --max-runs 10 --n-repetitions 10
+  $ benchopt run . -l -s sklearn -d leukemia --max-runs 10 --n-repetitions 10
 
 Note that in this case, only solvers which dependencies are installed in the current env will be run.
 
