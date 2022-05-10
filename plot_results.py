@@ -1,4 +1,5 @@
 import re
+import os
 import itertools
 import numpy as np
 import pandas as pd
@@ -6,20 +7,25 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
+SAVEFIG = False
+figname = "leukemia"
+
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
-# BENCH_NAME = "benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
-# BENCH_NAME = "benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
-# BENCH_NAME = "benchopt_run_2022-05-09_18h23m07.csv"  # dbg
-# BENCH_NAME = "benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01
-BENCH_NAME = "benchopt_run_2022-05-10_11h48m27.csv"  # finance
+# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_15h20m40.csv"  # leukemia
+# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
+# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
+# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h23m07.csv"  # dbg
+BENCH_NAME = "./outputs/benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01
+# BENCH_NAME = "benchopt_run_2022-05-10_11h48m27.csv"  # finance
 FLOATING_PRECISION = 1e-11
 MIN_XLIM = 1e-3
+MARKERS = list(plt.Line2D.markers.keys())[:-4]
 
 configure_plt()
-cmap = plt.get_cmap('tab10')
+cmap = plt.get_cmap('tab20')
 
-df = pd.read_csv("./outputs/" + BENCH_NAME, header=0, index_col=0)
+df = pd.read_csv(BENCH_NAME, header=0, index_col=0)
 
 solvers = df["solver_name"].unique()
 solvers = np.array(sorted(solvers, key=str.lower))
@@ -31,7 +37,7 @@ labelsize = 20
 regex = re.compile('\[(.*?)\]')
 
 plt.close('all')
-fig, axarr = plt.subplots(
+fig1, axarr = plt.subplots(
     len(datasets),
     len(objectives),
     sharex=False,
@@ -68,11 +74,10 @@ for idx_data, dataset in enumerate(datasets):
             q1 = df3.groupby('stop_val')['time'].quantile(.1)
             q9 = df3.groupby('stop_val')['time'].quantile(.9)
             y = curve["objective_value"] - c_star
-            color = cmap(i)
 
             ax.loglog(
-                curve["time"], y, color=color, marker="o", markersize=3,
-                label=solver_name, linewidth=3)
+                curve["time"], y, color=cmap(i), marker=MARKERS[i], markersize=6,
+                label=solver_name, linewidth=2)
 
         ax.set_xlim([MIN_XLIM, ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel(
@@ -91,7 +96,7 @@ for idx_data, dataset in enumerate(datasets):
     # axarr[idx_data, 0].set_yticks([1, 1e-7])
     # axarr[idx_data, 0].set_ylim([1e-7, 1])
 
-fig.suptitle(regex.sub('', objective), fontsize=fontsize)
+fig1.suptitle(regex.sub('', objective), fontsize=fontsize)
 plt.show(block=False)
 
 
@@ -111,3 +116,15 @@ height = legend.get_window_extent().height
 fig2.set_size_inches((width / 80,  max(height / 80, 0.5)))
 plt.axis('off')
 plt.show(block=False)
+
+
+if SAVEFIG:
+    fig1_name = f"figures/{figname}.pdf"
+    fig1.savefig(fig1_name)
+    os.system(f"pdfcrop {fig1_name} {fig1_name}")
+    fig1.savefig(f"figures/{figname}.svg")
+
+    fig2_name = f"figures/{figname}_legend.pdf"
+    fig2.savefig(fig2_name)
+    os.system(f"pdfcrop {fig2_name} {fig2_name}")
+    fig2.savefig(f"figures/{figname}_legend.svg")
