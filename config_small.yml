@@ -1,10 +1,11 @@
 objective:
   - Lasso Regression[fit_intercept=False,reg=0.1]
   - Lasso Regression[fit_intercept=False,reg=0.01]
-  - Lasso Regression[fit_intercept=False,reg=0.001]
+  # - Lasso Regression[fit_intercept=False,reg=0.001]
 dataset:
-  - leukemia
-  - simulated[n_features=5000,n_samples=500,rho=0.3]
+  - meg
+  # - leukemia
+  # - simulated[n_features=5000,n_samples=500,rho=0.3]
 n-repetitions: 5
 n-jobs: 4
 timeout: 500

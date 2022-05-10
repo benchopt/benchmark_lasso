@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import blitzl1
+    import numpy as np
 
 
 class Solver(BaseSolver):
@@ -27,7 +28,8 @@ class Solver(BaseSolver):
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        self.X, self.y, self.lmbd = X, y, lmbd
+        # XXX y hack for MEG for now, must fix upstream
+        self.X, self.y, self.lmbd = X, np.ascontiguousarray(y), lmbd
 
         blitzl1.set_use_intercept(False)
         blitzl1.set_tolerance(0)

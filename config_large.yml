@@ -3,18 +3,19 @@ objective:
     - Lasso Regression[fit_intercept=False,reg=0.01]
     - Lasso Regression[fit_intercept=False,reg=0.001]
 dataset:
-    - libsvm[dataset=rcv1.binary]
+    # - libsvm[dataset=rcv1.binary]
+    - finance
 n-repetitions: 5
 n-jobs: 4
-timeout: 100
+timeout: 500
 solver:
   - celer
-  - sklearn
-  - cd
-  - glmnet
-  - lars
-  - modopt-fista
+  # - sklearn
+  # - cd
+  # - glmnet
+  # - lars
+  # - modopt-fista
   - skglm
   # - noncvx-pro
   - blitz
-  - python-pgd
+  # - python-pgd
