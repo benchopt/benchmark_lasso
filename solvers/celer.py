@@ -2,7 +2,7 @@ import warnings
 
 from benchopt import BaseSolver
 from benchopt import safe_import_context
-
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
@@ -21,6 +21,8 @@ class Solver(BaseSolver):
         '"Celer: a Fast Solver for the Lasso with Dual Extrapolation", '
         'vol. 80, pp. 3321-3330 (2018)'
     ]
+
+    # stopping_criterion = SufficientProgressCriterion(eps=1e-15)
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
