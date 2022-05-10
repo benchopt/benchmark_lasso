@@ -6,16 +6,16 @@ dataset:
     # - libsvm[dataset=rcv1.binary]
     - finance
 n-repetitions: 5
-n-jobs: 4
-timeout: 500
+n-jobs: 40
+timeout: 3000
 solver:
   - celer
-  # - sklearn
-  # - cd
-  # - glmnet
+  - sklearn
+  - cd
+  - glmnet
   # - lars
-  # - modopt-fista
+  - modopt-fista
   - skglm
   # - noncvx-pro
   - blitz
-  # - python-pgd
+  - python-pgd
