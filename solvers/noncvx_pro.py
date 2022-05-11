@@ -28,7 +28,7 @@ class Solver(BaseSolver):
 
         if n_samples < n_features:
             def u_opt(v):
-                S = X @ np.diag(v**2) @ X.T + lmbd * np.eye(n_samples)
+                S = X * v**2 @ X.T + lmbd * np.eye(n_samples)
                 return v * (X.T @ np.linalg.solve(S, y))
 
             def nabla_f(v):
