@@ -7,23 +7,34 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-figname = "finance"
+SAVEFIG = True
+# figname = "leukemia_meg"
+# figname = "finance"
+figname = "rcv1_news20"
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_15h20m40.csv"  # leukemia
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
-# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h23m07.csv"  # dbg
-# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, libsvm
+BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
-BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_15h45m21.csv'  # finance all
+
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
+
+all_solvers = [
+    'Blitz', 'cd', 'Celer', 'glmnet', 'lars',
+    'ModOpt-FISTA[restart_strategy=adaptive-1]',
+    'ModOpt-FISTA[restart_strategy=greedy]',
+    'Python-PGD[use_acceleration=False]',
+    'Python-PGD[use_acceleration=True]', 'skglm', 'sklearn',
+    'snapml[gpu=False]', 'snapml[gpu=True]'
+]
+
 
 DICT_XLIM = {
     "libsvm[dataset=rcv1.binary]": 1e-2,
@@ -33,7 +44,9 @@ DICT_XLIM = {
 }
 
 configure_plt()
-cmap = plt.get_cmap('tab20')
+CMAP = plt.get_cmap('tab20')
+style = {solv: (CMAP(i), MARKERS[i]) for i, solv in enumerate(all_solvers)}
+
 
 df = pd.read_csv(BENCH_NAME, header=0, index_col=0)
 
@@ -86,7 +99,8 @@ for idx_data, dataset in enumerate(datasets):
             y = curve["objective_value"] - c_star
 
             ax.loglog(
-                curve["time"], y, color=cmap(i), marker=MARKERS[i], markersize=6,
+                curve["time"], y, color=style[solver_name][0],
+                marker=style[solver_name][1], markersize=6,
                 label=solver_name, linewidth=2)
 
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
@@ -103,8 +117,6 @@ for idx_data, dataset in enumerate(datasets):
         dataset_label = dataset
     axarr[idx_data, 0].set_ylabel(
         dataset_label, fontsize=fontsize - 6)
-    # axarr[idx_data, 0].set_yticks([1, 1e-7])
-    # axarr[idx_data, 0].set_ylim([1e-7, 1])
 
 fig1.suptitle(regex.sub('', objective), fontsize=fontsize)
 plt.show(block=False)
