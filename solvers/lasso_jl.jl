@@ -25,8 +25,6 @@ function solve_lasso(
         λ=lambda,
         standardize=false,
         intercept=fit_intercept,
-        randomize=false,
-        stopearly=false,
         maxncoef=max(size(X, 1), size(X, 2)) * 100,
         cd_tol=tol,
     )
