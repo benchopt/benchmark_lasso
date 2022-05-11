@@ -2,7 +2,7 @@ from benchopt import BaseDataset
 from benchopt import safe_import_context
 
 
-with safe_import_context() as ctx:
+with safe_import_context() as import_ctx:
     import mne
     import numpy as np
     from mne.datasets import sample
