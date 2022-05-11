@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = True
-figname = "meg_wip"
+SAVEFIG = False
+figname = "finance"
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
@@ -16,9 +16,11 @@ figname = "meg_wip"
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h23m07.csv"  # dbg
-BENCH_NAME = "./outputs/benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01 nosnapml
-# BENCH_NAME = "benchopt_run_2022-05-10_11h48m27.csv"  # finance
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, libsvm
+# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
+# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
+BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_15h45m21.csv'  # finance all
+
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
@@ -27,6 +29,7 @@ DICT_XLIM = {
     "libsvm[dataset=rcv1.binary]": 1e-2,
     "libsvm[dataset=news20.binary]": 1e-1,
     "MEG": 1e-2,
+    "finance": 1e-1,
 }
 
 configure_plt()
