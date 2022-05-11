@@ -54,19 +54,14 @@ class Solver(JuliaSolver):
         self.run(1e-5)
 
     def run(self, tol):
-        if tol == INFINITY:
-            # Lasso.jl always runs one iteration before checking convergence,
-            # so we use this workaround to force the solver to start at zero
-            coefs_dim = self.p + 1 if self.fit_intercept else self.p
-            self.coefs = np.zeros(coefs_dim)
-        else:
-            self.coefs = self.solve_lasso(
-                self.X,
-                self.y,
-                self.lmbd / len(self.y),
-                self.fit_intercept,
-                tol**1.8,
-            )
+        self.coefs = self.solve_lasso(
+            self.X,
+            self.y,
+            self.lmbd / len(self.y),
+            self.fit_intercept,
+            tol**1.8,
+            tol == INFINITY
+        )
 
     def get_result(self):
         coefs = np.ravel(self.coefs)
