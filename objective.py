@@ -21,6 +21,12 @@ class Objective(BaseObjective):
         self.lmbd = self.reg * self._get_lambda_max()
         self.n_features = self.X.shape[1]
 
+    def get_one_solution(self):
+        n_features = self.n_features
+        if self.fit_intercept:
+            n_features += 1
+        return np.zeros(n_features)
+
     def compute(self, beta):
         # compute residuals
         if self.fit_intercept:
