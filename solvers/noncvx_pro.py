@@ -5,7 +5,6 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from numpy.linalg import norm
     import scipy.optimize as sciop
-    from scipy.sparse import issparse
 
 
 class Solver(BaseSolver):
@@ -19,9 +18,6 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
-        # XXX: make this solver work with sparse matrices.
-        if issparse(X):
-            return True, f"{self.name} does not support sparse design matrices"
         return False, None
 
     def run(self, n_iter):
