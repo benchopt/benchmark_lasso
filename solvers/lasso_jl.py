@@ -22,10 +22,7 @@ class Solver(JuliaSolver):
         patience=7, eps=1e-15, strategy="tolerance"
     )
     julia_requirements = [
-        "Distributions",
-        "GLM",
         "Lasso",
-        "LinearAlgebra",
         "PyCall",
         "SparseArrays",
     ]

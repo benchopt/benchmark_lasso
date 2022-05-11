@@ -1,7 +1,4 @@
-using Distributions
-using GLM
 using Lasso
-using LinearAlgebra
 using PyCall
 using SparseArrays
 
