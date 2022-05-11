@@ -14,7 +14,7 @@ with safe_import_context() as import_ctx:
 class Dataset(BaseDataset):
     name = "MEG"
     install_cmd = "conda"
-    requirements = ["mne"]
+    requirements = ["pip:mne"]
 
     @staticmethod
     def _load_meg_data(condition="Left Auditory"):
