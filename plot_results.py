@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-figname = "leukemia"
+SAVEFIG = True
+figname = "meg_wip"
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
@@ -16,11 +16,18 @@ figname = "leukemia"
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h23m07.csv"  # dbg
-BENCH_NAME = "./outputs/benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01
+BENCH_NAME = "./outputs/benchopt_run_2022-05-10_11h29m18.csv"  # MEG 0.1 0.01 nosnapml
 # BENCH_NAME = "benchopt_run_2022-05-10_11h48m27.csv"  # finance
-FLOATING_PRECISION = 1e-11
+# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, libsvm
+FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
+
+DICT_XLIM = {
+    "libsvm[dataset=rcv1.binary]": 1e-2,
+    "libsvm[dataset=news20.binary]": 1e-1,
+    "MEG": 1e-2,
+}
 
 configure_plt()
 cmap = plt.get_cmap('tab20')
@@ -60,12 +67,12 @@ for idx_data, dataset in enumerate(datasets):
         df2 = df1[df1['objective_name'] == objective]
         ax = axarr[idx_data, idx_obj]
         # check that at least one solver converged to compute c_star
-        if df2["objective_duality_gap"].min() > FLOATING_PRECISION * df2["objective_duality_gap"].max():
-            print(
-                f"No solver reached a duality gap below {FLOATING_PRECISION}, "
-                "cannot safely evaluate minimum objective."
-            )
-            continue
+        # if df2["objective_duality_gap"].min() > FLOATING_PRECISION * df2["objective_duality_gap"].max():
+        #     print(
+        #         f"No solver reached a duality gap below {FLOATING_PRECISION}, "
+        #         "cannot safely evaluate minimum objective."
+        #     )
+        #     continue
         c_star = np.min(df2["objective_value"]) - FLOATING_PRECISION
         for i, solver_name in enumerate(solvers):
             df3 = df2[df2['solver_name'] == solver_name]
@@ -79,7 +86,7 @@ for idx_data, dataset in enumerate(datasets):
                 curve["time"], y, color=cmap(i), marker=MARKERS[i], markersize=6,
                 label=solver_name, linewidth=2)
 
-        ax.set_xlim([MIN_XLIM, ax.get_xlim()[1]])
+        ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel(
             "Time (s)", fontsize=fontsize - 2)
         axarr[0, idx_obj].set_title(
@@ -105,6 +112,8 @@ n_col = 3
 if n_col is None:
     n_col = len(axarr[0, 0].lines)
 
+# take first ax, more likely to have all solvers converging
+ax = axarr[0, 0]
 lines_ordered = list(itertools.chain(*[ax.lines[i::n_col] for i in range(n_col)]))
 legend = ax2.legend(
     lines_ordered, [line.get_label() for line in lines_ordered], ncol=n_col,
