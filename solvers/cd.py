@@ -5,6 +5,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from numba import njit
+    from sklearn.linear_model._base import _preprocess_data
 
 
 if import_ctx.failed_import:
@@ -37,14 +38,22 @@ class Solver(BaseSolver):
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - not implemented but this should be quite easy
-        if fit_intercept:
+        # XXX - intercept not implemented for sparse X but it shouldn't be hard
+        if fit_intercept and sparse.issparse(X):
             return True, f"{self.name} does not handle fit_intercept"
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        self.y, self.lmbd = y, lmbd
+        # sklearn way of handling intercept: center y and X for dense data
+        if fit_intercept:
+            X, y, X_offset, y_offset, _ = _preprocess_data(
+                X, y, fit_intercept, return_mean=True, copy=True,
+            )
+            self.X_offset = X_offset
+            self.y_offset = y_offset
+
+        self.y, self.lmbd, self.fit_intercept = y, lmbd, fit_intercept
 
         if sparse.issparse(X):
             self.X = X
@@ -65,6 +74,10 @@ class Solver(BaseSolver):
         else:
             L = (self.X ** 2).sum(axis=0)
             self.w = self.cd(self.X, self.y, self.lmbd, L, n_iter)
+
+        if self.fit_intercept:
+            intercept = self.y_offset - self.X_offset @ self.w
+            self.w = np.r_[self.w, intercept]
 
     @staticmethod
     @njit
