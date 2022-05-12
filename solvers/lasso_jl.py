@@ -51,17 +51,24 @@ class Solver(JuliaSolver):
             self.X = scipyCSC_to_julia(X)
 
         # Trigger Julia JIT compilation
+        self.prev_solution = np.zeros(self.p + 1) if fit_intercept else np.zeros(self.p)
         self.run(1e-2)
 
     def run(self, tol):
-        self.coefs = self.solve_lasso(
+        coefs, converged = self.solve_lasso(
             self.X,
             self.y,
             self.lmbd / len(self.y),
             self.fit_intercept,
             tol**1.8,
-            tol == INFINITY
+            tol == INFINITY,
         )
+        if converged:
+            self.coefs = coefs
+            self.prev_solution = coefs
+        else:
+            self.coefs = self.prev_solution
+
 
     def get_result(self):
         coefs = np.ravel(self.coefs)
