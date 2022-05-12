@@ -40,7 +40,10 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - intercept not implemented for sparse X but it shouldn't be hard
         if fit_intercept and sparse.issparse(X):
-            return True, f"{self.name} does not handle fit_intercept"
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data",
+            )
 
         return False, None
 
