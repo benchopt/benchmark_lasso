@@ -7,19 +7,18 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = True
-# figname = "leukemia_meg"
+SAVEFIG = False
+# SAVEFIG = True
+figname = "leukemia_meg"
 # figname = "finance"
-figname = "rcv1_news20"
+# figname = "rcv1_news20"
 
 # RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
 # by the name of the produced results csv file.
-# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_15h20m40.csv"  # leukemia
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
-# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_18h10m13.csv"  # rcv1
-BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
+# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
-# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
+BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
 
 
 FLOATING_PRECISION = 1e-8
@@ -27,7 +26,7 @@ MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
 
 all_solvers = [
-    'Blitz', 'cd', 'Celer', 'glmnet', 'lars',
+    'Blitz', 'cd', 'Celer', 'glmnet', 'lars', 'Lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]',
     'Python-PGD[use_acceleration=False]',
@@ -41,6 +40,27 @@ DICT_XLIM = {
     "libsvm[dataset=news20.binary]": 1e-1,
     "MEG": 1e-2,
     "finance": 1e-1,
+    'leukemia': 1e-3,
+}
+
+DICT_TITLE = {
+    'Lasso Regression[fit_intercept=False,reg=0.1]': r'$\lambda = 0.1 \lambda_{\mathrm{max}}$',
+    'Lasso Regression[fit_intercept=False,reg=0.01]': r'$\lambda = 0.01 \lambda_{\mathrm{max}}$',
+    'Lasso Regression[fit_intercept=False,reg=0.001]': r'$\lambda = 0.001 \lambda_{\mathrm{max}}$',
+}
+
+DICT_YLABEL = {
+    'libsvm[dataset=rcv1.binary]': "rcv1.binary",
+    'libsvm[dataset=news20.binary]': "news20.binary",
+    'leukemia': 'leukemia',
+    'MEG': 'MEG',
+}
+
+DICT_YTICKS = {
+    'libsvm[dataset=rcv1.binary]': [1e3, 1, 1e-3, 1e-6],
+    'libsvm[dataset=news20.binary]': [1e3, 1, 1e-3, 1e-6],
+    'leukemia': [1e1, 1e-2, 1e-5, 1e-8],
+    'MEG': [1e1, 1e-2, 1e-5, 1e-8],
 }
 
 configure_plt()
@@ -65,7 +85,7 @@ fig1, axarr = plt.subplots(
     len(objectives),
     sharex=False,
     sharey=True,
-    figsize=[12, 0.8 + 2.5 * len(datasets)],
+    figsize=[11, 1 + 2 * len(datasets)],
     constrained_layout=True)
 
 # handle if there is only 1 dataset/objective:
@@ -101,14 +121,19 @@ for idx_data, dataset in enumerate(datasets):
             ax.loglog(
                 curve["time"], y, color=style[solver_name][0],
                 marker=style[solver_name][1], markersize=6,
-                label=solver_name, linewidth=2)
+                label=solver_name, linewidth=2, markevery=3)
 
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel(
             "Time (s)", fontsize=fontsize - 2)
         axarr[0, idx_obj].set_title(
-            '\n'.join(regex.search(objective).group(1).split(",")), fontsize=fontsize - 2)
+            # '\n'.join(regex.search(objective).group(1).split(",")), fontsize=fontsize - 2)
+            DICT_TITLE[objective])
+
         ax.tick_params(axis='both', which='major', labelsize=labelsize)
+        # ax.yaxis.set_major_locator(plt.MaxNLocator(3))
+        ax.grid()
+        ax.set_yticks(DICT_YTICKS[dataset])
 
     if regex.search(dataset) is not None:
         dataset_label = (regex.sub("", dataset) + '\n' +
@@ -116,7 +141,9 @@ for idx_data, dataset in enumerate(datasets):
     else:
         dataset_label = dataset
     axarr[idx_data, 0].set_ylabel(
-        dataset_label, fontsize=fontsize - 6)
+        # dataset_label,
+        DICT_YLABEL[dataset],
+        fontsize=fontsize - 6)
 
 fig1.suptitle(regex.sub('', objective), fontsize=fontsize)
 plt.show(block=False)
