@@ -62,6 +62,11 @@ jobs:
         branch=${BENCHOPT_BRANCH##*:}
         pip install -U git+https://github.com/$user/benchopt@$branch
 
+    - name: Disable Julia multi-threading on MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        export JULIA_NUM_THREADS=1
+
     - name: Test
       run: |
         export OMP_NUM_THREADS=1
