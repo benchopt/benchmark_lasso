@@ -2,8 +2,11 @@ from pathlib import Path
 
 import numpy as np
 from benchopt import safe_import_context
-from benchopt.helpers.julia import (JuliaSolver, assert_julia_installed,
-                                    get_jl_interpreter)
+from benchopt.helpers.julia import (
+    JuliaSolver,
+    assert_julia_installed,
+    get_jl_interpreter,
+)
 from benchopt.runner import INFINITY
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
@@ -51,7 +54,8 @@ class Solver(JuliaSolver):
             self.X = scipyCSC_to_julia(X)
 
         # Trigger Julia JIT compilation
-        self.prev_solution = np.zeros(self.p + 1) if fit_intercept else np.zeros(self.p)
+        w_dim = self.p + 1 if fit_intercept else self.p
+        self.prev_solution = np.zeros(w_dim)
         self.run(1e-2)
 
     def run(self, tol):
@@ -68,7 +72,6 @@ class Solver(JuliaSolver):
             self.prev_solution = coefs
         else:
             self.coefs = self.prev_solution
-
 
     def get_result(self):
         coefs = np.ravel(self.coefs)
