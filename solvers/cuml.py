@@ -6,7 +6,7 @@ with safe_import_context() as import_ctx:
     cuda_version = _get_cuda_version()
     if cuda_version is not None:
         cuda_version = cuda_version.split("cuda_", 1)[1][:4]
-    if cuda_version is None:
+    else:
         raise ImportError("cuml solver needs a nvidia GPU.")
 
     import cudf
