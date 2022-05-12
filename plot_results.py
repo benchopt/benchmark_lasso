@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-# SAVEFIG = True
-figname = "leukemia_meg"
+# SAVEFIG = False
+SAVEFIG = True
+figname = "leukemia_meg_rcv1_news20"
 # figname = "finance"
 # figname = "rcv1_news20"
 
@@ -18,7 +18,8 @@ figname = "leukemia_meg"
 # BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
-BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
+# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
+BENCH_NAME = './dist_outputs/leuk_meg_rcv1_news20.csv'  # meg + leukemia
 
 
 FLOATING_PRECISION = 1e-8
@@ -84,7 +85,7 @@ fig1, axarr = plt.subplots(
     len(datasets),
     len(objectives),
     sharex=False,
-    sharey=True,
+    sharey='row',
     figsize=[11, 1 + 2 * len(datasets)],
     constrained_layout=True)
 
@@ -131,9 +132,7 @@ for idx_data, dataset in enumerate(datasets):
             DICT_TITLE[objective])
 
         ax.tick_params(axis='both', which='major', labelsize=labelsize)
-        # ax.yaxis.set_major_locator(plt.MaxNLocator(3))
         ax.grid()
-        ax.set_yticks(DICT_YTICKS[dataset])
 
     if regex.search(dataset) is not None:
         dataset_label = (regex.sub("", dataset) + '\n' +
@@ -144,6 +143,7 @@ for idx_data, dataset in enumerate(datasets):
         # dataset_label,
         DICT_YLABEL[dataset],
         fontsize=fontsize - 6)
+    axarr[idx_data, 0].set_yticks(DICT_YTICKS[dataset])
 
 fig1.suptitle(regex.sub('', objective), fontsize=fontsize)
 plt.show(block=False)
