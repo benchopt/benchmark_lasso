@@ -1,9 +1,9 @@
 from benchopt import BaseSolver, safe_import_context
 from benchopt.utils.sys_info import _get_cuda_version
 
+cuda_version = _get_cuda_version()
 
 with safe_import_context() as import_ctx:
-    cuda_version = _get_cuda_version()
     if cuda_version is not None:
         cuda_version = cuda_version.split("cuda_", 1)[1][:4]
     else:
