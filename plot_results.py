@@ -19,8 +19,9 @@ figname = "leukemia_meg_rcv1_news20"
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
 # BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
-BENCH_NAME = './dist_outputs/leuk_meg_rcv1_news20.csv'  # meg + leukemia
+# BENCH_NAME = './dist_outputs/leuk_meg_rcv1_news20.csv'  # meg + leukemia
 
+BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -39,6 +40,7 @@ all_solvers = [
 DICT_XLIM = {
     "libsvm[dataset=rcv1.binary]": 1e-2,
     "libsvm[dataset=news20.binary]": 1e-1,
+    "libsvm[dataset=kkda_train]": 1e-1,
     "MEG": 1e-2,
     "finance": 1e-1,
     'leukemia': 1e-3,
@@ -53,6 +55,7 @@ DICT_TITLE = {
 DICT_YLABEL = {
     'libsvm[dataset=rcv1.binary]': "rcv1.binary",
     'libsvm[dataset=news20.binary]': "news20.binary",
+    'libsvm[dataset=kdda_train]': "kkda train",
     'leukemia': 'leukemia',
     'MEG': 'MEG',
 }
@@ -60,6 +63,7 @@ DICT_YLABEL = {
 DICT_YTICKS = {
     'libsvm[dataset=rcv1.binary]': [1e3, 1, 1e-3, 1e-6],
     'libsvm[dataset=news20.binary]': [1e3, 1, 1e-3, 1e-6],
+    'libsvm[dataset=kdda_train]': [1e3, 1, 1e-3, 1e-6],
     'leukemia': [1e1, 1e-2, 1e-5, 1e-8],
     'MEG': [1e1, 1e-2, 1e-5, 1e-8],
 }
