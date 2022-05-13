@@ -78,7 +78,7 @@ class Solver(BaseSolver):
             L = (self.X ** 2).sum(axis=0)
             self.w = self.cd(self.X, self.y, self.lmbd, L, n_iter)
 
-        if self.fit_intercept:
+        if self.fit_intercept and not sparse.issparse(self.X):
             intercept = self.y_offset - self.X_offset @ self.w
             self.w = np.r_[self.w, intercept]
 
