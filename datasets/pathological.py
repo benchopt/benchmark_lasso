@@ -11,7 +11,8 @@ class Dataset(BaseDataset):
     # the cross product for each key in the dictionary.
     parameters = {
         'n_samples': [
-            11,
+            10,
+            100,
             1000
         ],
     }
@@ -22,7 +23,8 @@ class Dataset(BaseDataset):
         self.n_features = n_samples
         # self.rng = np.random.RandomState(random_state)
         # self.diago = self.rng.rand(n_samples)
-        self.diago = np.logspace(-6, -12, n_samples)
+        # self.diago = np.logspace(-6, -12, n_samples)
+        self.diago = np.logspace(-3, -8, n_samples) / n_samples
 
     def get_data(self):
         y = np.ones(self.n_samples)
