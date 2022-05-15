@@ -7,8 +7,10 @@ dataset:
   - leukemia
   - libsvm[dataset=rcv1.binary]
   - libsvm[dataset=news20.binary]
+  - lars_adversarial[n_samples=100]
+  - lars_adversarial[n_samples=1000]
 n-repetitions: 5
-n-jobs: 4
+n-jobs: 12
 timeout: 5000
 solver:
   - apcd
