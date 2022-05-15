@@ -1,0 +1,14 @@
+objective:
+  - Lasso Regression[fit_intercept=False,reg=0.1]
+
+dataset: # dataset to run benchmark on
+  - leukemia
+
+solver: # list of example solvers to do benchmark
+  - python-pgd[use_acceleration=True]
+  - sklearn
+  - lars
+
+# note: use more repetitions to have quantiles on the plot
+n-repetitions: 1
+max-runs: 20
