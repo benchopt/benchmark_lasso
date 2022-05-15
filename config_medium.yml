@@ -13,7 +13,7 @@ n-repetitions: 5
 n-jobs: 12
 timeout: 5000
 solver:
-  - apcd
+  # - apcd
   - blitz
   - cd
   - celer
