@@ -14,6 +14,12 @@ class Solver(BaseSolver):
     requirements = ["pip:snapml"]
 
     parameters = {"gpu": [False, True]}
+    references = [
+        "C. Dünner, T. Parnell, D. Sarigiannis, N. Ioannou, A. Anghel"
+        "G. Ravi, M. Kandasamy and H. Pozidis"
+        "Snap ML: A hierarchical framework for machine learning"
+        "Advances in Neural Information Processing Systems (2018)"
+    ]
 
     def skip(self, X, y, lmbd, fit_intercept):
         if self.gpu and get_cuda_version() is None:
