@@ -9,7 +9,7 @@ class Dataset(BaseDataset):
     name = "lars_adversarial"
 
     parameters = {
-        'n_samples': 100,
+        'n_samples': [100],
     }
 
     def __init__(self, n_samples=10):
