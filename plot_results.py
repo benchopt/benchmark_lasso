@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-# SAVEFIG = False
-SAVEFIG = True
-figname = "leukemia_meg_rcv1_news20"
+SAVEFIG = False
+# SAVEFIG = True
+figname = "lars_leukemia_meg_rcv1_news20"
 # figname = "finance"
 # figname = "rcv1_news20"
 
@@ -21,21 +21,34 @@ figname = "leukemia_meg_rcv1_news20"
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
 # BENCH_NAME = './dist_outputs/leuk_meg_rcv1_news20.csv'  # meg + leukemia
 
-BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
+# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
+# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
+BENCH_NAME = "dist_outputs/allminuslars1000.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
 
-all_solvers = [
-    'Blitz', 'cd', 'Celer', 'glmnet', 'lars', 'Lightning',
-    'ModOpt-FISTA[restart_strategy=adaptive-1]',
-    'ModOpt-FISTA[restart_strategy=greedy]',
-    'Python-PGD[use_acceleration=False]',
-    'Python-PGD[use_acceleration=True]', 'skglm', 'sklearn',
-    'snapml[gpu=False]', 'snapml[gpu=True]'
-]
+SOLVERS = {
+    'Blitz': "Blitz",
+    'cd': 'Coordinate descent',
+    'Celer': 'celer',
+    'cuml[cd]': 'CUML[cd]',
+    'cuml[qn]': 'CUML[qn]',
+    'glmnet': 'GLMNET',
+    'lars': "LARS",
+    'Lightning': 'lightning',
+    'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[restart=adaptive-1]',
+    'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[restart=greedy]',
+    'Python-PGD[use_acceleration=False]': 'Python-FISTA',
+    'Python-PGD[use_acceleration=True]': 'Python-PGD',
+    'skglm': 'skglm',
+    'sklearn': 'scikit-learn',
+    'snapml[gpu=False]': 'snapml[cpu]',
+    'snapml[gpu=True]': 'snapml[gpu]',
+}
 
+all_solvers = SOLVERS.keys()
 
 DICT_XLIM = {
     "libsvm[dataset=rcv1.binary]": 1e-2,
@@ -44,6 +57,8 @@ DICT_XLIM = {
     "MEG": 1e-2,
     "finance": 1e-1,
     'leukemia': 1e-3,
+    "lars_adversarial[n_samples=100]": 1e-4,
+    "lars_adversarial[n_samples=1000]": 1e-4,
 }
 
 DICT_TITLE = {
@@ -58,6 +73,8 @@ DICT_YLABEL = {
     'libsvm[dataset=kdda_train]': "kkda train",
     'leukemia': 'leukemia',
     'MEG': 'MEG',
+    "lars_adversarial[n_samples=100]": 'LARS[n=100]',
+    "lars_adversarial[n_samples=1000]": 'LARS 1000',
 }
 
 DICT_YTICKS = {
@@ -66,6 +83,17 @@ DICT_YTICKS = {
     'libsvm[dataset=kdda_train]': [1e3, 1, 1e-3, 1e-6],
     'leukemia': [1e1, 1e-2, 1e-5, 1e-8],
     'MEG': [1e1, 1e-2, 1e-5, 1e-8],
+    "lars_adversarial[n_samples=100]": [1e1, 1e-2, 1e-5, 1e-8],
+    "lars_adversarial[n_samples=1000]": [1e1, 1e-2, 1e-5, 1e-8],
+}
+
+DICT_XTICKS = {
+    "lars_adversarial[n_samples=100]": np.geomspace(1e-4, 1e3, 8),
+    'leukemia': np.geomspace(1e-3, 1e2, 6),
+    'libsvm[dataset=rcv1.binary]': np.geomspace(1e-2, 1e2, 5),
+    'libsvm[dataset=news20.binary]': np.geomspace(1e-1, 1e3, 5),
+    # 'libsvm[dataset=kdda_train]': [1e3, 1, 1e-3, 1e-6],
+    'MEG': np.geomspace(1e-2, 1e3, 6),
 }
 
 configure_plt()
@@ -80,7 +108,8 @@ solvers = np.array(sorted(solvers, key=str.lower))
 datasets = df["data_name"].unique()
 objectives = df["objective_name"].unique()
 
-fontsize = 20
+titlesize = 22
+ticksize = 16
 labelsize = 20
 regex = re.compile('\[(.*?)\]')
 
@@ -126,30 +155,27 @@ for idx_data, dataset in enumerate(datasets):
             ax.loglog(
                 curve["time"], y, color=style[solver_name][0],
                 marker=style[solver_name][1], markersize=6,
-                label=solver_name, linewidth=2, markevery=3)
+                label=SOLVERS[solver_name], linewidth=2, markevery=3)
 
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
-        axarr[len(datasets)-1, idx_obj].set_xlabel(
-            "Time (s)", fontsize=fontsize - 2)
+        axarr[len(datasets)-1, idx_obj].set_xlabel("Time (s)", fontsize=labelsize)
         axarr[0, idx_obj].set_title(
             # '\n'.join(regex.search(objective).group(1).split(",")), fontsize=fontsize - 2)
-            DICT_TITLE[objective])
+            DICT_TITLE[objective], fontsize=labelsize)
 
-        ax.tick_params(axis='both', which='major', labelsize=labelsize)
         ax.grid()
+        ax.set_xticks(DICT_XTICKS[dataset])
+        ax.tick_params(axis='both', which='major', labelsize=ticksize)
 
     if regex.search(dataset) is not None:
         dataset_label = (regex.sub("", dataset) + '\n' +
                          '\n'.join(regex.search(dataset).group(1).split(',')))
     else:
         dataset_label = dataset
-    axarr[idx_data, 0].set_ylabel(
-        # dataset_label,
-        DICT_YLABEL[dataset],
-        fontsize=fontsize - 6)
+    axarr[idx_data, 0].set_ylabel(DICT_YLABEL[dataset], fontsize=labelsize)
     axarr[idx_data, 0].set_yticks(DICT_YTICKS[dataset])
 
-fig1.suptitle(regex.sub('', objective), fontsize=fontsize)
+fig1.suptitle(regex.sub('', objective), fontsize=titlesize)
 plt.show(block=False)
 
 
