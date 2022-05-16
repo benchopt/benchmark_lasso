@@ -1,7 +1,7 @@
-# from benchopt import BaseSolver, safe_import_context
-from benchopt import BaseSolver
+from benchopt import BaseSolver, safe_import_context
 
-# with safe_import_context() as ctx:
+with safe_import_context() as import_ctx:
+    import cd_solver
 
 
 class Solver(BaseSolver):
@@ -27,7 +27,6 @@ class Solver(BaseSolver):
         cf = [0.5] * n_samples
         g = ["abs"] * n_features
         cg = [self.lmbd] * n_features
-        import cd_solver
         pb = cd_solver.Problem(N=N, f=f, Af=Af, bf=bf, cf=cf, g=g, cg=cg)
         cd_solver.cd_solver_.coordinate_descent(
             pb, max_iter=n_iter)

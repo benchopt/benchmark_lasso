@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    from scipy import sparse
     from modopt.opt.algorithms import POGM
     from modopt.opt.proximity import SparseThreshold
     from modopt.opt.linear import Identity
@@ -26,7 +27,12 @@ class Solver(BaseSolver):
         'image processing", Astronomy and Computing, vol. 32, '
         ' pp. 100402 (2020)'
     ]
-    support_sparse = False
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        # the 1 / L stepsize is not valid for the intercept
+        if sparse.issparse(X) and fit_intercept:
+            return True, "modopt doesn't support sparse X and fit_intercept"
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -57,7 +63,11 @@ class Solver(BaseSolver):
 
             weights = np.full(self.X.shape[1], self.lmbd)
 
-        L = np.linalg.norm(self.X, ord=2) ** 2
+        if sparse.issparse(self.X):
+            L = sparse.linalg.svds(self.X, k=1)[1][0] ** 2
+        else:
+            L = np.linalg.norm(self.X, ord=2) ** 2
+
         self.pogm = POGM(
             x=self.var_init,  # this is the coefficient w
             u=self.var_init,
