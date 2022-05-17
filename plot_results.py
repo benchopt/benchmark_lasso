@@ -30,22 +30,22 @@ MIN_XLIM = 1e-3
 MARKERS = list(plt.Line2D.markers.keys())[:-4]
 
 SOLVERS = {
-    'Blitz': "Blitz",
-    'cd': 'Coordinate descent',
+    'Blitz': "blitz",
+    'cd': 'coordinate descent',
     'Celer': 'celer',
-    'cuml[cd]': 'CUML[cd]',
-    'cuml[qn]': 'CUML[qn]',
+    'cuml[cd]': 'cuML[cd]',
+    'cuml[qn]': 'cuML[qn]',
     'glmnet': 'GLMNET',
     'lars': "LARS",
     'Lightning': 'lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[greedy]',
-    'Python-PGD[use_acceleration=False]': 'Python-FISTA',
-    'Python-PGD[use_acceleration=True]': 'Python-PGD',
+    'Python-PGD[use_acceleration=False]': 'FISTA',
+    'Python-PGD[use_acceleration=True]': 'ISTA',
     'skglm': 'skglm',
     'sklearn': 'scikit-learn',
-    'snapml[gpu=False]': 'snapml[cpu]',
-    'snapml[gpu=True]': 'snapml[gpu]',
+    'snapml[gpu=False]': 'snapML[cpu]',
+    'snapml[gpu=True]': 'snapML[gpu]',
 }
 
 all_solvers = SOLVERS.keys()
@@ -104,7 +104,7 @@ style = {solv: (CMAP(i), MARKERS[i]) for i, solv in enumerate(all_solvers)}
 df = pd.read_csv(BENCH_NAME, header=0, index_col=0)
 
 solvers = df["solver_name"].unique()
-solvers = np.array(sorted(solvers, key=str.lower))
+solvers = np.array(sorted(solvers, key=lambda key: SOLVERS[key].lower()))
 datasets = df["data_name"].unique()
 objectives = df["objective_name"].unique()
 
