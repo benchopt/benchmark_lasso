@@ -188,7 +188,8 @@ if n_col is None:
 
 # take first ax, more likely to have all solvers converging
 ax = axarr[0, 0]
-lines_ordered = list(itertools.chain(*[ax.lines[i::n_col] for i in range(n_col)]))
+lines_ordered = list(itertools.chain(
+    *[ax.lines[i::n_col] for i in range(n_col)]))
 legend = ax2.legend(
     lines_ordered, [line.get_label() for line in lines_ordered], ncol=n_col,
     loc="upper center")
