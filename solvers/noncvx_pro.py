@@ -21,7 +21,7 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         # sklearn way of handling intercept: center y and X for dense data
-        # when X is sparse, X_offset is computed but X is not centered
+        # when X is sparse, X_offset is computed but X is not centered
         if fit_intercept:
             X, y, X_offset, y_offset, _ = _preprocess_data(
                 X, y, fit_intercept, return_mean=True, copy=True,
@@ -31,11 +31,11 @@ class Solver(BaseSolver):
 
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
-        
+
         if X.shape[0] >= X.shape[1]:
             self.C = X.T @ X
             if issparse(self.C):
-                self.C = self.C.toarray()        
+                self.C = self.C.toarray()
 
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX: make this solver work with sparse matrices.

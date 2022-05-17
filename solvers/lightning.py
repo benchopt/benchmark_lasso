@@ -6,7 +6,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from lightning.regression import CDRegressor
-    from sklearn.linear_model._base import _preprocess_data    
+    from sklearn.linear_model._base import _preprocess_data
 
 
 class Solver(BaseSolver):
