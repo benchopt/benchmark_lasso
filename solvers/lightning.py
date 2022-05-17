@@ -4,11 +4,11 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy import sparse
     from lightning.regression import CDRegressor
+    from sklearn.linear_model._base import _preprocess_data    
 
 
-# TODO: lightning always fit an intercept
-#       it is thus not optimizing the same cost function
 class Solver(BaseSolver):
     name = 'Lightning'
 
@@ -25,12 +25,25 @@ class Solver(BaseSolver):
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        if fit_intercept and sparse.issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data",
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
+        # lightning has an attribut intercept_ but it is not handled properly
+        # (as it is simply set to zero). For this reason, we use the sklearn
+        # way of handling intercept: center y and X beforehand for dense data
+        if fit_intercept:
+            X, y, X_offset, y_offset, _ = _preprocess_data(
+                X, y, fit_intercept, return_mean=True, copy=True,
+            )
+            self.X_offset = X_offset
+            self.y_offset = y_offset
+
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
@@ -45,6 +58,8 @@ class Solver(BaseSolver):
 
     def get_result(self):
         beta = self.clf.coef_.flatten()
+
         if self.fit_intercept:
-            beta = np.r_[beta, self.clf.intercept_]
+            intercept = self.y_offset - self.X_offset @ beta
+            beta = np.r_[beta, intercept]
         return beta
