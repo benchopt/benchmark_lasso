@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     from libsvmdata import fetch_libsvm
+    from sklearn.preprocessing import StandardScaler
 
 
 class Dataset(BaseDataset):
@@ -24,6 +25,10 @@ class Dataset(BaseDataset):
     def get_data(self):
 
         X, y = fetch_libsvm(self.dataset)
+
+        if self.dataset == "YearPredictionMSD":
+            scaler = StandardScaler()
+            scaler.fit_transform(X)
 
         data = dict(X=X, y=y)
 
