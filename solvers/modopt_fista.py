@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    from scipy import sparse
     from modopt.opt.algorithms import ForwardBackward
     from modopt.opt.proximity import SparseThreshold
     from modopt.opt.linear import Identity
@@ -28,7 +29,11 @@ class Solver(BaseSolver):
         'image processing", Astronomy and Computing, vol. 32, '
         ' pp. 100402 (2020)'
     ]
-    support_sparse = False
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if sparse.issparse(X) and fit_intercept:
+            return True, "modopt doesn't support sparse X and fit_intercept"
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -40,7 +45,10 @@ class Solver(BaseSolver):
             self.var_init = np.zeros(n_features)
 
     def run(self, callback):
-        L = np.linalg.norm(self.X, ord=2) ** 2
+        if sparse.issparse(self.X):
+            L = sparse.linalg.svds(self.X, k=1)[1][0] ** 2
+        else:
+            L = np.linalg.norm(self.X, ord=2) ** 2
 
         if self.restart_strategy == 'greedy':
             beta_param = 1.3 / L
