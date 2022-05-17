@@ -28,7 +28,7 @@ class Dataset(BaseDataset):
 
         if self.dataset == "YearPredictionMSD":
             scaler = StandardScaler()
-            scaler.fit_transform(X)
+            X = scaler.fit_transform(X)
 
         data = dict(X=X, y=y)
 
