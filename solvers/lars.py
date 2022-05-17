@@ -1,5 +1,6 @@
 from benchopt import BaseSolver
 from benchopt import safe_import_context
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
 
 with safe_import_context() as import_ctx:
@@ -20,6 +21,8 @@ class Solver(BaseSolver):
         " vol. 32 (2), pp. 407-499 (2004)"
     ]
     support_sparse = False
+
+    stopping_criterion = SufficientProgressCriterion(eps=1e-15, patience=10)
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

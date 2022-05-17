@@ -23,7 +23,8 @@ figname = "lars_leukemia_meg_rcv1_news20"
 
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
-BENCH_NAME = "dist_outputs/allminuslars1000.csv"
+# BENCH_NAME = "dist_outputs/allminuslars1000.csv"
+BENCH_NAME = "dist_outputs/all.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -40,6 +41,7 @@ SOLVERS = {
     'Lightning': 'lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[greedy]',
+    'noncvx-pro': 'noncvx-pro',
     'Python-PGD[use_acceleration=False]': 'FISTA',
     'Python-PGD[use_acceleration=True]': 'ISTA',
     'skglm': 'skglm',
