@@ -1,6 +1,3 @@
-from pathlib import Path
-
-import numpy as np
 from benchopt import safe_import_context
 from benchopt.helpers.julia import (
     JuliaSolver,
@@ -12,11 +9,12 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     assert_julia_installed()
+    import numpy as np
     from scipy import sparse
 
-
-# File containing the function to be called from julia
-JULIA_SOLVER_FILE = str(Path(__file__).with_suffix(".jl"))
+    from pathlib import Path
+    # File containing the function to be called from julia
+    JULIA_SOLVER_FILE = str(Path(__file__).with_suffix(".jl"))
 
 
 class Solver(JuliaSolver):
@@ -34,7 +32,6 @@ class Solver(JuliaSolver):
         'for generalized linear models via coordinate descent", '
         "J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)"
     ]
-    support_sparse = True
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.n, self.p = X.shape
