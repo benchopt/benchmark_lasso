@@ -6,6 +6,7 @@ with safe_import_context() as import_ctx:
     from numpy.linalg import norm
     import scipy.optimize as sciop
     from scipy.sparse import issparse
+    from sklearn.linear_model._base import _preprocess_data
 
 
 class Solver(BaseSolver):
@@ -14,14 +15,28 @@ class Solver(BaseSolver):
     stopping_strategy = 'iteration'
 
     def set_objective(self, X, y, lmbd, fit_intercept):
+        # sklearn way of handling intercept: center y and X for dense data
+        # when X is sparse, X_offset is computed but X is not centered
+        if fit_intercept:
+            X, y, X_offset, y_offset, _ = _preprocess_data(
+                X, y, fit_intercept, return_mean=True, copy=True,
+            )
+            self.X_offset = X_offset
+            self.y_offset = y_offset
+
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
 
     def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
         # XXX: make this solver work with sparse matrices.
         if issparse(X):
             return True, f"{self.name} does not support sparse design matrices"
+        # XXX: even if sparse support is added, the test below should be kept
+        # unless fit_intercept is properly handled for sparse matrices
+        # (by manually considering X_offset in calculations)
+        if fit_intercept and issparse(X):
+            return True, \
+                f"{self.name} doesn't handle fit_intercept with sparse matrix",
         return False, None
 
     def run(self, n_iter):
@@ -60,7 +75,7 @@ class Solver(BaseSolver):
                 g = u * (Cx - Xty) / lmbd + v
                 return f, g
 
-        opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 0}
+        opts = {'gtol': 1e-30, 'maxiter': n_iter, 'maxcor': 100, 'ftol': 1e-30}
         u0 = np.ones(n_features)
 
         lbfgs_res = sciop.minimize(
@@ -69,6 +84,10 @@ class Solver(BaseSolver):
         v = lbfgs_res.x
 
         self.w = v * u_opt(v)
+
+        if self.fit_intercept and not issparse(self.X):
+            intercept = self.y_offset - self.X_offset @ self.w
+            self.w = np.r_[self.w, intercept]
 
     def get_result(self):
         return self.w.flatten()
