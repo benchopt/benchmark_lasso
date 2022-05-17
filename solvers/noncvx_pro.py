@@ -65,7 +65,7 @@ class Solver(BaseSolver):
                 g = u * (Cx - Xty) / lmbd + v
                 return f, g
 
-        opts = {'gtol': 1e-8, 'maxiter': n_iter, 'maxcor': 5, 'ftol': 0}
+        opts = {'gtol': 1e-30, 'maxiter': n_iter, 'maxcor': 5, 'ftol': 1e-30}
         u0 = np.ones(n_features)
 
         lbfgs_res = sciop.minimize(
