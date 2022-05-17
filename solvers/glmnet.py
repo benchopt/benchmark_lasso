@@ -70,15 +70,14 @@ class Solver(BaseSolver):
         # no other way to force glmnet to solve for a prescribed lambda.
         fit_dict = {"lambda": self.lmbd / len(self.y)}
 
-        glmnet_fit = self.glmnet(self.X, self.y, intercept=self.fit_intercept,
-                                 standardize=False, maxit=maxit,
-                                 thresh=thresh, **fit_dict)
-        results = dict(zip(glmnet_fit.names, list(glmnet_fit)))
+        self.glmnet_fit = self.glmnet(
+            self.X, self.y, intercept=self.fit_intercept,
+            standardize=False, maxit=maxit, thresh=thresh, **fit_dict)
+
+    def get_result(self):
+        results = dict(zip(self.glmnet_fit.names, list(self.glmnet_fit)))
         as_matrix = robjects.r['as']
         coefs = np.array(as_matrix(results["beta"], "matrix"))
         beta = coefs.flatten()
 
-        self.w = np.r_[beta, results["a0"]] if self.fit_intercept else beta
-
-    def get_result(self):
-        return self.w
+        return np.r_[beta, results["a0"]] if self.fit_intercept else beta
