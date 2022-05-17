@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-# SAVEFIG = True
+# SAVEFIG = False
+SAVEFIG = True
 figname = "lars_leukemia_meg_rcv1_news20"
 # figname = "finance"
 # figname = "rcv1_news20"
@@ -38,8 +38,8 @@ SOLVERS = {
     'glmnet': 'GLMNET',
     'lars': "LARS",
     'Lightning': 'lightning',
-    'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[restart=adaptive-1]',
-    'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[restart=greedy]',
+    'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[adaptive-1]',
+    'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[greedy]',
     'Python-PGD[use_acceleration=False]': 'Python-FISTA',
     'Python-PGD[use_acceleration=True]': 'Python-PGD',
     'skglm': 'skglm',
@@ -175,7 +175,7 @@ for idx_data, dataset in enumerate(datasets):
     axarr[idx_data, 0].set_ylabel(DICT_YLABEL[dataset], fontsize=labelsize)
     axarr[idx_data, 0].set_yticks(DICT_YTICKS[dataset])
 
-fig1.suptitle(regex.sub('', objective), fontsize=titlesize)
+# fig1.suptitle(regex.sub('', objective), fontsize=titlesize)
 plt.show(block=False)
 
 
