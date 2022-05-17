@@ -24,4 +24,4 @@ class Dataset(BaseDataset):
         y = LabelBinarizer().fit_transform(y)[:, 0].astype(X.dtype)
         data = dict(X=X, y=y)
 
-        return X.shape[1], data
+        return data

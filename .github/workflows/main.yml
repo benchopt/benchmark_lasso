@@ -46,6 +46,12 @@ jobs:
 
     - run: conda info
 
+     # see https://github.com/benchopt/benchmark_logreg_l1/issues/20
+    - name: Install OpenMP
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install libomp
+
     - name: Install benchopt and its dependencies
       run: |
         conda info
@@ -58,6 +64,7 @@ jobs:
 
     - name: Test
       run: |
+        export OMP_NUM_THREADS=1
         benchopt test . --env-name bench_test_env -vl
         benchopt test . --env-name bench_test_env -vl --skip-install
 
