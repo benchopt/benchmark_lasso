@@ -12,11 +12,11 @@ class Dataset(BaseDataset):
     name = "libsvm"
 
     parameters = {
-        'dataset': ["bodyfat", "leukemia", "rcv1.binary"],
+        'dataset': ["bodyfat", "leukemia", "rcv1.binary", "YearPredictionMSD"],
     }
 
     install_cmd = 'conda'
-    requirements = ['pip:libsvmdata']
+    requirements = ['pip:git+https://github.com/mathurinm/libsvmdata@main']
 
     def __init__(self, dataset="bodyfat"):
         self.dataset = dataset
