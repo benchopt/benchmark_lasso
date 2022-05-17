@@ -33,9 +33,9 @@ class Solver(BaseSolver):
     parameter_template = "{solver}"
     support_sparse = False
     references = [
-        "S. Raschka, J. Patterson and C. Nolet"
-        '"Machine Learning in Python: Main developments and technology trends'
-        'in data science, machine learning, and artificial intelligence"'
+        "S. Raschka, J. Patterson and C. Nolet, "
+        '"Machine Learning in Python: Main developments and technology trends '
+        'in data science, machine learning, and artificial intelligence" '
         "arXiv preprint arXiv:2002.04803 (2020)"
     ]
 

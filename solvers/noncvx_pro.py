@@ -13,8 +13,8 @@ class Solver(BaseSolver):
 
     stopping_strategy = 'iteration'
     references = [
-        "Clarice Poon and Gabriel Peyré"
-        "'Smooth Bilevel Programming for Sparse Regularization'"
+        "Clarice Poon and Gabriel Peyré, "
+        "'Smooth Bilevel Programming for Sparse Regularization' "
         "Advances in Neural Information Processing Systems (2021)"
     ]
 
