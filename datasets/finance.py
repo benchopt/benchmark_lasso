@@ -21,7 +21,7 @@ class Dataset(BaseDataset):
         if self.X is None:
             self.X, self.y = fetch_libsvm('finance')
 
-        y -= y.mean()
+        self.y -= self.y.mean()
         data = dict(X=self.X, y=self.y)
 
         return data
