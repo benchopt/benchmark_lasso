@@ -16,7 +16,7 @@ class Solver(BaseSolver):
     parameters = {"gpu": [False, True]}
     references = [
         "C. Dünner, T. Parnell, D. Sarigiannis, N. Ioannou, A. Anghel, "
-        "G. Ravi, M. Kandasamy and H. Pozidis "
+        "G. Ravi, M. Kandasamy and H. Pozidis, "
         "'Snap ML: A hierarchical framework for machine learning', "
         "Advances in Neural Information Processing Systems (2018)"
     ]
