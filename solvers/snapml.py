@@ -1,5 +1,5 @@
 from benchopt import BaseSolver, safe_import_context
-from benchopt.utils.sys_info import _get_cuda_version
+from benchopt.utils.sys_info import get_cuda_version
 
 
 with safe_import_context() as import_ctx:
@@ -14,9 +14,15 @@ class Solver(BaseSolver):
     requirements = ["pip:snapml"]
 
     parameters = {"gpu": [False, True]}
+    references = [
+        "C. Dünner, T. Parnell, D. Sarigiannis, N. Ioannou, A. Anghel, "
+        "G. Ravi, M. Kandasamy and H. Pozidis, "
+        "'Snap ML: A hierarchical framework for machine learning', "
+        "Advances in Neural Information Processing Systems (2018)"
+    ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        if self.gpu and _get_cuda_version() is None:
+        if self.gpu and get_cuda_version() is None:
             return True, "snapml[gpu=True] needs a GPU to run"
         return False, None
 
