@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-# SAVEFIG = False
-SAVEFIG = True
+SAVEFIG = False
+# SAVEFIG = True
 figname = "lars_leukemia_meg_rcv1_news20"
 # figname = "finance"
 # figname = "rcv1_news20"
@@ -23,8 +23,8 @@ figname = "lars_leukemia_meg_rcv1_news20"
 
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
-# BENCH_NAME = "dist_outputs/allminuslars1000.csv"
-BENCH_NAME = "dist_outputs/all.csv"
+BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_12h37m21.csv"  # year prediction with wrong y
+# BENCH_NAME = "dist_outputs/all.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -39,8 +39,8 @@ SOLVERS = {
     'glmnet': 'glmnet',
     'lars': "LARS",
     'Lightning': 'lightning',
-    'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[adaptive-1]',
-    'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[greedy]',
+    'ModOpt-FISTA[restart_strategy=adaptive-1]': 'FISTA[adaptive-1]',
+    'ModOpt-FISTA[restart_strategy=greedy]': 'FISTA[greedy]',
     'noncvx-pro': 'noncvx-pro',
     'Python-PGD[use_acceleration=False]': 'ISTA',
     'Python-PGD[use_acceleration=True]': 'FISTA',
@@ -61,6 +61,7 @@ DICT_XLIM = {
     'leukemia': 1e-3,
     "lars_adversarial[n_samples=100]": 1e-4,
     "lars_adversarial[n_samples=1000]": 1e-4,
+    "libsvm[dataset=YearPredictionMSD]": 1e-3,
 }
 
 DICT_TITLE = {
@@ -77,6 +78,7 @@ DICT_YLABEL = {
     'MEG': 'MEG',
     "lars_adversarial[n_samples=100]": 'LARS[n=100]',
     "lars_adversarial[n_samples=1000]": 'LARS 1000',
+    "libsvm[dataset=YearPredictionMSD]": "MillionSong"
 }
 
 DICT_YTICKS = {
@@ -87,6 +89,7 @@ DICT_YTICKS = {
     'MEG': [1e1, 1e-2, 1e-5, 1e-8],
     "lars_adversarial[n_samples=100]": [1e1, 1e-2, 1e-5, 1e-8],
     "lars_adversarial[n_samples=1000]": [1e1, 1e-2, 1e-5, 1e-8],
+    "libsvm[dataset=YearPredictionMSD]": [1e7, 1e4, 1e1, 1e-2, 1e-5],
 }
 
 DICT_XTICKS = {
@@ -96,6 +99,7 @@ DICT_XTICKS = {
     'libsvm[dataset=news20.binary]': np.geomspace(1e-1, 1e3, 5),
     # 'libsvm[dataset=kdda_train]': [1e3, 1, 1e-3, 1e-6],
     'MEG': np.geomspace(1e-2, 1e3, 6),
+    "libsvm[dataset=YearPredictionMSD]": np.geomspace(1e-2, 1e3, 6),
 }
 
 configure_plt()
@@ -184,7 +188,7 @@ plt.show(block=False)
 
 
 fig2, ax2 = plt.subplots(1, 1, figsize=(20, 4))
-n_col = 3
+n_col = 4
 if n_col is None:
     n_col = len(axarr[0, 0].lines)
 
