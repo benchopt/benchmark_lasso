@@ -22,7 +22,7 @@ class Solver(BaseSolver):
     ]
     support_sparse = False
 
-    stopping_criterion = SufficientProgressCriterion(eps=1e-15, patience=10)
+    stopping_criterion = SufficientProgressCriterion(eps=1e-15, patience=5)
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-# SAVEFIG = True
-figname = "lars_leukemia_meg_rcv1_news20"
+# SAVEFIG = False
+SAVEFIG = True
+figname = "meg_rcv1_news20_MSD"
 # figname = "finance"
 # figname = "rcv1_news20"
 
@@ -23,8 +23,10 @@ figname = "lars_leukemia_meg_rcv1_news20"
 
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
-BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_12h37m21.csv"  # year prediction with wrong y
-# BENCH_NAME = "dist_outputs/all.csv"
+# BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_14h34m01.csv"  # year prediction
+BENCH_NAME = "dist_outputs/all1.csv"
+
+# BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_17h46m51.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -61,7 +63,7 @@ DICT_XLIM = {
     'leukemia': 1e-3,
     "lars_adversarial[n_samples=100]": 1e-4,
     "lars_adversarial[n_samples=1000]": 1e-4,
-    "libsvm[dataset=YearPredictionMSD]": 1e-3,
+    "libsvm[dataset=YearPredictionMSD]": 1e-2,
 }
 
 DICT_TITLE = {
@@ -99,7 +101,7 @@ DICT_XTICKS = {
     'libsvm[dataset=news20.binary]': np.geomspace(1e-1, 1e3, 5),
     # 'libsvm[dataset=kdda_train]': [1e3, 1, 1e-3, 1e-6],
     'MEG': np.geomspace(1e-2, 1e3, 6),
-    "libsvm[dataset=YearPredictionMSD]": np.geomspace(1e-2, 1e3, 6),
+    "libsvm[dataset=YearPredictionMSD]": np.geomspace(1e-2, 1e1, 4),
 }
 
 configure_plt()
@@ -109,11 +111,16 @@ style = {solv: (CMAP(i), MARKERS[i]) for i, solv in enumerate(all_solvers)}
 
 df = pd.read_csv(BENCH_NAME, header=0, index_col=0)
 
-df = df[df.data_name != "lars_adversarial[n_samples=100]"]
 
 solvers = df["solver_name"].unique()
 solvers = np.array(sorted(solvers, key=lambda key: SOLVERS[key].lower()))
-datasets = df["data_name"].unique()
+datasets = [
+    'MEG',
+    'libsvm[dataset=rcv1.binary]',
+    'libsvm[dataset=news20.binary]',
+    'libsvm[dataset=YearPredictionMSD]',
+]
+
 objectives = df["objective_name"].unique()
 
 titlesize = 22
