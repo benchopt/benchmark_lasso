@@ -15,7 +15,7 @@ class Dataset(BaseDataset):
     references = [
         "S. Kogan, D Levin, BR. Routledge, JS. Sagiand and NA. Smith, "
         "'Predicting risk from financial reports with regression'. "
-        "In Proceedings of the North American Association for Computational " 
+        "In Proceedings of the North American Association for Computational "
         "Linguistics Human Language Technologies Conference (2009)."
     ]
 
