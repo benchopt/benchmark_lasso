@@ -34,9 +34,10 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
+        # shrinking = True does not converge, see issue on lightning repo
         self.clf = CDRegressor(
             loss='squared', penalty='l1', C=.5, alpha=self.lmbd,
-            tol=1e-15, random_state=0, permute=False
+            tol=1e-15, random_state=0, permute=False, shrinking=False,
         )
 
     def run(self, n_iter):
