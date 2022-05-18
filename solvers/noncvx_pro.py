@@ -57,7 +57,11 @@ class Solver(BaseSolver):
 
         if n_samples < n_features:
             def u_opt(v):
-                S = X * v**2 @ X.T + lmbd * np.eye(n_samples)
+                if issparse(X):
+                    S = X.multiply(v**2) @ X.T + lmbd * np.eye(n_samples)
+                else:
+                    S = X * v**2 @ X.T + lmbd * np.eye(n_samples)
+
                 return v * (X.T @ np.linalg.solve(S, y))
 
             def nabla_f(v):
