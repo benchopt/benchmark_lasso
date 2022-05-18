@@ -36,14 +36,14 @@ SOLVERS = {
     'Celer': 'celer',
     'cuml[cd]': 'cuML[cd]',
     'cuml[qn]': 'cuML[qn]',
-    'glmnet': 'GLMNET',
+    'glmnet': 'glmnet',
     'lars': "LARS",
     'Lightning': 'lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]': 'ModOpt-FISTA[adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]': 'ModOpt-FISTA[greedy]',
     'noncvx-pro': 'noncvx-pro',
-    'Python-PGD[use_acceleration=False]': 'FISTA',
-    'Python-PGD[use_acceleration=True]': 'ISTA',
+    'Python-PGD[use_acceleration=False]': 'ISTA',
+    'Python-PGD[use_acceleration=True]': 'FISTA',
     'skglm': 'skglm',
     'sklearn': 'scikit-learn',
     'snapml[gpu=False]': 'snapML[cpu]',
@@ -104,6 +104,8 @@ style = {solv: (CMAP(i), MARKERS[i]) for i, solv in enumerate(all_solvers)}
 
 
 df = pd.read_csv(BENCH_NAME, header=0, index_col=0)
+
+df = df[df.data_name != "lars_adversarial[n_samples=100]"]
 
 solvers = df["solver_name"].unique()
 solvers = np.array(sorted(solvers, key=lambda key: SOLVERS[key].lower()))
