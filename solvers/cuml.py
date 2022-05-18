@@ -35,7 +35,6 @@ class Solver(BaseSolver):
         ],
     }
     parameter_template = "{solver}"
-    support_sparse = False
     references = [
         "S. Raschka, J. Patterson and C. Nolet, "
         '"Machine Learning in Python: Main developments and technology trends '
