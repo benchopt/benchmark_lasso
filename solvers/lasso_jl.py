@@ -61,7 +61,7 @@ class Solver(JuliaSolver):
     def run(self, tol):
         # remove possibly spurious warnings from pyjulia
         # TODO: remove filter when
-        # https://github.com/JuliaPy/pyjulia/issues/497 is resolved or 
+        # https://github.com/JuliaPy/pyjulia/issues/497 is resolved or
         # otherwise fix the warning
         warnings.filterwarnings("ignore", category=FutureWarning)
 
