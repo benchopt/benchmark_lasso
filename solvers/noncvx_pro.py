@@ -12,10 +12,15 @@ class Solver(BaseSolver):
     name = "noncvx-pro"
 
     stopping_strategy = 'iteration'
+    references = [
+        "Clarice Poon and Gabriel Peyré, "
+        "'Smooth Bilevel Programming for Sparse Regularization', "
+        "Advances in Neural Information Processing Systems (2021)"
+    ]
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
-        if X.shape[0] > X.shape[1]:
+        if X.shape[0] >= X.shape[1]:
             self.C = X.T @ X
             if issparse(self.C):
                 self.C = self.C.toarray()
