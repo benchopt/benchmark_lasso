@@ -1,6 +1,6 @@
 from benchopt import BaseSolver
 from benchopt import safe_import_context
-from benchopt.stopping_criterion import SufficientProgressCriterion
+from benchopt.stopping_criterion import SufficientDescentCriterion
 
 with safe_import_context() as import_ctx:
     import warnings
@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "skglm"
     stopping_strategy = "iteration"
-    stopping_criterion = SufficientProgressCriterion(eps=1e-12, patience=4)
+    stopping_criterion = SufficientDescentCriterion(eps=1e-12, patience=4)
 
     install_cmd = 'conda'
     requirements = [
