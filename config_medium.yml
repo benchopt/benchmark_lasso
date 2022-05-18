@@ -6,6 +6,7 @@ dataset:
   - meg
   - libsvm[dataset=rcv1.binary]
   - libsvm[dataset=news20.binary]
+  - libsvm[dataset=YearPredictionMSD]
 n-repetitions: 5
 n-jobs: 12
 timeout: 3000
@@ -22,3 +23,4 @@ solver:
   - skglm
   - snapml
   - noncvx-pro
+  - lasso_jl
