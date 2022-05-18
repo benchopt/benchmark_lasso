@@ -1,6 +1,6 @@
 from benchopt import BaseSolver
 from benchopt import safe_import_context
-from benchopt.stopping_criterion import SufficientDescentCriterion
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
 
 with safe_import_context() as import_ctx:
@@ -11,7 +11,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = 'Blitz'
     stopping_strategy = 'iteration'
-    stopping_criterion = SufficientDescentCriterion(eps=1e-12, patience=4)
+    stopping_criterion = SufficientProgressCriterion(eps=1e-12, patience=4)
 
     install_cmd = 'conda'
     requirements = [

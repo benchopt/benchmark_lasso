@@ -13,6 +13,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = 'Celer'
     stopping_strategy = 'iteration'
+    stopping_criterion = SufficientProgressCriterion(eps=1e-12, patience=4)
 
     install_cmd = 'conda'
     requirements = ['pip:celer']
