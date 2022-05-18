@@ -9,6 +9,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     assert_julia_installed()
+    import warnings
     import numpy as np
     from scipy import sparse
 
@@ -53,9 +54,16 @@ class Solver(JuliaSolver):
         # Trigger Julia JIT compilation
         w_dim = self.p + 1 if fit_intercept else self.p
         self.prev_solution = np.zeros(w_dim)
+
+        warnings.filterwarnings("ignore", category=FutureWarning)
         self.run(1e-2)
 
     def run(self, tol):
+        # remove possibly spurious warnings from pyjulia
+        # TODO: remove filter when https://github.com/JuliaPy/pyjulia/issues/497
+        # is resolved or otherwise fix the warning
+        warnings.filterwarnings("ignore", category=FutureWarning)
+
         coefs, converged = self.solve_lasso(
             self.X,
             self.y,
