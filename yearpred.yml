@@ -1,0 +1,21 @@
+objective:
+    - Lasso Regression[fit_intercept=False,reg=0.1]
+    - Lasso Regression[fit_intercept=False,reg=0.01]
+    - Lasso Regression[fit_intercept=False,reg=0.001]
+dataset:
+  - libsvm[dataset=YearPredictionMSD]
+n-repetitions: 5
+timeout: 5000
+solver:
+  - blitz
+  - cd
+  - celer
+  - cuml
+  - glmnet
+  - lars
+  - sklearn
+  - modopt-fista
+  - python-pgd
+  - skglm
+  - snapml
+  - noncvx-pro
