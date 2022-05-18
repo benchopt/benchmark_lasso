@@ -9,8 +9,12 @@ with safe_import_context() as import_ctx:
     else:
         raise ImportError("cuml solver needs a nvidia GPU.")
 
-    import cudf
     import numpy as np
+    from scipy import sparse
+
+    import cudf
+    import cupy as cp
+    import cupyx.scipy.sparse as cusparse
     from cuml.linear_model import Lasso
 
 
@@ -21,7 +25,7 @@ class Solver(BaseSolver):
     requirements = [
         "rapidsai::rapids",
         f"nvidia::cudatoolkit={cuda_version}",
-        "dask-sql",
+        "dask-sql", "cupy"
     ] if cuda_version is not None else []
 
     parameters = {
@@ -31,7 +35,6 @@ class Solver(BaseSolver):
         ],
     }
     parameter_template = "{solver}"
-    support_sparse = False
     references = [
         "S. Raschka, J. Patterson and C. Nolet, "
         '"Machine Learning in Python: Main developments and technology trends '
@@ -41,7 +44,15 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
-        self.X = cudf.DataFrame(self.X)
+        if sparse.issparse(X):
+            if sparse.isspmatrix_csc(X):
+                self.X = cusparse.csc_matrix(X)
+            elif sparse.isspmatrix_csr(X):
+                self.X = cusparse.csr_matrix(X)
+            else:
+                raise ValueError("Non suported sparse format")
+        else:
+            self.X = cudf.DataFrame(self.X.astype(np.float32))
         self.y = cudf.Series(self.y)
         self.fit_intercept = fit_intercept
 
@@ -58,7 +69,13 @@ class Solver(BaseSolver):
         self.result_lasso = self.lasso.fit(self.X, self.y)
 
     def get_result(self):
-        if self.fit_intercept:
-            return np.r_[self.result_lasso.coef_, self.result_lasso.intercept_]
+        if isinstance(self.lasso.coef_, cp.ndarray):
+            coef = self.lasso.coef_.get().flatten()
+            if self.lasso.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_.get()]
         else:
-            return self.result_lasso.coef_
+            coef = self.lasso.coef_.to_numpy().flatten()
+            if self.lasso.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_.to_numpy()]
+
+        return coef
