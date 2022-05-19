@@ -23,8 +23,6 @@ class Solver(BaseSolver):
         'vol. 80, pp. 3321-3330 (2018)'
     ]
 
-    # stopping_criterion = SufficientProgressCriterion(eps=1e-15)
-
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept

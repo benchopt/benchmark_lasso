@@ -24,9 +24,10 @@ figname = "meg_rcv1_news20_MSD"
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
 # BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
 # BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_14h34m01.csv"  # year prediction
-BENCH_NAME = "dist_outputs/all1.csv"
+# BENCH_NAME = "dist_outputs/all1.csv"
 
-# BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_17h46m51.csv"
+
+BENCH_NAME = "dist_outputs/benchopt_run_2022-05-19_00h10m01.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -40,6 +41,7 @@ SOLVERS = {
     'cuml[qn]': 'cuML[qn]',
     'glmnet': 'glmnet',
     'lars': "LARS",
+    'lasso_jl': "lasso\_jl",
     'Lightning': 'lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]': 'FISTA[adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]': 'FISTA[greedy]',
