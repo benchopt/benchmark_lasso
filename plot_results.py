@@ -118,9 +118,9 @@ solvers = df["solver_name"].unique()
 solvers = np.array(sorted(solvers, key=lambda key: SOLVERS[key].lower()))
 datasets = [
     'MEG',
+    'libsvm[dataset=YearPredictionMSD]',
     'libsvm[dataset=rcv1.binary]',
     'libsvm[dataset=news20.binary]',
-    'libsvm[dataset=YearPredictionMSD]',
 ]
 
 objectives = df["objective_name"].unique()
@@ -169,10 +169,14 @@ for idx_data, dataset in enumerate(datasets):
             q9 = df3.groupby('stop_val')['time'].quantile(.9)
             y = curve["objective_value"] - c_star
 
+            linestyle = '-'
+            if solver_name in ("snapml[gpu=True]", "cuml[qn]", "cuml[cd]"):
+                linestyle = '--'
             ax.loglog(
                 curve["time"], y, color=style[solver_name][0],
                 marker=style[solver_name][1], markersize=6,
-                label=SOLVERS[solver_name], linewidth=2, markevery=3)
+                label=SOLVERS[solver_name], linewidth=2, markevery=3,
+                linestyle=linestyle)
 
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel("Time (s)", fontsize=labelsize)
