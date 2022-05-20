@@ -61,7 +61,13 @@ class Solver(BaseSolver):
             "penalty.factor": self.penalty_factor,
         }
 
-        self.fit = self.ncvfit(self.Xmod, self.y, penalty="lasso", eps=1e-15, **fit_dict)
+        self.fit = self.ncvfit(
+            self.Xmod,
+            self.y,
+            penalty="lasso",
+            eps=1e-15,
+            **fit_dict
+        )
 
     def get_result(self):
         results = dict(zip(self.fit.names, list(self.fit)))
