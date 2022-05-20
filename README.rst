@@ -11,7 +11,7 @@ $$ \min_w \frac{1}{2} \|y - Xw\|^2_2 + \lambda \|w\|_1 $$
 
 where $n$ (or n_samples) stands for the number of samples, p (or n_features) stands for the number of features and
 
-$$ y \in \mathbb{R}^n, X = [x_1^\top, \dots, x_n^\top]^\top \in \mathbb{R}^{n \times p} $$
+$$ y \\in \mathbb{R}^n, X = [x_1^\top, \dots, x_n^\top]^\top \in \mathbb{R}^{n \times p} $$
 
 
 Install
