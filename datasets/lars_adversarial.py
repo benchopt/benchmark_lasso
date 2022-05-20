@@ -11,6 +11,11 @@ class Dataset(BaseDataset):
     parameters = {
         'n_samples': [100],
     }
+    references = [
+        "Mairal and Yu, "
+        "'Complexity Analysis of the Lasso Regularization Path', "
+        "ICML (2012)"
+    ]
 
     def __init__(self, n_samples=10):
         self.n_samples = n_samples

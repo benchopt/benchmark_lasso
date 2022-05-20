@@ -14,6 +14,14 @@ class Dataset(BaseDataset):
 
     install_cmd = 'conda'
     requirements = ['scikit-learn']
+    references = [
+        "T. R. Golub, D. K. Slonim, P. Tamayo, C. Huard, M. Gaasenbeek, "
+        "J. P. Mesirov, H. Coller, M. L. Loh, J. R. Downing, M. A. Caligiuri, "
+        "C. D. Bloomfield, and E. S. Lander. "
+        "'Molecular classification of cancer: class discovery and class "
+        "prediction by gene expression monitoring. '"
+        "Science, (1999)."
+    ]
 
     def get_data(self):
         # Unlike libsvm[leukemia], this dataset corresponds to the whole
