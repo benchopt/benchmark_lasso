@@ -52,4 +52,4 @@ class Solver(BaseSolver):
         self.coef = coef
 
     def get_result(self):
-        return self.coef.astype(np.float64)
+        return self.coef

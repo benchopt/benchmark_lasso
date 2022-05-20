@@ -28,6 +28,7 @@ class Objective(BaseObjective):
         return np.zeros(n_features)
 
     def compute(self, beta):
+        beta = beta.astype(np.float64)  # avoid float32 numerical errors
         # compute residuals
         if self.fit_intercept:
             beta, intercept = beta[:self.n_features], beta[self.n_features:]
