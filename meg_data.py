@@ -17,6 +17,7 @@ cov_fname = data_path + '/sample_audvis-shrunk-cov.fif'
 noise_cov = mne.read_cov(cov_fname)
 # Handling forward solution
 forward = mne.read_forward_solution(fwd_fname)
+targets = {}
 
 for condition in ["Left Auditory", "Right Auditory"]:
     evoked = mne.read_evokeds(
@@ -35,7 +36,8 @@ for condition in ["Left Auditory", "Right Auditory"]:
 
     # Whiten data
     M = whitener @ M
-    np.savetxt(f"target_{condition.split()[0].lower()}.csv", M, delimiter=',')
+    targets[condition] = M
 
 # gain is independent of condition:
-np.savetxt("data.csv", gain, delimiter=',')
+data = np.hstack([gain, targets["Left Auditory"], targets["Right Auditory"]])
+np.savetxt("data.csv", data, delimiter=',')
