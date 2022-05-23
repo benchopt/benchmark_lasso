@@ -3,13 +3,14 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import numpy as np
     from sklearn.datasets import fetch_openml
 
 
 class Dataset(BaseDataset):
     name = "MEG"
     install_cmd = "conda"
-    requirements = ["scikit-learn"]
+    requirements = ["mne-base"]
 
     @staticmethod
     def _load_meg_data(condition="Left Auditory"):
@@ -17,9 +18,9 @@ class Dataset(BaseDataset):
         X = dataset.data[:, :7498]
 
         if condition == "Left Auditory":
-            idx = XXX
+            idx = 7498 + 27
         else:
-            idx = XXX
+            idx = 7498 + 85 + 28
         y = dataset.data[:, idx]
         return X, y
 
