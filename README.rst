@@ -3,19 +3,16 @@ Benchmark repository for Lasso
 
 |Build Status| |Python 3.6+|
 
-BenchOpt is a package to simplify and make more transparent and
+Benchopt is a package to simplify and make more transparent and
 reproducible the comparisons of optimization algorithms.
 The Lasso consists in solving the following program:
 
-.. math::
+$$ \\min_w \\, \\tfrac{1}{2} \\Vert y - Xw \\Vert^2_2 + \\lambda \\Vert w\\Vert_1 $$
 
-    \min_w \frac{1}{2} \|y - Xw\|^2_2 + \lambda \|w\|_1
+where $n$ (or n_samples) stands for the number of samples, $p$ (or n_features) stands for the number of features and
 
-where n (or n_samples) stands for the number of samples, p (or n_features) stands for the number of features and
+$$ y \\in \\mathbb{R}^n, \\, \\, X \\in \\mathbb{R}^{n \\times p} $$
 
-.. math::
-
- y \in \mathbb{R}^n, X = [x_1^\top, \dots, x_n^\top]^\top \in \mathbb{R}^{n \times p}
 
 Install
 -------
@@ -39,7 +36,7 @@ Alternatively, one can use the command line interface to select which problems, 
 
 .. code-block::
 
-	$ benchopt run ./benchmark_lasso -s sklearn -d leukemia --max-runs 10 --n-repetitions 10
+	$ benchopt run -s sklearn -d leukemia --max-runs 10 --n-repetitions 5
 
 
 Use `benchopt run -h` for more details about these options, or visit https://benchopt.github.io/api.html.
