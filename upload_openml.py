@@ -14,7 +14,7 @@ The measurements for left stimulation are `data[:, 7498:7583]`.
 The measurements for right stimulation are `data[:, 7583:]`.
 
 The data was generated with the following script:
-
+```
 import mne
 import numpy as np
 from mne.datasets import sample
@@ -57,9 +57,18 @@ for condition in ["Left Auditory", "Right Auditory"]:
 
 # gain is independent of condition:
 data = np.hstack([gain, targets["Left Auditory"], targets["Right Auditory"]])
+```
 """
 
-citation = "Gramfort, A., Luessi, M., Larson, E., Engemann, D. A., Strohmeier, D., Brodbeck, C., ... & Hämäläinen, M. (2013). MEG and EEG data analysis with MNE-Python. Frontiers in neuroscience, 267."
+citation = "Gramfort, A., Luessi, M., Larson, E., Engemann, D. A., Strohmeier, D., Brodbeck, C., ... & Hamalainen, M. (2013). MEG and EEG data analysis with MNE-Python. Frontiers in neuroscience, 267."
+
+
+attributes = (["X" + str(x).zfill(4) for x in range(7498)] +
+              ["L" + str(x).zfill(2) for x in range(85)] +
+              ["R" + str(x).zfill(2) for x in range(85)])
+
+attributes = list(zip(attributes, ["REAL"] * data.shape[1]))
+
 
 dataset = create_dataset(
     name=name,
@@ -70,8 +79,10 @@ dataset = create_dataset(
     citation=citation,
     creator="MNE contributors",
     collection_date="2022/05/23",
-    language=None,
-    attributes=None,
+    language="English",
+    attributes=attributes,
     default_target_attribute=None,
-    ignore_attribute=True,
+    ignore_attribute=None,
 )
+
+dataset.publish()
