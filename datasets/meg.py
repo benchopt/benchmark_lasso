@@ -14,13 +14,14 @@ class Dataset(BaseDataset):
     @staticmethod
     def _load_meg_data(condition="Left Auditory"):
         dataset = fetch_openml(data_id=43884)
-        X = dataset.data[:, :7498]
+        all_data = dataset.data.to_numpy()
+        X = all_data[:, :7498]
 
         if condition == "Left Auditory":
             idx = 7498 + 27
         else:
             idx = 7498 + 85 + 28
-        y = dataset.data[:, idx]
+        y = all_data[:, idx]
         return X, y
 
     def get_data(self):
