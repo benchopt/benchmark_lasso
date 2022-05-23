@@ -2,6 +2,7 @@ import mne
 import numpy as np
 from mne.datasets import sample
 from mne.inverse_sparse.mxne_inverse import _prepare_gain
+# this script used MNE 1.0.2
 
 condition = "Right Auditory"
 data_path = sample.data_path() + '/MEG/sample'
@@ -34,7 +35,7 @@ for condition in ["Left Auditory", "Right Auditory"]:
 
     # Whiten data
     M = whitener @ M
-    np.savetxt(f"target_{condition.split()[0].lower()}.txt", M, delimiter=',')
+    np.savetxt(f"target_{condition.split()[0].lower()}.csv", M, delimiter=',')
 
 # gain is independent of condition:
-np.savetxt("data.txt", gain, delimiter=',')
+np.savetxt("data.csv", gain, delimiter=',')
