@@ -3,14 +3,13 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
-    import numpy as np
     from sklearn.datasets import fetch_openml
 
 
 class Dataset(BaseDataset):
     name = "MEG"
     install_cmd = "conda"
-    requirements = ["mne-base"]
+    requirements = ["scikit-learn"]
 
     @staticmethod
     def _load_meg_data(condition="Left Auditory"):
