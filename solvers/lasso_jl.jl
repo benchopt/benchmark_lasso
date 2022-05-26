@@ -23,12 +23,9 @@ function solve_lasso(
     p = size(X, 2)
 
     w = if fit_intercept zeros(Float64, p + 1) else zeros(Float64, p) end
-    
+
     converged = true
 
-    # TODO(jolars): once https://github.com/JuliaStats/Lasso.jl/issues/70 or
-    # maybe https://github.com/JuliaStats/Lasso.jl/issues/71 is/are resolved,
-    # we should not need the try-catch here
     if !get_null_solution
         try
             lasso_fit = fit(
