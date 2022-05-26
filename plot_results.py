@@ -7,27 +7,12 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-# SAVEFIG = False
-SAVEFIG = True
+SAVEFIG = False
+# SAVEFIG = True
 figname = "meg_rcv1_news20_MSD"
-# figname = "finance"
-# figname = "rcv1_news20"
 
-# RUN `benchopt run . --config config_small.yml`, then replace BENCH_NAME
-# by the name of the produced results csv file.
-# BENCH_NAME = "./outputs/benchopt_run_2022-05-09_17h39m12.csv"  # simu 500x5k + leuk
-# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-11_08h59m03.csv"  # rcv1, news20
-# BENCH_NAME = "./dist_outputs/benchopt_run_2022-05-10_19h39m32.csv"  # finance
-# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-11_11h21m02.csv'  # meg + leukemia
-# BENCH_NAME = './dist_outputs/leuk_meg_rcv1_news20.csv'  # meg + leukemia
-
-# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-12_23h45m45.csv'  # Mathurin kkda
-# BENCH_NAME = './dist_outputs/benchopt_run_2022-05-16_03h07m04.csv'  # medium v2
-# BENCH_NAME = "dist_outputs/benchopt_run_2022-05-18_14h34m01.csv"  # year prediction
-# BENCH_NAME = "dist_outputs/all1.csv"
-
-
-BENCH_NAME = "dist_outputs/benchopt_run_2022-05-19_00h10m01.csv"
+# RUN `benchopt run . --bench_config.yml` to produce the csv
+BENCH_NAME = "lasso-neurips.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -137,36 +122,19 @@ fig1, axarr = plt.subplots(
     sharex=False,
     sharey='row',
     figsize=[11, 1 + 2 * len(datasets)],
-    constrained_layout=True)
-
-# handle if there is only 1 dataset/objective:
-if len(datasets) == 1:
-    if len(objectives) == 1:
-        axarr = np.atleast_2d(axarr)
-    else:
-        axarr = axarr[None, :]
-elif len(objectives) == 1:
-    axarr = axarr[:, None]
+    constrained_layout=True,
+    squeeze=False)
 
 for idx_data, dataset in enumerate(datasets):
     df1 = df[df['data_name'] == dataset]
     for idx_obj, objective in enumerate(objectives):
         df2 = df1[df1['objective_name'] == objective]
         ax = axarr[idx_data, idx_obj]
-        # check that at least one solver converged to compute c_star
-        # if df2["objective_duality_gap"].min() > FLOATING_PRECISION * df2["objective_duality_gap"].max():
-        #     print(
-        #         f"No solver reached a duality gap below {FLOATING_PRECISION}, "
-        #         "cannot safely evaluate minimum objective."
-        #     )
-        #     continue
         c_star = np.min(df2["objective_value"]) - FLOATING_PRECISION
         for i, solver_name in enumerate(solvers):
             df3 = df2[df2['solver_name'] == solver_name]
             curve = df3.groupby('stop_val').median()
 
-            q1 = df3.groupby('stop_val')['time'].quantile(.1)
-            q9 = df3.groupby('stop_val')['time'].quantile(.9)
             y = curve["objective_value"] - c_star
 
             linestyle = '-'
@@ -181,7 +149,6 @@ for idx_data, dataset in enumerate(datasets):
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
         axarr[len(datasets)-1, idx_obj].set_xlabel("Time (s)", fontsize=labelsize)
         axarr[0, idx_obj].set_title(
-            # '\n'.join(regex.search(objective).group(1).split(",")), fontsize=fontsize - 2)
             DICT_TITLE[objective], fontsize=labelsize)
 
         ax.grid()
@@ -196,7 +163,6 @@ for idx_data, dataset in enumerate(datasets):
     axarr[idx_data, 0].set_ylabel(DICT_YLABEL[dataset], fontsize=labelsize)
     axarr[idx_data, 0].set_yticks(DICT_YTICKS[dataset])
 
-# fig1.suptitle(regex.sub('', objective), fontsize=titlesize)
 plt.show(block=False)
 
 
@@ -205,7 +171,6 @@ n_col = 4
 if n_col is None:
     n_col = len(axarr[0, 0].lines)
 
-# take first ax, more likely to have all solvers converging
 ax = axarr[0, 0]
 lines_ordered = list(itertools.chain(
     *[ax.lines[i::n_col] for i in range(n_col)]))

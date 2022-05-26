@@ -24,3 +24,4 @@ solver:
   - snapml
   - noncvx-pro
   - lasso_jl
+output: lasso-neurips
