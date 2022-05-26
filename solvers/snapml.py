@@ -1,6 +1,6 @@
 from benchopt import BaseSolver, safe_import_context
 from benchopt.utils.sys_info import get_cuda_version
-
+from benchopt.stopping_criterion import SufficientDescentCriterion
 
 with safe_import_context() as import_ctx:
     from snapml import LinearRegression
@@ -12,6 +12,8 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = ["pip:snapml"]
+
+    stopping_criterion = SufficientDescentCriterion(eps=1e-10, patience=7)
 
     parameters = {"gpu": [False, True]}
     references = [
