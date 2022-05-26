@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 from celer.plot_utils import configure_plt
 
 
-SAVEFIG = False
-# SAVEFIG = True
+SAVEFIG = True
 figname = "meg_rcv1_news20_MSD"
 
 # RUN `benchopt run . --bench_config.yml` to produce the csv
@@ -27,7 +26,7 @@ SOLVERS = {
     'cuml[qn]': 'cuML[qn]',
     'glmnet': 'glmnet',
     'lars': "LARS",
-    'lasso_jl': "lasso\_jl",
+    'lasso_jl': r"lasso\_jl",
     'Lightning': 'lightning',
     'ModOpt-FISTA[restart_strategy=adaptive-1]': 'FISTA[adaptive-1]',
     'ModOpt-FISTA[restart_strategy=greedy]': 'FISTA[greedy]',
@@ -114,7 +113,7 @@ objectives = df["objective_name"].unique()
 titlesize = 22
 ticksize = 16
 labelsize = 20
-regex = re.compile('\[(.*?)\]')
+regex = re.compile(r'\[(.*?)\]')
 
 plt.close('all')
 fig1, axarr = plt.subplots(
