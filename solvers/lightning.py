@@ -36,7 +36,7 @@ class Solver(BaseSolver):
 
         self.clf = CDRegressor(
             loss='squared', penalty='l1', C=.5, alpha=self.lmbd,
-            tol=1e-15, random_state=0, permute=False
+            tol=1e-15, random_state=0, permute=False, shrinking=False,
         )
 
     def run(self, n_iter):
