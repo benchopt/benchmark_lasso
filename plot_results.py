@@ -5,14 +5,23 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from celer.plot_utils import configure_plt
+import matplotlib as mpl
+
+
+usetex = mpl.checkdep_usetex(True)
+params = {
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Computer Modern Roman"],
+    "text.usetex": usetex,
+}
+mpl.rcParams.update(params)
 
 
 SAVEFIG = True
 figname = "meg_rcv1_news20_MSD"
 
 # RUN `benchopt run . --bench_config.yml` to produce the csv
-BENCH_NAME = "outputs/lasso-neurips.csv"
+BENCH_NAME = "outputs/lasso_neurips.csv"
 
 FLOATING_PRECISION = 1e-8
 MIN_XLIM = 1e-3
@@ -54,9 +63,15 @@ DICT_XLIM = {
 }
 
 DICT_TITLE = {
-    'Lasso Regression[fit_intercept=False,reg=0.1]': r'$\lambda = 0.1 \lambda_{\mathrm{max}}$',
-    'Lasso Regression[fit_intercept=False,reg=0.01]': r'$\lambda = 0.01 \lambda_{\mathrm{max}}$',
-    'Lasso Regression[fit_intercept=False,reg=0.001]': r'$\lambda = 0.001 \lambda_{\mathrm{max}}$',
+    'Lasso Regression[fit_intercept=False,reg=0.1]': (
+        r'$\lambda = 0.1 \lambda_{\mathrm{max}}$'
+    ),
+    'Lasso Regression[fit_intercept=False,reg=0.01]': (
+        r'$\lambda = 0.01 \lambda_{\mathrm{max}}$'
+    ),
+    'Lasso Regression[fit_intercept=False,reg=0.001]': (
+        r'$\lambda = 0.001 \lambda_{\mathrm{max}}$'
+    ),
 }
 
 DICT_YLABEL = {
@@ -91,7 +106,6 @@ DICT_XTICKS = {
     "libsvm[dataset=YearPredictionMSD]": np.geomspace(1e-2, 1e1, 4),
 }
 
-configure_plt()
 CMAP = plt.get_cmap('tab20')
 style = {solv: (CMAP(i), MARKERS[i]) for i, solv in enumerate(all_solvers)}
 
@@ -147,7 +161,9 @@ for idx_data, dataset in enumerate(datasets):
                 linestyle=linestyle)
 
         ax.set_xlim([DICT_XLIM.get(dataset, MIN_XLIM), ax.get_xlim()[1]])
-        axarr[len(datasets)-1, idx_obj].set_xlabel("Time (s)", fontsize=labelsize)
+        axarr[len(datasets)-1, idx_obj].set_xlabel(
+            "Time (s)", fontsize=labelsize
+        )
         axarr[0, idx_obj].set_title(
             DICT_TITLE[objective], fontsize=labelsize)
 

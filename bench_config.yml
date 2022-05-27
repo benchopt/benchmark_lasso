@@ -25,4 +25,4 @@ solver:
   - noncvx-pro
   - lasso_jl
 
-output: lasso-neurips
+output: lasso_neurips
