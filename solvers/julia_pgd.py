@@ -21,6 +21,7 @@ class Solver(JuliaSolver):
     # Config of the solver
     name = 'Julia-PGD'
     stopping_strategy = 'iteration'
+    requirements = ["scikit-learn"]
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '

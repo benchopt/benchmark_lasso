@@ -22,7 +22,7 @@ class Solver(BaseSolver):
     name = "R-PGD"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2']
+    requirements = ['r-base', 'rpy2', 'scikit-learn']
     stopping_strategy = 'iteration'
     support_sparse = False
     references = [

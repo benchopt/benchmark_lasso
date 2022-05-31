@@ -13,6 +13,7 @@ class Solver(BaseSolver):
     name = "noncvx-pro"
 
     stopping_strategy = 'iteration'
+    requirements = ["scikit-learn"]
     references = [
         "Clarice Poon and Gabriel Peyré, "
         "'Smooth Bilevel Programming for Sparse Regularization', "

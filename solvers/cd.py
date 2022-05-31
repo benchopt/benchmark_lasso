@@ -27,7 +27,7 @@ class Solver(BaseSolver):
     name = "cd"
 
     install_cmd = 'conda'
-    requirements = ['numba']
+    requirements = ['numba', "scikit-learn"]
     references = [
         'W. J. Fu, "Penalized Regressions: the Bridge versus the Lasso", '
         'J. Comput. Graph. Statist., vol.7, no. 3, pp. 397-416, '
