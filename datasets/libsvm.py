@@ -18,6 +18,11 @@ class Dataset(BaseDataset):
 
     install_cmd = 'conda'
     requirements = ['pip:git+https://github.com/mathurinm/libsvmdata@main']
+    references = [
+        "C. Chang and CJ. Lin, "
+        "'ACM transactions on intelligent systems and technology (TIST)', "
+        "Acm New York, USA vol 2 (2011)."
+    ]
 
     def __init__(self, dataset="bodyfat"):
         self.dataset = dataset

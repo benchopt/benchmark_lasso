@@ -35,7 +35,6 @@ class Solver(BaseSolver):
         ],
     }
     parameter_template = "{solver}"
-    support_sparse = False
     references = [
         "S. Raschka, J. Patterson and C. Nolet, "
         '"Machine Learning in Python: Main developments and technology trends '
@@ -70,13 +69,13 @@ class Solver(BaseSolver):
         self.result_lasso = self.lasso.fit(self.X, self.y)
 
     def get_result(self):
-        if isinstance(self.clf.coef_, cp.ndarray):
-            coef = self.clf.coef_.get().flatten()
-            if self.clf.fit_intercept:
-                coef = np.r_[coef, self.clf.intercept_.get()]
+        if isinstance(self.lasso.coef_, cp.ndarray):
+            coef = self.lasso.coef_.get().flatten()
+            if self.lasso.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_.get()]
         else:
-            coef = self.clf.coef_.to_numpy().flatten()
-            if self.clf.fit_intercept:
-                coef = np.r_[coef, self.clf.intercept_.to_numpy()]
+            coef = self.lasso.coef_.to_numpy().flatten()
+            if self.lasso.fit_intercept:
+                coef = np.r_[coef, self.lasso.intercept_.to_numpy()]
 
         return coef
