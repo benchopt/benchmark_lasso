@@ -18,6 +18,7 @@ function solve_lasso(
     lambda::Vector{Float64},
     fit_intercept::Bool,
     tol::Float64,
+    cd_maxiter::Int,
     get_null_solution::Bool,
 )
     p = size(X, 2)
@@ -37,6 +38,7 @@ function solve_lasso(
                 y;
                 λ=lambda, standardize=false, intercept=fit_intercept,
                 maxncoef=max(size(X, 1), size(X, 2)) * 100,
+                cd_maxiter=cd_maxiter,
                 cd_tol=tol,
             )
             w = coef(lasso_fit)
