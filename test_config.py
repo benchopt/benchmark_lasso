@@ -23,6 +23,9 @@ def check_test_solver_install(solver_class):
             'numpy version. Skipping for now.'
         )
 
+    if "spams" in solver_class.name.lower():
+        pytest.skip("python-spams is not released for python 3.9 yet")
+
     if "cuml" in solver_class.name.lower():
         if sys.platform == "darwin":
             pytest.xfail("Cuml is not supported on MacOS.")
