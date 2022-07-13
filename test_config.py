@@ -15,14 +15,6 @@ def check_test_solver_install(solver_class):
     if 'julia' in solver_class.name.lower():
         pytest.xfail('Julia install from conda fails currently.')
 
-    # ModOpt install change numpy version, breaking celer install.
-    # See CEA-COSMIC/ModOpt#144. Skipping for now
-    if ('modopt' in solver_class.name.lower()):
-        pytest.skip(
-            'Modopt breaks other package installation by changing '
-            'numpy version. Skipping for now.'
-        )
-
     if "spams" in solver_class.name.lower():
         pytest.skip("python-spams is not released for python 3.9 yet")
 
