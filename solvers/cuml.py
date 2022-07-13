@@ -1,21 +1,19 @@
 from benchopt import BaseSolver, safe_import_context
-from benchopt.utils.sys_info import get_cuda_version
+from benchopt.helpers.requires_gpu import requires_gpu
+from benchopt.stopping_criterion import SufficientProgressCriterion
 
-cuda_version = get_cuda_version()
-
+cuda_version = None
 with safe_import_context() as import_ctx:
-    if cuda_version is not None:
-        cuda_version = cuda_version.split("cuda_", 1)[1][:4]
-    else:
-        raise ImportError("cuml solver needs a nvidia GPU.")
-
     import numpy as np
     from scipy import sparse
+    cuda_version = requires_gpu()
 
-    import cudf
-    import cupy as cp
-    import cupyx.scipy.sparse as cusparse
-    from cuml.linear_model import Lasso
+    if cuda_version is not None:
+
+        import cudf
+        import cupy as cp
+        import cupyx.scipy.sparse as cusparse
+        from cuml.linear_model import Lasso
 
 
 class Solver(BaseSolver):
@@ -41,6 +39,10 @@ class Solver(BaseSolver):
         'in data science, machine learning, and artificial intelligence", '
         "arXiv preprint arXiv:2002.04803 (2020)"
     ]
+
+    stopping_criterion = SufficientProgressCriterion(
+        eps=1e-12, patience=5, strategy='iteration'
+    )
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
