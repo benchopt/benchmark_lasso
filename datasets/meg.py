@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     from sklearn.datasets import fetch_openml
+    import numpy as np
 
 
 class Dataset(BaseDataset):
@@ -21,7 +22,7 @@ class Dataset(BaseDataset):
             idx = 7498 + 27
         else:
             idx = 7498 + 85 + 28
-        y = all_data[:, idx]
+        y = np.ascontiguousarray(all_data[:, idx])
         return X, y
 
     def get_data(self):
