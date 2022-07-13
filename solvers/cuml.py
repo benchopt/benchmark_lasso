@@ -2,6 +2,7 @@ from benchopt import BaseSolver, safe_import_context
 from benchopt.helpers.requires_gpu import requires_gpu
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
+cuda_version = None
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
