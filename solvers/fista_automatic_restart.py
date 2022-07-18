@@ -34,8 +34,8 @@ class Solver(BaseSolver):
         w = np.zeros(n_features)
         z = np.zeros(n_features)
         C = 6.38
-        ite_per_restart = np.zeros(n_iter//(2*C)+2)
-        F_tab = np.zeros(n_iter//(2*C)+2)
+        ite_per_restart = np.zeros(int(n_iter / (2 * C)) + 2)
+        F_tab = np.zeros(int(n_iter / (2 * C)) + 2)
         i_glob = 0
         i_int = 0
         counter = 0  # Restart counter
