@@ -6,12 +6,12 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = 'Python-FISTA_automatic_restart'
+    name = 'FISTA_automatic_restart'
     stopping_strategy = "iteration"
 
     references = [
         'J.-F. Aujol, Ch. Dossal, H. Labarrière, A. Rondepierre, '
-        '"FISTA restart using an automatic estimation of the'
+        '"FISTA restart using an automatic estimation of the '
         'growth parameter", HAL preprint : hal-03153525v4, '
         'A. Beck and M. Teboulle,'
         '"A fast iterative shrinkage-thresholding algorithm for'
@@ -34,16 +34,17 @@ class Solver(BaseSolver):
         w = np.zeros(n_features)
         z = np.zeros(n_features)
         C = 6.38
-        k_tab = np.zeros(int(n_iter/(2*C))+2)
-        F_tab = np.zeros(int(n_iter/(2*C))+2)
+        ite_per_restart = np.zeros(n_iter//(2*C)+2)
+        F_tab = np.zeros(n_iter//(2*C)+2)
         i_glob = 0
         i_int = 0
-        counter = 0
-        k_tab[counter] = int(2*C)
+        counter = 0  # Restart counter
+        LastF = 0
+        ite_per_restart[counter] = int(2*C)
         F_tab[counter] = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)**2
                           + self.lmbd*abs(w).sum())
         # First call of FISTA
-        while i_glob < n_iter and i_int < k_tab[counter]:
+        while i_glob < n_iter and i_int < ite_per_restart[counter]:
             w_old = w.copy()
             z -= self.X.T @ (self.X @ z - self.y) / L
             w = self.st(z, self.lmbd / L)
@@ -51,13 +52,13 @@ class Solver(BaseSolver):
             i_int += 1
             i_glob += 1
         counter += 1
-        k_tab[counter] = int(2*C)
+        ite_per_restart[counter] = int(2*C)
         F_tab[counter] = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)**2
                           + self.lmbd*abs(w).sum())
         while i_glob < n_iter:
             i_int = 0
             # Restart of FISTA after k_tab[counter] iterations
-            while i_glob < n_iter and i_int < k_tab[counter]:
+            while i_glob < n_iter and i_int < ite_per_restart[counter]:
                 w_old = w.copy()
                 z -= self.X.T @ (self.X @ z - self.y) / L
                 w = self.st(z, self.lmbd / L)
@@ -66,17 +67,18 @@ class Solver(BaseSolver):
                 i_glob += 1
             counter += 1
             if i_glob < n_iter:
-                F_tab[counter] = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)
-                                  ** 2 + self.lmbd*abs(w).sum())
+                LastF = (.5 * np.linalg.norm(self.X @ w - self.y, ord=2) ** 2
+                         + self.lmbd * abs(w).sum())
+                F_tab[counter] = LastF
                 # Estimation of the growth parameter
-                mu = (np.min(4*L / (k_tab[:counter-1]+1) ** 2 *
-                             (F_tab[:counter-1] - F_tab[counter]) / 
-                             (F_tab[1:counter] - F_tab[counter])))
+                mu = (np.min(4 * L / (ite_per_restart[:counter-1]+1) ** 2
+                             * (F_tab[:counter-1] - LastF) /
+                             (F_tab[1:counter] - LastF)))
                 # Update of the number of iterations before next restart
-                if (k_tab[counter-1] <= C*np.sqrt(L/mu)):
-                    k_tab[counter] = 2*k_tab[counter-1]
+                if ite_per_restart[counter-1] <= C*np.sqrt(L/mu):
+                    ite_per_restart[counter] = 2 * ite_per_restart[counter-1]
                 else:
-                    k_tab[counter] = k_tab[counter-1]
+                    ite_per_restart[counter] = ite_per_restart[counter-1]
         self.w = w
 
     def st(self, w, mu):
