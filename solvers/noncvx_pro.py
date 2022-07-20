@@ -44,7 +44,10 @@ class Solver(BaseSolver):
         # unless fit_intercept is properly handled for sparse matrices
         # (by manually considering X_offset in calculations)
         if fit_intercept and issparse(X):
-            return True, f"{self.name} doesn't handle fit_intercept with sparse data"
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data"
+            )
         return False, None
 
     def run(self, n_iter):

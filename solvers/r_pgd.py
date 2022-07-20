@@ -37,7 +37,10 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         # rpy2 does not directly support sparse matrices (workaround exists)
         if fit_intercept and issparse(X):
-            return True, f"{self.name} doesn't handle fit_intercept with sparse data"
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data"
+            )
 
         return False, None
 

@@ -34,13 +34,16 @@ class Solver(JuliaSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - fit intercept is not yet implemented in julia.jl for sparse X
         if fit_intercept and issparse(X):
-            return True, f"{self.name} doesn't handle fit_intercept with sparse data"
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data"
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         # Handling intercept: center y and X (dense data only)
-        if fit_intercept and not sparse.issparse(self.X):
+        if fit_intercept and not issparse(self.X):
             self.X_offset = np.average(X, axis=0)
             X -= self.X_offset
             self.y_offset = np.average(y, axis=0)
