@@ -8,7 +8,6 @@ from benchopt.helpers.julia import assert_julia_installed
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model._base import _preprocess_data
     assert_julia_installed()
 
 
@@ -21,7 +20,6 @@ class Solver(JuliaSolver):
     # Config of the solver
     name = 'Julia-PGD'
     stopping_strategy = 'iteration'
-    requirements = ["scikit-learn"]
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '
@@ -36,19 +34,18 @@ class Solver(JuliaSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - fit intercept is not yet implemented in julia.jl for sparse X
         if fit_intercept and issparse(X):
-            return True, \
-                f"{self.name} doesn't handle fit_intercept with sparse data",
+            return (True,
+                f"{self.name} doesn't handle fit_intercept with sparse data")
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        # sklearn way of handling intercept: center y and X for dense data
-        if fit_intercept:
-            X, y, X_offset, y_offset, _ = _preprocess_data(
-                X, y, fit_intercept, return_mean=True, copy=True,
-            )
-            self.X_offset = X_offset
-            self.y_offset = y_offset
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
 
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept

@@ -5,7 +5,6 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from numba import njit
-    from sklearn.linear_model._base import _preprocess_data
 
 
 if import_ctx.failed_import:
@@ -27,7 +26,7 @@ class Solver(BaseSolver):
     name = "cd"
 
     install_cmd = 'conda'
-    requirements = ['numba', "scikit-learn"]
+    requirements = ['numba']
     references = [
         'W. J. Fu, "Penalized Regressions: the Bridge versus the Lasso", '
         'J. Comput. Graph. Statist., vol.7, no. 3, pp. 397-416, '
@@ -48,13 +47,12 @@ class Solver(BaseSolver):
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        # sklearn way of handling intercept: center y and X for dense data
-        if fit_intercept:
-            X, y, X_offset, y_offset, _ = _preprocess_data(
-                X, y, fit_intercept, return_mean=True, copy=True,
-            )
-            self.X_offset = X_offset
-            self.y_offset = y_offset
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not sparse.issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
 
         self.y, self.lmbd, self.fit_intercept = y, lmbd, fit_intercept
 

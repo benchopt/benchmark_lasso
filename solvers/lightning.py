@@ -6,7 +6,6 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
     from lightning.regression import CDRegressor
-    from sklearn.linear_model._base import _preprocess_data
 
 
 class Solver(BaseSolver):
@@ -15,7 +14,6 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = [
         'cython',
-        'scikit-learn',
         'pip:git+https://github.com/scikit-learn-contrib/lightning.git'
     ]
     references = [
@@ -36,14 +34,13 @@ class Solver(BaseSolver):
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         # lightning has an attribut intercept_ but it is not handled properly
-        # (as it is simply set to zero). For this reason, we use the sklearn
-        # way of handling intercept: center y and X beforehand for dense data
-        if fit_intercept:
-            X, y, X_offset, y_offset, _ = _preprocess_data(
-                X, y, fit_intercept, return_mean=True, copy=True,
-            )
-            self.X_offset = X_offset
-            self.y_offset = y_offset
+        # (as it is simply set to zero). For this reason, we handle intercept
+        # manually: center y and X beforehand (for dense data only)
+        if fit_intercept and not sparse.issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
 
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept

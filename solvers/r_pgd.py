@@ -6,7 +6,6 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model._base import _preprocess_data
 
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri
@@ -22,7 +21,7 @@ class Solver(BaseSolver):
     name = "R-PGD"
 
     install_cmd = 'conda'
-    requirements = ['r-base', 'rpy2', 'scikit-learn']
+    requirements = ['r-base', 'rpy2']
     stopping_strategy = 'iteration'
     support_sparse = False
     references = [
@@ -38,17 +37,18 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         # rpy2 does not directly support sparse matrices (workaround exists)
         if fit_intercept and issparse(X):
-            return True, \
-                f"{self.name} doesn't handle fit_intercept with sparse data"
+            return (True,
+                f"{self.name} doesn't handle fit_intercept with sparse data")
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        # sklearn way of handling intercept: center y and X (for dense data)
-        if fit_intercept:
-            X, y, self.X_offset, self.y_offset, _ = _preprocess_data(
-                X, y, fit_intercept, copy=True, return_mean=True
-            )
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
 
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
