@@ -3,12 +3,10 @@ from benchopt import BaseSolver, safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
-    from sklearn.linear_model._base import _preprocess_data
 
 
 class Solver(BaseSolver):
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
-    requirements = ['scikit-learn']
     stopping_strategy = "callback"
 
     # any parameter defined here is accessible as a class attribute
@@ -34,13 +32,12 @@ class Solver(BaseSolver):
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        # sklearn way of handling intercept: center y and X for dense data
-        if fit_intercept:
-            X, y, X_offset, y_offset, _ = _preprocess_data(
-                X, y, fit_intercept, return_mean=True, copy=True,
-            )
-            self.X_offset = X_offset
-            self.y_offset = y_offset
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not sparse.issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
 
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
