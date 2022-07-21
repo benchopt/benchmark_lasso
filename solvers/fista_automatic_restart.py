@@ -32,47 +32,42 @@ class Solver(BaseSolver):
         C = 6.38  # Parameter controlling the restart frequency, 6.38 is the
         # optimal theoretical value (we refer the user to the preprint for
         # more details).
-        inner_iteration = 0
-        n_restarts = 0  # Restart counter
-        last_F = 0
         ite_per_restart = np.array([int(2*C)])
-        F_tab = np.array([self.cost_function(w)])
-        cb = callback(w)
+        objectives = np.array([self.cost_function(w)])
+        should_run = callback(w)
         # First call of FISTA
-        while cb and inner_iteration < ite_per_restart[n_restarts]:
+        for i in range(ite_per_restart[-1]):
             w_old = w.copy()
             z -= self.X.T @ (self.X @ z - self.y) / L
             w = self.st(z, self.lmbd / L)
-            z = w + inner_iteration/(inner_iteration+3) * (w - w_old)
-            inner_iteration += 1
-            cb = callback(w)
-        n_restarts += 1
-        ite_per_restart = np.r_[ite_per_restart, int(2*C)]
-        F_tab = np.r_[F_tab, self.cost_function(w)]
-        while cb:
-            inner_iteration = 0
+            z = w + i/(i+3) * (w - w_old)
+            should_run = callback(w)
+            if not should_run:
+                break
+        ite_per_restart = np.r_[ite_per_restart, ite_per_restart[-1]]
+        objectives = np.r_[objectives, self.cost_function(w)]
+        while should_run:
             # Restart of FISTA after k_tab[counter] iterations
-            while cb and inner_iteration < ite_per_restart[n_restarts]:
+            for i in range(ite_per_restart[-1]):
                 w_old = w.copy()
                 z -= self.X.T @ (self.X @ z - self.y) / L
                 w = self.st(z, self.lmbd / L)
-                z = w + inner_iteration/(inner_iteration+3) * (w - w_old)
-                inner_iteration += 1
-                cb = callback(w)
-            n_restarts += 1
-            last_F = self.cost_function(w)
-            F_tab = np.r_[F_tab, last_F]
+                z = w + i/(i+3) * (w - w_old)
+                should_run = callback(w)
+                if not should_run:
+                    break
+            objectives = np.r_[objectives, self.cost_function(w)]
             # Estimation of the growth parameter
-            mu = np.min(4 * L / (ite_per_restart[:n_restarts-1]+1) ** 2
-                        * (F_tab[:n_restarts-1] - last_F) /
-                        (F_tab[1:n_restarts] - last_F))
+            mu = np.min(4 * L / (ite_per_restart[:-1]+1) ** 2
+                        * (objectives[:-2] - objectives[-1]) /
+                        (objectives[1:-1] - objectives[-1]))
             # Update of the number of iterations before next restart
-            if ite_per_restart[n_restarts-1] <= C*np.sqrt(L/mu):
+            if ite_per_restart[-1] <= C*np.sqrt(L/mu):
                 ite_per_restart = np.r_[ite_per_restart,
-                                        2 * ite_per_restart[n_restarts-1]]
+                                        2 * ite_per_restart[-1]]
             else:
                 ite_per_restart = np.r_[ite_per_restart,
-                                        ite_per_restart[n_restarts-1]]
+                                        ite_per_restart[-1]]
         self.w = w
 
     def st(self, w, mu):
