@@ -7,16 +7,12 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'FISTA_automatic_restart'
-    stopping_strategy = "iteration"
+    stopping_strategy = "callback"
 
     references = [
         'J.-F. Aujol, Ch. Dossal, H. Labarrière, A. Rondepierre, '
         '"FISTA restart using an automatic estimation of the '
-        'growth parameter", HAL preprint : hal-03153525v4, '
-        'A. Beck and M. Teboulle,'
-        '"A fast iterative shrinkage-thresholding algorithm for'
-        ' linear inverse problems", SIAM J. Imaging Sci., '
-        'vol. 2, no. 1, pp. 183-202 (2009)'
+        'growth parameter", HAL preprint : hal-03153525v4'
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
@@ -28,62 +24,65 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
-    def run(self, n_iter):
+    def run(self, callback):
         L = self.compute_lipschitz_constant()
         n_features = self.X.shape[1]
         w = np.zeros(n_features)
         z = np.zeros(n_features)
-        C = 6.38
-        ite_per_restart = np.zeros(int(n_iter / (2 * C)) + 2)
-        F_tab = np.zeros(int(n_iter / (2 * C)) + 2)
-        i_glob = 0
-        i_int = 0
-        counter = 0  # Restart counter
-        LastF = 0
-        ite_per_restart[counter] = int(2*C)
-        F_tab[counter] = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)**2
-                          + self.lmbd*abs(w).sum())
+        C = 6.38  # Parameter controlling the restart frequency, 6.38 is the
+        # optimal theoretical value (we refer the user to the preprint for
+        # more details).
+        inner_iteration = 0
+        n_restarts = 0  # Restart counter
+        last_F = 0
+        ite_per_restart = np.array([int(2*C)])
+        F_tab = np.array([self.cost_function(w)])
+        cb = callback(w)
         # First call of FISTA
-        while i_glob < n_iter and i_int < ite_per_restart[counter]:
+        while cb and inner_iteration < ite_per_restart[n_restarts]:
             w_old = w.copy()
             z -= self.X.T @ (self.X @ z - self.y) / L
             w = self.st(z, self.lmbd / L)
-            z = w + i_int/(i_int+3) * (w - w_old)
-            i_int += 1
-            i_glob += 1
-        counter += 1
-        ite_per_restart[counter] = int(2*C)
-        F_tab[counter] = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)**2
-                          + self.lmbd*abs(w).sum())
-        while i_glob < n_iter:
-            i_int = 0
+            z = w + inner_iteration/(inner_iteration+3) * (w - w_old)
+            inner_iteration += 1
+            cb = callback(w)
+        n_restarts += 1
+        ite_per_restart = np.r_[ite_per_restart, int(2*C)]
+        F_tab = np.r_[F_tab, self.cost_function(w)]
+        while cb:
+            inner_iteration = 0
             # Restart of FISTA after k_tab[counter] iterations
-            while i_glob < n_iter and i_int < ite_per_restart[counter]:
+            while cb and inner_iteration < ite_per_restart[n_restarts]:
                 w_old = w.copy()
                 z -= self.X.T @ (self.X @ z - self.y) / L
                 w = self.st(z, self.lmbd / L)
-                z = w + i_int/(i_int+3) * (w - w_old)
-                i_int += 1
-                i_glob += 1
-            counter += 1
-            if i_glob < n_iter:
-                LastF = (.5 * np.linalg.norm(self.X @ w - self.y, ord=2) ** 2
-                         + self.lmbd * abs(w).sum())
-                F_tab[counter] = LastF
-                # Estimation of the growth parameter
-                mu = (np.min(4 * L / (ite_per_restart[:counter-1]+1) ** 2
-                             * (F_tab[:counter-1] - LastF) /
-                             (F_tab[1:counter] - LastF)))
-                # Update of the number of iterations before next restart
-                if ite_per_restart[counter-1] <= C*np.sqrt(L/mu):
-                    ite_per_restart[counter] = 2 * ite_per_restart[counter-1]
-                else:
-                    ite_per_restart[counter] = ite_per_restart[counter-1]
+                z = w + inner_iteration/(inner_iteration+3) * (w - w_old)
+                inner_iteration += 1
+                cb = callback(w)
+            n_restarts += 1
+            last_F = self.cost_function(w)
+            F_tab = np.r_[F_tab, last_F]
+            # Estimation of the growth parameter
+            mu = np.min(4 * L / (ite_per_restart[:n_restarts-1]+1) ** 2
+                        * (F_tab[:n_restarts-1] - last_F) /
+                        (F_tab[1:n_restarts] - last_F))
+            # Update of the number of iterations before next restart
+            if ite_per_restart[n_restarts-1] <= C*np.sqrt(L/mu):
+                ite_per_restart = np.r_[ite_per_restart,
+                                        2 * ite_per_restart[n_restarts-1]]
+            else:
+                ite_per_restart = np.r_[ite_per_restart,
+                                        ite_per_restart[n_restarts-1]]
         self.w = w
 
     def st(self, w, mu):
         w -= np.clip(w, -mu, mu)
         return w
+
+    def cost_function(self, w):
+        F = (.5*np.linalg.norm(self.X @ w - self.y, ord=2)**2
+             + self.lmbd*abs(w).sum())
+        return F
 
     def get_result(self):
         return self.w
