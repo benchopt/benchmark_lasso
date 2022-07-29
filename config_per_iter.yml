@@ -1,0 +1,13 @@
+solver:
+  - cd
+  - sklearn
+  - python-pgd
+
+dataset:
+  - leukemia
+
+objective:
+  - Lasso Regression[fit_intercept=False]
+
+n-repetitions: 1
+output: bench_per_iteration
