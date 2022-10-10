@@ -9,11 +9,17 @@ class Dataset(BaseDataset):
     name = "libsvm"
 
     parameters = {
-        "dataset": ["bodyfat", "finance", "finance-tf-idf", "YearPredictionMSD"],
+        "dataset": ["bodyfat", "YearPredictionMSD"],
     }
 
     install_cmd = "conda"
-    requirements = ["pip:libsvmdata"]
+    requirements = ["pip:git+https://github.com/mathurinm/libsvmdata@main"]
+    references = [
+        "C. Chang and CJ. Lin, "
+        "LIBSVM: a library for support vector machines,"
+        "ACM transactions on intelligent systems and technology (TIST), 2(3), 1-27, (2011)."
+    ]
+
 
     def __init__(self, dataset="bodyfat"):
         self.dataset = dataset
