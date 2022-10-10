@@ -2,9 +2,9 @@ from benchopt import BaseDataset, safe_import_context
 
 with safe_import_context() as import_ctx:
     import os
-
     import appdirs
     import numpy as np
+    from pathlib import Path
     from download import download
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri
@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 
 
 def fetch_breheny(dataset: str):
-    base_dir = appdirs.user_cache_dir("libsvmdata")
+    base_dir = Path.home() / 'data' / 'libsvm'
 
     path = os.path.join(base_dir, dataset + ".rds")
 
