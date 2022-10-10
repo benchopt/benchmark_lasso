@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 
 
 def fetch_breheny(dataset: str):
-    base_dir = Path.home() / 'data' / 'libsvm'
+    base_dir = Path.home() / "data" / "breheny"
 
     path = os.path.join(base_dir, dataset + ".rds")
 
