@@ -12,14 +12,14 @@ function solve_lasso(
     L = opnorm(X)^2
     p = size(X, 2)
     w = zeros(p)
-    r = similar(y)
-    v = similar(w)
-    g = similar(w)                  
+    residual = similar(y)
+    diffvec = similar(w)
+    gradient = similar(w)                  
     for i ∈ 1:n_iter
-        r = X * w - y
-        g = X' * r
-        v = w - g / L
-        w = st(v, lambda / L)
+        residual = X * w - y
+        gradient = X' * residual
+        diffvec = w - gradient / L
+        w = st(diffvec, lambda / L)
     end
 
     return w
