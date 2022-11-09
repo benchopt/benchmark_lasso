@@ -1,7 +1,11 @@
-from benchopt import BaseDataset, safe_import_context
+from benchopt import BaseDataset
+
+from benchopt import safe_import_context
+
 
 with safe_import_context() as import_ctx:
     from libsvmdata import fetch_libsvm
+    from sklearn.preprocessing import StandardScaler
 
 
 class Dataset(BaseDataset):
@@ -9,25 +13,28 @@ class Dataset(BaseDataset):
     name = "libsvm"
 
     parameters = {
-        "dataset": ["bodyfat", "YearPredictionMSD"],
+        'dataset': ["bodyfat", "leukemia", "rcv1.binary", "YearPredictionMSD"],
     }
 
-    install_cmd = "conda"
-    requirements = ["pip:git+https://github.com/mathurinm/libsvmdata@main"]
+    install_cmd = 'conda'
+    requirements = ['pip:git+https://github.com/mathurinm/libsvmdata@main']
     references = [
         "C. Chang and CJ. Lin, "
-        "LIBSVM: a library for support vector machines,"
-        "ACM transactions on intelligent systems and technology (TIST), 2(3), 1-27, (2011)."
+        "'ACM transactions on intelligent systems and technology (TIST)', "
+        "Acm New York, USA vol 2 (2011)."
     ]
-
 
     def __init__(self, dataset="bodyfat"):
         self.dataset = dataset
-        self.X, self.y = None, None
 
     def get_data(self):
 
-        if self.X is None:
-            self.X, self.y = fetch_libsvm(self.dataset)
+        X, y = fetch_libsvm(self.dataset)
 
-        return dict(X=self.X, y=self.y)
+        if self.dataset == "YearPredictionMSD":
+            scaler = StandardScaler()
+            X = scaler.fit_transform(X)
+
+        data = dict(X=X, y=y)
+
+        return data
