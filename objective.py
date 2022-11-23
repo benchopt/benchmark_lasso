@@ -5,6 +5,7 @@ from benchopt import BaseObjective
 
 
 class Objective(BaseObjective):
+    min_benchopt_version = "1.3"
     name = "Lasso Regression"
 
     parameters = {
@@ -50,6 +51,6 @@ class Objective(BaseObjective):
         else:
             return abs(self.X.T.dot(self.y)).max()
 
-    def to_dict(self):
+    def get_objective(self):
         return dict(X=self.X, y=self.y, lmbd=self.lmbd,
                     fit_intercept=self.fit_intercept)
