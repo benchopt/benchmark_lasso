@@ -12,9 +12,11 @@ class Dataset(BaseDataset):
     # the cross product for each key in the dictionary.
     parameters = {
         'n_samples, n_features': [
-            (100, 5000),
-            (100, 10000)],  # slow to simulate big correlated design
-        'rho': [0, 0.6]
+            (100, 10_000),
+            (500, 600),
+            (10_000, 100)
+        ],
+        'rho': [0, 0.6],
     }
 
     def __init__(self, n_samples=10, n_features=50, rho=0, random_state=27):
@@ -32,4 +34,4 @@ class Dataset(BaseDataset):
 
         data = dict(X=X, y=y)
 
-        return self.n_features, data
+        return data

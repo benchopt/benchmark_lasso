@@ -1,11 +1,11 @@
-import numpy as np
-from scipy import sparse
-
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
+    import numpy as np
+    from scipy import sparse
     from numba import njit
+
 
 if import_ctx.failed_import:
 
@@ -27,8 +27,23 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['numba']
+    references = [
+        'W. J. Fu, "Penalized Regressions: the Bridge versus the Lasso", '
+        'J. Comput. Graph. Statist., vol.7, no. 3, pp. 397-416, '
+        'Taylor & Francis (1998)',
+        'J. Friedman, T. J. Hastie, H. Höfling and R. Tibshirani, '
+        '"Pathwise coordinate optimization", Ann. Appl. Stat., vol 1, no. 2, '
+        'pp. 302-332 (2007)'
+    ]
 
-    def set_objective(self, X, y, lmbd):
+    def skip(self, X, y, lmbd, fit_intercept):
+        # XXX - not implemented but this should be quite easy
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
+        return False, None
+
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.y, self.lmbd = y, lmbd
 
         if sparse.issparse(X):

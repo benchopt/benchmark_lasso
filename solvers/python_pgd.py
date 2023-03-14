@@ -1,17 +1,18 @@
-from math import sqrt
-import numpy as np
-from scipy import sparse
-
 from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
     import cupy as cp
+    import numpy as np
+    from scipy import sparse
+    from math import sqrt
 
 
 class Solver(BaseSolver):
+
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
+    stopping_strategy = "callback"
 
     requirements = [
         'conda-forge:cupy',
@@ -24,18 +25,36 @@ class Solver(BaseSolver):
         'use_gpu': [False, True]
     }
 
-    def skip(self, X, y, lmbd):
+    references = [
+        'I. Daubechies, M. Defrise and C. De Mol, '
+        '"An iterative thresholding algorithm for linear inverse problems '
+        'with a sparsity constraint", Comm. Pure Appl. Math., '
+        'vol. 57, pp. 1413-1457, no. 11, Wiley Online Library (2004)',
+        'A. Beck and M. Teboulle, "A fast iterative shrinkage-thresholding '
+        'algorithm for linear inverse problems", SIAM J. Imaging Sci., '
+        'vol. 2, no. 1, pp. 183-202 (2009)'
+    ]
+
+    def skip(self, X, y, lmbd, fit_intercept):
         if sparse.issparse(X) and self.use_gpu:
             return True, "sparse is not supported with GPU"
+
+        # XXX - not implemented but not too complicated to implement
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+
         return False, None
 
-    def set_objective(self, X, y, lmbd):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         if self.use_gpu:
+            # transfert X, y to GPU
             X, y = cp.array(X), cp.array(y)
-        self.X, self.y, self.lmbd = X, y, lmbd
 
-    def run(self, n_iter):
-        L = self.compute_lipschitz_cste()
+        self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
+
+    def run(self, callback):
+        L = self.compute_lipschitz_constant()
 
         xp = cp if self.use_gpu else np
 
@@ -45,7 +64,7 @@ class Solver(BaseSolver):
             z = xp.zeros(n_features)
 
         t_new = 1
-        for _ in range(n_iter):
+        while callback(w):
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + sqrt(1 + 4 * t_old ** 2)) / 2
@@ -70,32 +89,9 @@ class Solver(BaseSolver):
     def get_result(self):
         return self.w
 
-    def compute_lipschitz_cste(self, max_iter=100):
+    def compute_lipschitz_constant(self):
         if not sparse.issparse(self.X):
             xp = cp if self.use_gpu else np
             return xp.linalg.norm(self.X, ord=2) ** 2
 
-        n, m = self.X.shape
-        if n < m:
-            A = self.X.T
-        else:
-            A = self.X
-
-        b_k = np.random.rand(A.shape[1])
-        b_k /= np.linalg.norm(b_k)
-        rk = np.inf
-
-        for _ in range(max_iter):
-            # calculate the matrix-by-vector product Ab
-            b_k1 = A.T @ (A @ b_k)
-
-            # compute the eigenvalue and stop if it does not move anymore
-            rk1 = rk
-            rk = b_k1 @ b_k
-            if abs(rk - rk1) < 1e-10:
-                break
-
-            # re normalize the vector
-            b_k = b_k1 / np.linalg.norm(b_k1)
-
-        return rk
+        return sparse.linalg.svds(self.X, k=1)[1][0] ** 2
