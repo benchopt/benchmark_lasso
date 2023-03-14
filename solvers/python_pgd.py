@@ -9,14 +9,20 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import cupy as cp
 
+
 class Solver(BaseSolver):
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
 
-    requirements = ['cupy']
+    requirements = [
+        'conda-forge:cupy',
+        'conda-forge:cudatoolkit=11.5'
+    ]
 
     # any parameter defined here is accessible as a class attribute
-    parameters = {'use_acceleration': [False, True],
-                  'use_gpu': [False, True]}
+    parameters = {
+        'use_acceleration': [False, True],
+        'use_gpu': [False, True]
+    }
 
     def skip(self, X, y, lmbd):
         if sparse.issparse(X) and self.use_gpu:
