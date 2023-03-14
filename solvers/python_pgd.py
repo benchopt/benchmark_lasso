@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
 
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
-    stopping_strategy = "callback"
+    stopping_strategy = "iteration"
 
     requirements = [
         'conda-forge:cupy',
@@ -53,7 +53,7 @@ class Solver(BaseSolver):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
-    def run(self, callback):
+    def run(self, n_iter):
         L = self.compute_lipschitz_constant()
 
         xp = cp if self.use_gpu else np
@@ -64,7 +64,7 @@ class Solver(BaseSolver):
             z = xp.zeros(n_features)
 
         t_new = 1
-        while callback(w):
+        for _ in range(n_iter):
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + sqrt(1 + 4 * t_old ** 2)) / 2
