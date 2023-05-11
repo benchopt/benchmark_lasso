@@ -15,6 +15,13 @@ class Solver(BaseSolver):
         "pip:git+https://github.com/Badr-MOUFAD/fercoq-approx@main"
     ]
 
+    references = [
+        'Fercoq, Olivier and Richt{\'a}rik, Peter, '
+        'SIAM Journal on Optimization, '
+        '"Accelerated, parallel, and proximal coordinate descent", '
+        'vol. 25, pp. 1997--2023 (2015)'
+    ]
+
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
