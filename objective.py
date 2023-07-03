@@ -12,7 +12,6 @@ class Objective(BaseObjective):
         'fit_intercept': [True, False],
         'reg': [.5, .1, .05],
     }
-    requirements = ["scipy"]
 
     def __init__(self, reg=.1, fit_intercept=False):
         self.reg = reg

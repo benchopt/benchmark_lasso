@@ -2,11 +2,11 @@ from benchopt import BaseDataset
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
-    from scipy.fftpack import dctn, idctn
-    from scipy.datasets import ascent
     import pooch  # noqa: F401
-    from scipy.sparse.linalg import LinearOperator
     import numpy as np
+    from scipy.datasets import ascent
+    from scipy.fftpack import dctn, idctn
+    from scipy.sparse.linalg import LinearOperator
 
 
 class Dataset(BaseDataset):
@@ -30,7 +30,7 @@ class Dataset(BaseDataset):
         if self.X is None or self.y is None:
             y = self._load_image(noise_level=0.1,
                                  random_state=self.random_state)
-            (pw, ph) = y.shape
+            pw, ph = y.shape
 
             rng = np.random.RandomState(self.random_state)
             mask = rng.binomial(1, 0.9, pw * ph).astype(bool)
