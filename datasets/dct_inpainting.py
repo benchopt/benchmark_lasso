@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     from scipy.fftpack import dctn, idctn
     from scipy.datasets import ascent
+    import pooch  # noqa: F401
     from scipy.sparse.linalg import LinearOperator
     import numpy as np
 
