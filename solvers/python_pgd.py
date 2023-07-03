@@ -3,6 +3,8 @@ from benchopt import BaseSolver, safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
+    from scipy.linalg.interpolative import estimate_spectral_norm
+    from scipy.sparse.linalg import LinearOperator
 
 
 class Solver(BaseSolver):
@@ -63,7 +65,9 @@ class Solver(BaseSolver):
         return self.w
 
     def compute_lipschitz_constant(self):
-        if not sparse.issparse(self.X):
+        if isinstance(self.X, LinearOperator):
+            L = estimate_spectral_norm(self.X) ** 2
+        elif not sparse.issparse(self.X):
             L = np.linalg.norm(self.X, ord=2) ** 2
         else:
             L = sparse.linalg.svds(self.X, k=1)[1][0] ** 2
