@@ -5,6 +5,11 @@ from benchopt import BaseObjective
 
 
 class Objective(BaseObjective):
+    """Some stuff.
+
+
+    Some other stuff but very long and also like this and liike tklreflxkjlkvsjd.
+    """
     min_benchopt_version = "1.3"
     name = "Lasso Regression"
 

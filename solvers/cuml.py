@@ -17,6 +17,10 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """S. Raschka, J. Patterson and C. Nolet, "Machine Learning in Python:
+    Main developments and technology trends in data science, machine learning,
+    and artificial intelligence", arXiv preprint arXiv:2002.04803 (2020)
+    """
     name = "cuml"
 
     install_cmd = "conda"
@@ -33,12 +37,6 @@ class Solver(BaseSolver):
         ],
     }
     parameter_template = "{solver}"
-    references = [
-        "S. Raschka, J. Patterson and C. Nolet, "
-        '"Machine Learning in Python: Main developments and technology trends '
-        'in data science, machine learning, and artificial intelligence", '
-        "arXiv preprint arXiv:2002.04803 (2020)"
-    ]
 
     stopping_criterion = SufficientProgressCriterion(
         eps=1e-12, patience=5, strategy='iteration'
