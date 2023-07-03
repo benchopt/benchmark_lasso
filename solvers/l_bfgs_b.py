@@ -8,6 +8,8 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """a
+    """
     name = "L-BFGS-B"
 
     stopping_strategy = 'iteration'
