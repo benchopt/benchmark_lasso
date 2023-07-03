@@ -29,7 +29,7 @@ class Solver(BaseSolver):
             return True, "snapml[gpu=True] needs a GPU to run"
         if isinstance(X, LinearOperator):
             return True, f"{self.name} does not handle implicit operator"
-        
+
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):

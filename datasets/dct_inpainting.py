@@ -1,7 +1,6 @@
 from benchopt import BaseDataset
 from benchopt import safe_import_context
 
-
 with safe_import_context() as import_ctx:
     from scipy.fftpack import dctn, idctn
     from scipy.datasets import ascent
@@ -27,7 +26,8 @@ class Dataset(BaseDataset):
 
     def get_data(self):
         if self.X is None or self.y is None:
-            y = self._load_image(noise_level=0.1, random_state=self.random_state)
+            y = self._load_image(noise_level=0.1,
+                                 random_state=self.random_state)
             (pw, ph) = y.shape
 
             rng = np.random.RandomState(self.random_state)
@@ -38,17 +38,15 @@ class Dataset(BaseDataset):
 
             def _fwd_operator(u):
                 dct_coeffs = idctn(u.reshape((pw, ph)), norm="ortho").reshape(
-                    (pw * ph,)
-                )
+                    (pw * ph, ))
                 dct_coeffs[mask] = 0.0
                 return dct_coeffs
 
             def _rfwd_operator(x):
                 masked_coeffs = x.copy()
                 masked_coeffs[mask] = 0.0
-                idct_coeffs = dctn(
-                    masked_coeffs.reshape((pw, ph)), norm="ortho"
-                ).reshape((pw * ph,))
+                idct_coeffs = dctn(masked_coeffs.reshape((pw, ph)),
+                                   norm="ortho").reshape((pw * ph, ))
                 return idct_coeffs
 
             _fwd_scipy_operator = LinearOperator(

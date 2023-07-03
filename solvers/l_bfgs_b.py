@@ -33,7 +33,7 @@ class Solver(BaseSolver):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
         if isinstance(X, LinearOperator):
-            return True, f"{self.name} does not handle implicit operator"      
+            return True, f"{self.name} does not handle implicit operator"
 
         return False, None
 

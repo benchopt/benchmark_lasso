@@ -9,6 +9,7 @@ with safe_import_context() as import_ctx:
     from scipy.sparse import issparse
     from scipy.sparse.linalg import LinearOperator
 
+
 class Solver(BaseSolver):
     name = "noncvx-pro"
 
@@ -32,7 +33,7 @@ class Solver(BaseSolver):
             return True, f"{self.name} does not handle fit_intercept"
         if isinstance(X, LinearOperator):
             return True, f"{self.name} does not handle implicit operator"
-        
+
         return False, None
 
     def run(self, n_iter):
