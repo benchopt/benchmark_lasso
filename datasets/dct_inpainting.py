@@ -10,6 +10,7 @@ with safe_import_context() as import_ctx:
 
 class Dataset(BaseDataset):
     name = "dct_inpainting"
+    requirements = ["pooch"]
 
     def __init__(self, random_state=27):
         self.random_state = random_state
