@@ -3,6 +3,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    from scipy.sparse.linalg import LinearOperator
     import blitzl1
 
 
@@ -23,6 +24,9 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
 
         return False, None
 

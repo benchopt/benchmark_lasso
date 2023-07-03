@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import scipy
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from spams import lasso, fistaFlat
 
 
@@ -21,6 +22,9 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not work with fit_intercept"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+        
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):

@@ -3,6 +3,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from numpy.linalg import norm
     from scipy.optimize import fmin_l_bfgs_b
 
@@ -31,6 +32,8 @@ class Solver(BaseSolver):
         # XXX - not implemented but this should be quite easy
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"      
 
         return False, None
 

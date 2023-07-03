@@ -5,6 +5,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 with safe_import_context() as import_ctx:
     import numpy as np
     from scipy import sparse
+    from scipy.sparse.linalg import LinearOperator
 
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri, packages
@@ -32,6 +33,12 @@ class Solver(BaseSolver):
     stopping_criterion = SufficientProgressCriterion(
         patience=7, eps=1e-38, strategy='tolerance'
     )
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         if sparse.issparse(X):

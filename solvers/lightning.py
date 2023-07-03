@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from lightning.regression import CDRegressor
 
 
@@ -27,6 +28,8 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
 
         return False, None
 
