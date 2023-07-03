@@ -46,8 +46,7 @@ class Solver(BaseSolver):
                 coef = np.r_[coef, self.lasso.intercept_]
             self.coef = coef
 
-    @staticmethod
-    def get_next(previous):
+    def get_next(self, previous):
         "Linear growth for n_iter."
         return previous + 1
 
