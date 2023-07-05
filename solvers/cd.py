@@ -33,7 +33,6 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = ['numba']
 
-
     def skip(self, X, y, lmbd, fit_intercept):
         # XXX - not implemented but this should be quite easy
         if fit_intercept:

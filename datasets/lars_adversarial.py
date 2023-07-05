@@ -4,18 +4,13 @@ from benchopt import BaseDataset
 
 
 class Dataset(BaseDataset):
-    """Adversarial example of Mairal and Yu 'Complexity Analysis
+    """Adversarial example of Mairal and Yu, 'Complexity Analysis
      of the Lasso Regularization Path', 2012."""
     name = "lars_adversarial"
 
     parameters = {
         'n_samples': [100],
     }
-    references = [
-        "Mairal and Yu, "
-        "'Complexity Analysis of the Lasso Regularization Path', "
-        "ICML (2012)"
-    ]
 
     def __init__(self, n_samples=10):
         self.n_samples = n_samples

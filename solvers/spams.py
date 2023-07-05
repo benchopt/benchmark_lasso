@@ -8,15 +8,13 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """J. Mairal, F. Bach, J. Ponce, G. Sapiro, R. Jenatton and G. Obozinski.
+    'Spams: A sparse modeling software', 2014
+    """
     name = 'spams'
 
     install_cmd = 'conda'
     requirements = ['python-spams']
-    references = [
-        'J. Mairal, F. Bach, J. Ponce and G. Sapiro, '
-        '"Online dictionary learning for sparse coding", '
-        'ICML, vol. 382, pp. 689-696, ACM (2009)'
-    ]
 
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:

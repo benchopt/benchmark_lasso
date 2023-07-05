@@ -5,10 +5,7 @@ from benchopt import BaseObjective
 
 
 class Objective(BaseObjective):
-    """Some stuff.
-
-
-    Some other stuff but very long and also like this and liike tklreflxkjlkvsjd.
+    """L1 regularized linear regression.
     """
     min_benchopt_version = "1.3"
     name = "Lasso Regression"
@@ -16,11 +13,13 @@ class Objective(BaseObjective):
     parameters = {
         'fit_intercept': [True, False],
         'reg': [.5, .1, .05],
+        'data': ["'/path/to/stuff'"],
     }
 
-    def __init__(self, reg=.1, fit_intercept=False):
+    def __init__(self, reg=.1, fit_intercept=False, data=None):
         self.reg = reg
         self.fit_intercept = fit_intercept
+        self.data = data
 
     def set_data(self, X, y):
         self.X, self.y = X, y
@@ -58,4 +57,4 @@ class Objective(BaseObjective):
 
     def get_objective(self):
         return dict(X=self.X, y=self.y, lmbd=self.lmbd,
-                    fit_intercept=self.fit_intercept)
+                    fit_intercept=self.fit_intercept, data=self.data)

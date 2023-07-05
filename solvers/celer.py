@@ -11,7 +11,7 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    """M. Massias, A. Gramfort and J. Salmon,  "Celer: a Fast Solver for the
+    """M. Massias, A. Gramfort and J. Salmon, "Celer: a Fast Solver for the
     Lasso with Dual Extrapolation", ICML 2018
     """
     name = 'Celer'
@@ -20,7 +20,7 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = ['pip:celer']
 
-    def set_objective(self, X, y, lmbd, fit_intercept):
+    def set_objective(self, X, y, lmbd, fit_intercept, data):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
