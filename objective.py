@@ -18,7 +18,6 @@ class Objective(BaseObjective):
     def __init__(self, reg=.1, fit_intercept=False):
         self.reg = reg
         self.fit_intercept = fit_intercept
-        self.data = data
 
     def set_data(self, X, y):
         self.X, self.y = X, y
