@@ -13,10 +13,9 @@ class Objective(BaseObjective):
     parameters = {
         'fit_intercept': [True, False],
         'reg': [.5, .1, .05],
-        'data': ["'/path/to/stuff'"],
     }
 
-    def __init__(self, reg=.1, fit_intercept=False, data=None):
+    def __init__(self, reg=.1, fit_intercept=False):
         self.reg = reg
         self.fit_intercept = fit_intercept
         self.data = data
@@ -57,4 +56,4 @@ class Objective(BaseObjective):
 
     def get_objective(self):
         return dict(X=self.X, y=self.y, lmbd=self.lmbd,
-                    fit_intercept=self.fit_intercept, data=self.data)
+                    fit_intercept=self.fit_intercept)

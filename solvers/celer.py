@@ -20,7 +20,7 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = ['pip:celer']
 
-    def set_objective(self, X, y, lmbd, fit_intercept, data):
+    def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
