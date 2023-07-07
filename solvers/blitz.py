@@ -31,8 +31,7 @@ class Solver(BaseSolver):
         blitzl1.set_tolerance(0)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
-    @staticmethod
-    def get_next(previous):
+    def get_next(self, previous):
         "Linear growth for n_iter."
         return previous + 1
 
