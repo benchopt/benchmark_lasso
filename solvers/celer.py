@@ -15,7 +15,7 @@ class Solver(BaseSolver):
     Lasso with Dual Extrapolation", ICML 2018
     """
     name = 'Celer'
-    stopping_strategy = 'iteration'
+    sampling_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = ['pip:celer']
