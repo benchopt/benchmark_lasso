@@ -34,14 +34,24 @@ class Solver(BaseSolver):
     requirements = ['numba']
 
     def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - not implemented but this should be quite easy
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        # XXX - intercept not implemented for sparse X but it shouldn't be hard
+        if fit_intercept and sparse.issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data",
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
-        self.y, self.lmbd = y, lmbd
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not sparse.issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
+
+        self.y, self.lmbd, self.fit_intercept = y, lmbd, fit_intercept
 
         if sparse.issparse(X):
             self.X = X
@@ -62,6 +72,10 @@ class Solver(BaseSolver):
         else:
             L = (self.X ** 2).sum(axis=0)
             self.w = self.cd(self.X, self.y, self.lmbd, L, n_iter)
+
+        if self.fit_intercept and not sparse.issparse(self.X):
+            intercept = self.y_offset - self.X_offset @ self.w
+            self.w = np.r_[self.w, intercept]
 
     @staticmethod
     @njit

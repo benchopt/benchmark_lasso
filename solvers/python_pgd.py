@@ -22,13 +22,23 @@ class Solver(BaseSolver):
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - not implemented but not too complicated to implement
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        # XXX - intercept not implemented for sparse X but it shouldn't be hard
+        if fit_intercept and sparse.issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data",
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not sparse.issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
+
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
@@ -40,8 +50,10 @@ class Solver(BaseSolver):
         if self.use_acceleration:
             z = np.zeros(n_features)
 
+        intercept = self.y_offset if self.fit_intercept else []
+
         t_new = 1
-        while callback(w):
+        while callback(np.r_[w, intercept]):
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + np.sqrt(1 + 4 * t_old ** 2)) / 2
@@ -53,7 +65,10 @@ class Solver(BaseSolver):
                 w -= self.X.T @ (self.X @ w - self.y) / L
                 w = self.st(w, self.lmbd / L)
 
-        self.w = w
+            if self.fit_intercept:
+                intercept = self.y_offset - self.X_offset @ w
+
+        self.w = np.r_[w, intercept]
 
     def st(self, w, mu):
         w -= np.clip(w, -mu, mu)

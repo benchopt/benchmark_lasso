@@ -6,6 +6,8 @@ from benchopt.helpers.julia import get_jl_interpreter
 from benchopt.helpers.julia import assert_julia_installed
 
 with safe_import_context() as import_ctx:
+    import numpy as np
+    from scipy.sparse import issparse
     assert_julia_installed()
 
 
@@ -27,15 +29,26 @@ class Solver(JuliaSolver):
         'algorithm for linear inverse problems", SIAM J. Imaging Sci., '
         'vol. 2, no. 1, pp. 183-202 (2009)'
     ]
+    support_sparse = False
 
     def skip(self, X, y, lmbd, fit_intercept):
-        # XXX - fit intercept is not yet implemented in julia.jl
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        # XXX - fit intercept is not yet implemented in julia.jl for sparse X
+        if fit_intercept and issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data"
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
+
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
 
@@ -44,6 +57,10 @@ class Solver(JuliaSolver):
 
     def run(self, n_iter):
         self.beta = self.solve_lasso(self.X, self.y, self.lmbd, n_iter)
+
+        if self.fit_intercept and not issparse(self.X):
+            intercept = self.y_offset - self.X_offset @ self.beta
+            self.beta = np.r_[self.beta.ravel(), intercept]
 
     def get_result(self):
         return self.beta.ravel()

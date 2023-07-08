@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse import issparse
 
     from rpy2 import robjects
     from rpy2.robjects import numpy2ri
@@ -34,12 +35,23 @@ class Solver(BaseSolver):
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        # rpy2 does not directly support sparse matrices (workaround exists)
+        if fit_intercept and issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data"
+            )
 
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
+        # Handling intercept: center y and X (dense data only)
+        if fit_intercept and not issparse(self.X):
+            self.X_offset = np.average(X, axis=0)
+            X -= self.X_offset
+            self.y_offset = np.average(y, axis=0)
+            y -= self.y_offset
+
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
         self.r_pgd = robjects.r['proximal_gradient_descent']
@@ -52,4 +64,8 @@ class Solver(BaseSolver):
         self.w = np.array(as_r(coefs, "vector"))
 
     def get_result(self):
-        return self.w.flatten()
+        if self.fit_intercept:
+            intercept = self.y_offset - self.X_offset @ self.w
+            return np.r_[self.w.flatten(), intercept]
+        else:
+            return self.w.flatten()

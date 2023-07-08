@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import warnings
     import numpy as np
+    from scipy import sparse
     from skglm import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
@@ -18,12 +19,15 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:skglm'
+        'pip:skglm', 'scikit-learn'
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
+        if fit_intercept and sparse.issparse(X):
+            return (
+                True,
+                f"{self.name} doesn't handle fit_intercept with sparse data",
+            )
 
         return False, None
 
@@ -35,7 +39,8 @@ class Solver(BaseSolver):
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000,
-            tol=1e-12, fit_intercept=False, warm_start=False, verbose=False)
+            tol=1e-12, fit_intercept=self.fit_intercept, warm_start=False,
+            verbose=False)
 
         # Cache Numba compilation
         self.run(1)
