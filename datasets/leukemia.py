@@ -27,7 +27,7 @@ class Dataset(BaseDataset):
         # Unlike libsvm[leukemia], this dataset corresponds to the whole
         # leukemia  data with train + test data (72 samples) and not just
         # the training set.
-        X, y = fetch_openml("leukemia", return_X_y=True)
+        X, y = fetch_openml("leukemia", return_X_y=True, parser="auto")
         X = X.to_numpy()
         y = LabelBinarizer().fit_transform(y)[:, 0].astype(X.dtype)
         data = dict(X=X, y=y)

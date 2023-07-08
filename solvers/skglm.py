@@ -9,18 +9,16 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel and
+    M. Massias, "Beyond L1: Faster and Better Sparse Models with skglm",
+    NeurIPS 2022.
+    """
     name = "skglm"
     stopping_strategy = "iteration"
 
     install_cmd = 'conda'
     requirements = [
         'pip:skglm'
-    ]
-    references = [
-        'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel'
-        'and M. Massias'
-        '"Beyond L1: Faster and Better Sparse Models with skglm", '
-        'https://arxiv.org/abs/2204.07826'
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):

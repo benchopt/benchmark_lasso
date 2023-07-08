@@ -7,17 +7,15 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """T. B. Johnson and C. Guestrin, "Blitz: A Principled Meta-Algorithm for
+    Scaling Sparse Optimization", ICML 2015
+    """
     name = 'Blitz'
     stopping_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = [
         'pip:git+https://github.com/tbjohns/blitzl1.git@master'
-    ]
-    references = [
-        'T. B. Johnson and C. Guestrin, "Blitz: A Principled Meta-Algorithm '
-        'for Scaling Sparse Optimization", ICML, '
-        'vol. 37, pp. 1171-1179 (2015)'
     ]
 
     def skip(self, X, y, lmbd, fit_intercept):

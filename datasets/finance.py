@@ -7,17 +7,16 @@ with safe_import_context() as import_ctx:
 
 
 class Dataset(BaseDataset):
+    """S. Kogan, D Levin, BR. Routledge, JS. Sagiand and NA. Smith,
+    'Predicting risk from financial reports with regression'.
+    In Proceedings of the North American Association for Computational
+    Linguistics Human Language Technologies Conference (2009).
+    """
     name = "finance"
     is_sparse = True
 
     install_cmd = 'conda'
     requirements = ['pip:libsvmdata']
-    references = [
-        "S. Kogan, D Levin, BR. Routledge, JS. Sagiand and NA. Smith, "
-        "'Predicting risk from financial reports with regression'. "
-        "In Proceedings of the North American Association for Computational "
-        "Linguistics Human Language Technologies Conference (2009)."
-    ]
 
     def __init__(self):
         self.X, self.y = None, None
