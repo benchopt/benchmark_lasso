@@ -12,6 +12,8 @@ class Solver(BaseSolver):
     name = "skglm"
     stopping_strategy = "iteration"
 
+    tags = ["first-order", "Coordinate-Descent"]
+
     install_cmd = 'conda'
     requirements = [
         'pip:skglm'

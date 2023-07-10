@@ -12,6 +12,8 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = 'sklearn'
 
+    tags = ["first-order", "Coordinate-Descent"]
+
     install_cmd = 'conda'
     requirements = ['scikit-learn']
     references = [

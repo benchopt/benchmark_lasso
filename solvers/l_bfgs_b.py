@@ -11,6 +11,9 @@ class Solver(BaseSolver):
     name = "L-BFGS-B"
 
     stopping_strategy = 'iteration'
+
+    tags = ["second-order"]
+
     support_sparse = False
     references = [
         'R. H. Byrd, P. Lu and J. Nocedal, '

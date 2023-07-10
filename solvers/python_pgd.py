@@ -9,6 +9,8 @@ class Solver(BaseSolver):
     name = 'Python-PGD'  # proximal gradient, optionally accelerated
     stopping_strategy = "callback"
 
+    tags = ["first-order"]
+
     # any parameter defined here is accessible as a class attribute
     parameters = {'use_acceleration': [False, True]}
     references = [

@@ -23,7 +23,21 @@ def st(x, mu):
 
 
 class Solver(BaseSolver):
+    """Description
+
+    Lorem Lorem Lorem Lorem Lorem Lorem Lorem Lorem Lorem
+    Lorem Lorem Lorem Lorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    Lorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem LoremLorem Lorem Lorem
+    """
     name = "cd"
+
+    tags = ["first-order", "Coordinate-Descent"]
 
     install_cmd = 'conda'
     requirements = ['numba']
