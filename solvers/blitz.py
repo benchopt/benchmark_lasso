@@ -3,6 +3,7 @@ from benchopt import safe_import_context
 
 
 with safe_import_context() as import_ctx:
+    import numpy as np
     import blitzl1
 
 
@@ -11,23 +12,18 @@ class Solver(BaseSolver):
     Scaling Sparse Optimization", ICML 2015
     """
     name = 'Blitz'
-    stopping_strategy = 'iteration'
+    sampling_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = [
         'pip:git+https://github.com/tbjohns/blitzl1.git@master'
     ]
 
-    def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
-
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
+        self.fit_intercept = fit_intercept
 
-        blitzl1.set_use_intercept(False)
+        blitzl1.set_use_intercept(fit_intercept)
         blitzl1.set_tolerance(0)
         self.problem = blitzl1.LassoProblem(self.X, self.y)
 
@@ -36,7 +32,11 @@ class Solver(BaseSolver):
         return previous + 1
 
     def run(self, n_iter):
-        self.coef_ = self.problem.solve(self.lmbd, max_iter=n_iter).x
+        sol = self.problem.solve(self.lmbd, max_iter=n_iter)
+        coef = sol.x
+        if self.fit_intercept:
+            coef = np.r_[coef, sol.intercept]
+        self.coef = coef
 
     def get_result(self):
-        return self.coef_.flatten()
+        return self.coef

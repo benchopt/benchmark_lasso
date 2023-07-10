@@ -14,18 +14,12 @@ class Solver(BaseSolver):
     NeurIPS 2022.
     """
     name = "skglm"
-    stopping_strategy = "iteration"
+    sampling_strategy = "iteration"
 
     install_cmd = 'conda'
     requirements = [
         'pip:skglm'
     ]
-
-    def skip(self, X, y, lmbd, fit_intercept):
-        if fit_intercept:
-            return True, f"{self.name} does not handle fit_intercept"
-
-        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
@@ -35,7 +29,8 @@ class Solver(BaseSolver):
         n_samples = self.X.shape[0]
         self.lasso = Lasso(
             alpha=self.lmbd / n_samples, max_iter=1, max_epochs=50_000,
-            tol=1e-12, fit_intercept=False, warm_start=False, verbose=False)
+            tol=1e-12, fit_intercept=fit_intercept, warm_start=False,
+        )
 
         # Cache Numba compilation
         self.run(1)
