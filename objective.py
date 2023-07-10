@@ -5,6 +5,8 @@ from benchopt import BaseObjective
 
 
 class Objective(BaseObjective):
+    """L1 regularized linear regression.
+    """
     min_benchopt_version = "1.3"
     name = "Lasso Regression"
 

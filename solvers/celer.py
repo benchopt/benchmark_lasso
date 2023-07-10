@@ -12,16 +12,14 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """M. Massias, A. Gramfort and J. Salmon, "Celer: a Fast Solver for the
+    Lasso with Dual Extrapolation", ICML 2018
+    """
     name = 'Celer'
-    stopping_strategy = 'iteration'
+    sampling_strategy = 'iteration'
 
     install_cmd = 'conda'
     requirements = ['pip:celer']
-    references = [
-        'M. Massias, A. Gramfort and J. Salmon, ICML, '
-        '"Celer: a Fast Solver for the Lasso with Dual Extrapolation", '
-        'vol. 80, pp. 3321-3330 (2018)'
-    ]
 
     def skip(self, X, y, lmbd, fit_intercept):
         if isinstance(X, LinearOperator):

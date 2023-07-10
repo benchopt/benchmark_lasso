@@ -11,18 +11,15 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel, B. Thirion,
+    O. Grisel, M. Blondel, P. Prettenhofer, R. Weiss, V. Dubourg,
+    J. Vanderplas, A. Passos, D. Cournapeau, M. Brucher, M. Perrot and
+    E. Duchesnay, "Scikit-learn: Machine Learning in Python", JMLR 2011.
+    """
     name = 'sklearn'
 
     install_cmd = 'conda'
     requirements = ['scikit-learn']
-    references = [
-        'F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel, B. Thirion, '
-        'O. Grisel, M. Blondel, P. Prettenhofer, R. Weiss, V. Dubourg, '
-        'J. Vanderplas, A. Passos, D. Cournapeau, M. Brucher, M. Perrot'
-        ' and E. Duchesnay'
-        '"Scikit-learn: Machine Learning in Python", J. Mach. Learn. Res., '
-        'vol. 12, pp. 2825-283 (2011)'
-    ]
 
     def skip(self, X, y, lmbd, fit_intercept):
         if isinstance(X, LinearOperator):

@@ -17,14 +17,15 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
+    """J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths for
+     generalized linear models via coordinate descent", J. Stat. Softw.,
+     vol. 33, no. 1, pp. 1-22, 2010"""
     name = "glmnet"
 
     install_cmd = 'conda'
     requirements = ['r-base', 'rpy2', 'r-glmnet', 'r-matrix']
     references = [
-        'J. Friedman, T. J. Hastie and R. Tibshirani, "Regularization paths '
-        'for generalized linear models via coordinate descent", '
-        'J. Stat. Softw., vol. 33, no. 1, pp. 1-22, NIH Public Access (2010)'
+
     ]
     support_sparse = True
 
