@@ -12,7 +12,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "noncvx-pro"
 
-    stopping_strategy = 'iteration'
+    sampling_strategy = 'iteration'
     stopping_criterion = SufficientDescentCriterion(eps=1e-10, patience=5)
     references = [
         "Clarice Poon and Gabriel Peyré, "

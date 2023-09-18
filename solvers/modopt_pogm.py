@@ -14,7 +14,7 @@ with safe_import_context() as import_ctx:
 
 class Solver(BaseSolver):
     name = 'ModOpt-POGM'
-    stopping_strategy = 'callback'
+    sampling_strategy = 'callback'
 
     install_cmd = 'conda'
     requirements = [

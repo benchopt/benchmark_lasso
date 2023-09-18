@@ -21,7 +21,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['r-base', 'rpy2']
-    stopping_strategy = 'iteration'
+    sampling_strategy = 'iteration'
     support_sparse = False
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
