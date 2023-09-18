@@ -78,4 +78,4 @@ class Solver(BaseSolver):
             if self.lasso.fit_intercept:
                 coef = np.r_[coef, self.lasso.intercept_.to_numpy()]
 
-        return coef
+        return dict(beta=coef)

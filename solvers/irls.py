@@ -56,4 +56,4 @@ class Solver(BaseSolver):
         self.w = w
 
     def get_result(self):
-        return self.w
+        return dict(beta=self.w)

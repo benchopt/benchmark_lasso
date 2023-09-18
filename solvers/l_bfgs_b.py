@@ -66,4 +66,4 @@ class Solver(BaseSolver):
         self.w = w_hat
 
     def get_result(self):
-        return self.w.flatten()
+        return dict(beta=self.w.flatten())

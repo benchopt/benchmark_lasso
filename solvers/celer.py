@@ -49,4 +49,4 @@ class Solver(BaseSolver):
         return previous + 1
 
     def get_result(self):
-        return self.coef
+        return dict(beta=self.coef)

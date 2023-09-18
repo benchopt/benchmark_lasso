@@ -105,8 +105,8 @@ class Solver(BaseSolver):
         )
 
         self.fb.iterate(max_iter=1)
-        while callback(self.fb.x_final):
+        while callback():
             self.fb.iterate(max_iter=10)
 
     def get_result(self):
-        return self.fb.x_final.copy()
+        return dict(beta=self.fb.x_final.copy())

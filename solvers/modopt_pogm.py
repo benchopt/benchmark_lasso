@@ -89,8 +89,8 @@ class Solver(BaseSolver):
         )
 
         self.pogm.iterate(max_iter=1)
-        while callback(self.pogm.x_final):
+        while callback():
             self.pogm.iterate(max_iter=10)
 
     def get_result(self):
-        return self.pogm.x_final
+        return dict(beta=self.pogm.x_final)

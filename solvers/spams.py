@@ -47,4 +47,4 @@ class Solver(BaseSolver):
                            **self.solver_parameter).toarray().flatten()
 
     def get_result(self):
-        return self.w
+        return dict(beta=self.w)
