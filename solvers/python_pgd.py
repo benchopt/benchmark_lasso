@@ -36,12 +36,12 @@ class Solver(BaseSolver):
         L = self.compute_lipschitz_constant()
 
         n_features = self.X.shape[1]
-        w = np.zeros(n_features)
+        self.w = w = np.zeros(n_features)
         if self.use_acceleration:
             z = np.zeros(n_features)
 
         t_new = 1
-        while callback(w):
+        while callback():
             if self.use_acceleration:
                 t_old = t_new
                 t_new = (1 + np.sqrt(1 + 4 * t_old ** 2)) / 2
@@ -53,14 +53,14 @@ class Solver(BaseSolver):
                 w -= self.X.T @ (self.X @ w - self.y) / L
                 w = self.st(w, self.lmbd / L)
 
-        self.w = w
+            self.w = w
 
     def st(self, w, mu):
         w -= np.clip(w, -mu, mu)
         return w
 
     def get_result(self):
-        return self.w
+        return dict(beta=self.w)
 
     def compute_lipschitz_constant(self):
         if not sparse.issparse(self.X):

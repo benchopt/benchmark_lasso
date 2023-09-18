@@ -7,8 +7,8 @@ from benchopt import BaseObjective
 class Objective(BaseObjective):
     """L1 regularized linear regression.
     """
-    min_benchopt_version = "1.3"
     name = "Lasso Regression"
+    min_benchopt_version = "1.5"
 
     parameters = {
         'fit_intercept': [True, False],
@@ -24,13 +24,13 @@ class Objective(BaseObjective):
         self.lmbd = self.reg * self._get_lambda_max()
         self.n_features = self.X.shape[1]
 
-    def get_one_solution(self):
+    def get_one_result(self):
         n_features = self.n_features
         if self.fit_intercept:
             n_features += 1
-        return np.zeros(n_features)
+        return dict(beta=np.zeros(n_features))
 
-    def compute(self, beta):
+    def evaluate_result(self, beta):
         beta = beta.astype(np.float64)  # avoid float32 numerical errors
         # compute residuals
         if self.fit_intercept:

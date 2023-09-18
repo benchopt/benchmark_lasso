@@ -51,4 +51,4 @@ class Solver(BaseSolver):
         beta = self.model.coef_.flatten()
         if self.fit_intercept:
             beta = np.r_[beta, self.model.intercept_]
-        return beta
+        return dict(beta=beta)

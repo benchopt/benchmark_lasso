@@ -45,4 +45,4 @@ class Solver(BaseSolver):
         if self.fit_intercept:
             beta, intercept = beta
             beta = np.r_[beta.flatten(), intercept]
-        return beta
+        return dict(beta=beta)

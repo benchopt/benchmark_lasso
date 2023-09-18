@@ -52,4 +52,4 @@ class Solver(BaseSolver):
         self.w = np.array(as_r(coefs, "vector"))
 
     def get_result(self):
-        return self.w.flatten()
+        return dict(beta=self.w.flatten())

@@ -81,4 +81,4 @@ class Solver(BaseSolver):
         self.w = v * u_opt(v)
 
     def get_result(self):
-        return self.w.flatten()
+        return dict(beta=self.w.flatten())

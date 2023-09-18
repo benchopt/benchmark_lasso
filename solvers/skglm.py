@@ -51,4 +51,4 @@ class Solver(BaseSolver):
         return stop_val + 1
 
     def get_result(self):
-        return self.coef
+        return dict(beta=self.coef)
