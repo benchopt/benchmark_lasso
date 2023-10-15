@@ -5,6 +5,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from glum import GeneralizedLinearRegressor
     from sklearn.exceptions import ConvergenceWarning
 
@@ -39,6 +40,9 @@ class Solver(BaseSolver):
 
     def skip(self, X, y, lmbd, fit_intercept):
         # glum instantiates a Hessian of size (n_features, n_features)
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
         if X.shape[1] > 20_000:
             return True, "glum does not support n_features >= 20000"
         return False, None

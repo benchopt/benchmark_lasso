@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import scipy
+    from scipy.sparse.linalg import LinearOperator
     import numpy as np
     from cyanure import Regression
 
@@ -18,6 +19,12 @@ class Solver(BaseSolver):
         ' Minimization for Python, C++, and soon more," '
         'Arxiv eprint 1912.08165 (2019)'
     ]
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

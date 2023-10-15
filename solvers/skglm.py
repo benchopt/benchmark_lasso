@@ -4,6 +4,7 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import warnings
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from skglm import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
@@ -20,6 +21,21 @@ class Solver(BaseSolver):
     requirements = [
         'pip:skglm'
     ]
+
+    references = [
+        'Q. Bertrand and Q. Klopfenstein and P.-A. Bannier and G. Gidel'
+        'and M. Massias'
+        '"Beyond L1: Faster and Better Sparse Models with skglm", '
+        'https://arxiv.org/abs/2204.07826'
+    ]
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if fit_intercept:
+            return True, f"{self.name} does not handle fit_intercept"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

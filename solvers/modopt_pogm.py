@@ -6,6 +6,8 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     from scipy import sparse
+    from scipy.sparse.linalg import LinearOperator
+    from scipy.linalg.interpolative import estimate_spectral_norm
     from modopt.opt.algorithms import POGM
     from modopt.opt.proximity import SparseThreshold
     from modopt.opt.linear import Identity
@@ -63,7 +65,9 @@ class Solver(BaseSolver):
 
             weights = np.full(self.X.shape[1], self.lmbd)
 
-        if sparse.issparse(self.X):
+        if isinstance(self.X, LinearOperator):
+            L = estimate_spectral_norm(self.X) ** 2
+        elif sparse.issparse(self.X):
             L = sparse.linalg.svds(self.X, k=1)[1][0] ** 2
         else:
             L = np.linalg.norm(self.X, ord=2) ** 2

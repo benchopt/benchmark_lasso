@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
     from numpy.linalg import norm
     import scipy.optimize as sciop
     from scipy.sparse import issparse
+    from scipy.sparse.linalg import LinearOperator
 
 
 class Solver(BaseSolver):
@@ -30,6 +31,9 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
         return False, None
 
     def run(self, n_iter):

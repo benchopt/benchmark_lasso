@@ -6,6 +6,7 @@ from benchopt.helpers.julia import get_jl_interpreter
 from benchopt.helpers.julia import assert_julia_installed
 
 with safe_import_context() as import_ctx:
+    from scipy.sparse.linalg import LinearOperator
     assert_julia_installed()
 
 
@@ -32,6 +33,9 @@ class Solver(JuliaSolver):
         # XXX - fit intercept is not yet implemented in julia.jl
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
 
         return False, None
 

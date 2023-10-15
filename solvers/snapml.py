@@ -5,6 +5,7 @@ from benchopt.stopping_criterion import SufficientDescentCriterion
 with safe_import_context() as import_ctx:
     from snapml import LinearRegression
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
 
 
 class Solver(BaseSolver):
@@ -26,6 +27,9 @@ class Solver(BaseSolver):
     def skip(self, X, y, lmbd, fit_intercept):
         if self.gpu and get_cuda_version() is None:
             return True, "snapml[gpu=True] needs a GPU to run"
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):

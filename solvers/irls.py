@@ -3,6 +3,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from sklearn.linear_model import Ridge
 
 
@@ -27,6 +28,9 @@ class Solver(BaseSolver):
         # XXX - not implemented but not too complicated to implement
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
+
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
 
         return False, None
 

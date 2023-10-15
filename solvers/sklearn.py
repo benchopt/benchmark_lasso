@@ -5,6 +5,7 @@ from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from sklearn.linear_model import Lasso
     from sklearn.exceptions import ConvergenceWarning
 
@@ -19,6 +20,12 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = ['scikit-learn']
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd

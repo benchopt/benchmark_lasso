@@ -5,6 +5,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 cuda_version = None
 with safe_import_context() as import_ctx:
     import numpy as np
+    from scipy.sparse.linalg import LinearOperator
     from scipy import sparse
     cuda_version = requires_gpu()
 
@@ -41,6 +42,12 @@ class Solver(BaseSolver):
     stopping_criterion = SufficientProgressCriterion(
         eps=1e-12, patience=5, strategy='iteration'
     )
+
+    def skip(self, X, y, lmbd, fit_intercept):
+        if isinstance(X, LinearOperator):
+            return True, f"{self.name} does not handle implicit operator"
+
+        return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
