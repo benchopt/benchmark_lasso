@@ -11,8 +11,8 @@ on:
     branches:
       - main
   schedule:
-    # Run every day at 7:42am UTC.
-    - cron:  '42 7 * * *'
+    # Run every 3rd of the month at 7:42am UTC.
+    - cron:  '42 7 3 * *'
 
 jobs:
   benchopt_dev:
