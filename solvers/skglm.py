@@ -17,7 +17,7 @@ class Solver(BaseSolver):
     sampling_strategy = "iteration"
 
     install_cmd = 'conda'
-    requirements = ['pip::skglm']
+    requirements = ['pip::git+https://github.com/scikit-learn-contrib/skglm.git']
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
