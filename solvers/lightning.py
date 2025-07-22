@@ -15,7 +15,7 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = [
         'cython',
-        'pip:git+https://github.com/scikit-learn-contrib/lightning.git'
+        'pip::git+https://github.com/scikit-learn-contrib/lightning.git'
     ]
     references = [
         'M. Blondel, K. Seki and K. Uehara, '

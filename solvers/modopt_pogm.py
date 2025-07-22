@@ -17,9 +17,7 @@ class Solver(BaseSolver):
     sampling_strategy = 'callback'
 
     install_cmd = 'conda'
-    requirements = [
-        'pip:modopt',
-    ]
+    requirements = ['pip::modopt']
     references = [
         'S. Farrens, A. Grigis, L. El Gueddari, Z. Ramzi, G. R. Chaithya, '
         'S. Starck, B. Sarthou, H. Cherkaoui, P. Ciuciu and J.-L. Starck, '

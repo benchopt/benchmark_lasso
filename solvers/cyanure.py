@@ -12,7 +12,7 @@ class Solver(BaseSolver):
     name = 'Cyanure'
 
     install_cmd = 'conda'
-    requirements = ['mkl', 'pip:cyanure-mkl']
+    requirements = ['mkl', 'pip::cyanure-mkl']
     references = [
         'J. Mairal, "Cyanure: An Open-Source Toolbox for Empirical Risk'
         ' Minimization for Python, C++, and soon more," '
