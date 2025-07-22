@@ -16,7 +16,7 @@ class Dataset(BaseDataset):
     is_sparse = True
 
     install_cmd = 'conda'
-    requirements = ['pip:libsvmdata']
+    requirements = ['pip::libsvmdata']
 
     def __init__(self):
         self.X, self.y = None, None

@@ -8,7 +8,7 @@ class Objective(BaseObjective):
     """L1 regularized linear regression.
     """
     name = "Lasso Regression"
-    min_benchopt_version = "1.5"
+    min_benchopt_version = "1.7"
 
     parameters = {
         'fit_intercept': [True, False],

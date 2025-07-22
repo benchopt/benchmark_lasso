@@ -16,7 +16,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:git+https://github.com/tbjohns/blitzl1.git@master'
+        'pip::git+https://github.com/tbjohns/blitzl1.git@master'
     ]
 
     def set_objective(self, X, y, lmbd, fit_intercept):

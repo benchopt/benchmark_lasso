@@ -17,7 +17,7 @@ class Dataset(BaseDataset):
     }
 
     install_cmd = 'conda'
-    requirements = ['pip:git+https://github.com/mathurinm/libsvmdata@main']
+    requirements = ['pip::git+https://github.com/mathurinm/libsvmdata@main']
     references = [
         "C. Chang and CJ. Lin, "
         "'ACM transactions on intelligent systems and technology (TIST)', "

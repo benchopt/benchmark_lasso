@@ -25,10 +25,10 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = [
-        "rapidsai:rapids",
-        f"nvidia:cudatoolkit={cuda_version}",
+        "rapidsai::rapids",
+        "nvidia::'cuda-version>=11.4,<=12.8'",
         "dask-sql", "cupy"
-    ] if cuda_version is not None else []
+    ]
 
     parameters = {
         "solver": [

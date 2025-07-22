@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = "snapml"
 
     install_cmd = "conda"
-    requirements = ["pip:snapml"]
+    requirements = ["pip::snapml"]
 
     stopping_criterion = SufficientDescentCriterion(eps=1e-10, patience=7)
 

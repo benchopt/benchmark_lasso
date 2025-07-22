@@ -16,9 +16,7 @@ class Solver(BaseSolver):
     name = 'ModOpt-FISTA'
     sampling_strategy = 'callback'
     install_cmd = 'conda'
-    requirements = [
-        'pip:modopt',
-    ]
+    requirements = ['pip::modopt']
     parameters = {
         'restart_strategy': ['greedy', 'adaptive-1'],
     }

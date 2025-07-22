@@ -18,6 +18,10 @@ def check_test_solver_install(solver_class):
     if "spams" in solver_class.name.lower():
         pytest.skip("python-spams is not released for python 3.9 yet")
 
+    if "snapml" in solver_class.name.lower():
+        if sys.platform == "darwin":
+            pytest.xfail("SnapML is not supported on MacOS.")
+
     if "cuml" in solver_class.name.lower():
         if sys.platform == "darwin":
             pytest.xfail("Cuml is not supported on MacOS.")

@@ -18,7 +18,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip:skglm'
+        'pip::git+https://github.com/scikit-learn-contrib/skglm.git'
     ]
 
     def set_objective(self, X, y, lmbd, fit_intercept):
