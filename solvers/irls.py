@@ -1,9 +1,8 @@
-from benchopt import BaseSolver, safe_import_context
+from benchopt import BaseSolver
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
-with safe_import_context() as import_ctx:
-    import numpy as np
-    from sklearn.linear_model import Ridge
+import numpy as np
+from sklearn.linear_model import Ridge
 
 
 class Solver(BaseSolver):

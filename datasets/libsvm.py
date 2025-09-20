@@ -1,11 +1,7 @@
 from benchopt import BaseDataset
 
-from benchopt import safe_import_context
-
-
-with safe_import_context() as import_ctx:
-    from libsvmdata import fetch_libsvm
-    from sklearn.preprocessing import StandardScaler
+from libsvmdata import fetch_libsvm
+from sklearn.preprocessing import StandardScaler
 
 
 class Dataset(BaseDataset):
@@ -17,15 +13,12 @@ class Dataset(BaseDataset):
     }
 
     install_cmd = 'conda'
-    requirements = ['pip::git+https://github.com/mathurinm/libsvmdata@main']
+    requirements = ['pip::libsvmdata']
     references = [
         "C. Chang and CJ. Lin, "
         "'ACM transactions on intelligent systems and technology (TIST)', "
         "Acm New York, USA vol 2 (2011)."
     ]
-
-    def __init__(self, dataset="bodyfat"):
-        self.dataset = dataset
 
     def get_data(self):
 
@@ -35,6 +28,4 @@ class Dataset(BaseDataset):
             scaler = StandardScaler()
             X = scaler.fit_transform(X)
 
-        data = dict(X=X, y=y)
-
-        return data
+        return dict(X=X, y=y)

@@ -1,10 +1,7 @@
 from benchopt import BaseDataset
-from benchopt import safe_import_context
 
-
-with safe_import_context() as import_ctx:
-    from sklearn.datasets import fetch_openml
-    import numpy as np
+from sklearn.datasets import fetch_openml
+import numpy as np
 
 
 class Dataset(BaseDataset):

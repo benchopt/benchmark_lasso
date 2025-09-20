@@ -1,19 +1,17 @@
-from benchopt import BaseSolver, safe_import_context
+from benchopt import BaseSolver
 from benchopt.helpers.requires_gpu import requires_gpu
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
-cuda_version = None
-with safe_import_context() as import_ctx:
-    import numpy as np
-    from scipy import sparse
-    cuda_version = requires_gpu()
+import numpy as np
+from scipy import sparse
+cuda_version = requires_gpu()
 
-    if cuda_version is not None:
+if cuda_version is not None:
 
-        import cudf
-        import cupy as cp
-        import cupyx.scipy.sparse as cusparse
-        from cuml.linear_model import Lasso
+    import cudf
+    import cupy as cp
+    import cupyx.scipy.sparse as cusparse
+    from cuml.linear_model import Lasso
 
 
 class Solver(BaseSolver):

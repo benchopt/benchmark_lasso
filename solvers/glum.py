@@ -1,12 +1,10 @@
 import warnings
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 from benchopt.stopping_criterion import SufficientProgressCriterion
 
-with safe_import_context() as import_ctx:
-    import numpy as np
-    from glum import GeneralizedLinearRegressor
-    from sklearn.exceptions import ConvergenceWarning
+import numpy as np
+from glum import GeneralizedLinearRegressor
+from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):

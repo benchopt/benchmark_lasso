@@ -1,11 +1,8 @@
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-
-with safe_import_context() as import_ctx:
-    import scipy
-    import numpy as np
-    from cyanure import Regression
+import scipy
+import numpy as np
+from cyanure import Regression
 
 
 class Solver(BaseSolver):

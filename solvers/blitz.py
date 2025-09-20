@@ -1,10 +1,7 @@
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-
-with safe_import_context() as import_ctx:
-    import numpy as np
-    import blitzl1
+import blitzl1
+import numpy as np
 
 
 class Solver(BaseSolver):

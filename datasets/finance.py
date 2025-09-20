@@ -1,9 +1,6 @@
 from benchopt import BaseDataset
-from benchopt import safe_import_context
 
-with safe_import_context() as import_ctx:
-    # Dependencies of download_libsvm are scikit-learn, download and tqdm
-    from libsvmdata import fetch_libsvm
+from libsvmdata import fetch_libsvm
 
 
 class Dataset(BaseDataset):
@@ -13,7 +10,6 @@ class Dataset(BaseDataset):
     Linguistics Human Language Technologies Conference (2009).
     """
     name = "finance"
-    is_sparse = True
 
     install_cmd = 'conda'
     requirements = ['pip::libsvmdata']

@@ -1,10 +1,9 @@
-from benchopt import BaseSolver, safe_import_context
+from benchopt import BaseSolver
 from benchopt.utils.sys_info import get_cuda_version
 from benchopt.stopping_criterion import SufficientDescentCriterion
 
-with safe_import_context() as import_ctx:
-    from snapml import LinearRegression
-    import numpy as np
+from snapml import LinearRegression
+import numpy as np
 
 
 class Solver(BaseSolver):

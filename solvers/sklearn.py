@@ -1,12 +1,9 @@
 import warnings
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-
-with safe_import_context() as import_ctx:
-    import numpy as np
-    from sklearn.linear_model import Lasso
-    from sklearn.exceptions import ConvergenceWarning
+import numpy as np
+from sklearn.linear_model import Lasso
+from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):

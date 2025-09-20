@@ -1,15 +1,12 @@
 import numpy as np
 
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-
-with safe_import_context() as import_ctx:
-    from scipy import sparse
-    from modopt.opt.algorithms import POGM
-    from modopt.opt.proximity import SparseThreshold
-    from modopt.opt.linear import Identity
-    from modopt.opt.gradient import GradBasic
+from scipy import sparse
+from modopt.opt.algorithms import POGM
+from modopt.opt.proximity import SparseThreshold
+from modopt.opt.linear import Identity
+from modopt.opt.gradient import GradBasic
 
 
 class Solver(BaseSolver):

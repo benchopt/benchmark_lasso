@@ -1,19 +1,15 @@
 from pathlib import Path
 
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-with safe_import_context() as import_ctx:
-    import numpy as np
+import numpy as np
+from scipy.sparse import issparse
 
-    from rpy2 import robjects
-    from rpy2.robjects import numpy2ri
-    from benchopt.helpers.r_lang import import_func_from_r_file
+from rpy2 import robjects
+from benchopt.helpers.r_lang import import_func_from_r_file, converter_ctx
 
-    # Setup the system to allow rpy2 running
-    R_FILE = str(Path(__file__).with_suffix('.R'))
-    import_func_from_r_file(R_FILE)
-    numpy2ri.activate()
+# Setup the system to allow rpy2 running
+R_FILE = str(Path(__file__).with_suffix('.R'))
 
 
 class Solver(BaseSolver):
@@ -22,7 +18,6 @@ class Solver(BaseSolver):
     install_cmd = 'conda'
     requirements = ['r-base', 'rpy2']
     sampling_strategy = 'iteration'
-    support_sparse = False
     references = [
         'I. Daubechies, M. Defrise and C. De Mol, '
         '"An iterative thresholding algorithm for linear inverse problems '
@@ -37,19 +32,25 @@ class Solver(BaseSolver):
         if fit_intercept:
             return True, f"{self.name} does not handle fit_intercept"
 
+        if issparse(X):
+            return True, f"{self.name} does not handle sparse data"
+
         return False, None
 
     def set_objective(self, X, y, lmbd, fit_intercept):
         self.X, self.y, self.lmbd = X, y, lmbd
         self.fit_intercept = fit_intercept
+
+        import_func_from_r_file(R_FILE)
         self.r_pgd = robjects.r['proximal_gradient_descent']
 
     def run(self, n_iter):
-        coefs = self.r_pgd(
-            self.X, self.y[:, None], self.lmbd,
-            n_iter=n_iter)
-        as_r = robjects.r['as']
-        self.w = np.array(as_r(coefs, "vector"))
+        with converter_ctx():
+            coefs = self.r_pgd(
+                self.X, self.y[:, None], self.lmbd,
+                n_iter=n_iter)
+            as_r = robjects.r['as']
+            self.w = np.array(as_r(coefs, "vector"))
 
     def get_result(self):
         return dict(beta=self.w.flatten())

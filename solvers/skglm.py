@@ -1,11 +1,9 @@
 from benchopt import BaseSolver
-from benchopt import safe_import_context
 
-with safe_import_context() as import_ctx:
-    import warnings
-    import numpy as np
-    from skglm import Lasso
-    from sklearn.exceptions import ConvergenceWarning
+import warnings
+import numpy as np
+from skglm import Lasso
+from sklearn.exceptions import ConvergenceWarning
 
 
 class Solver(BaseSolver):
@@ -18,7 +16,7 @@ class Solver(BaseSolver):
 
     install_cmd = 'conda'
     requirements = [
-        'pip::git+https://github.com/scikit-learn-contrib/skglm.git'
+        'pip::skglm'
     ]
 
     def set_objective(self, X, y, lmbd, fit_intercept):
